@@ -394,7 +394,8 @@ function filterNotePlayers() {
   results.style.display = 'block';
   results.innerHTML = matches.map(function(p){
     var pc = posColors[p.pos]||'b-k';
-    return '<div onclick="selectNotePlayer(''+p.name.replace(/'/g,"\'")+'',this)" style="padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''"><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+p.pos+'</span>'+p.name+'<span style="font-size:11px;color:var(--text3);">'+p.team+'</span></div>';
+    var safeName = p.name.replace(/'/g,'\x27');
+    return '<div onclick="selectNotePlayer(\"'+safeName+'\")" style="padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);" onmouseover="this.style.background=\'var(--bg4)\'" onmouseout="this.style.background=\'\'"><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+p.pos+'</span>'+p.name+'<span style="font-size:11px;color:var(--text3);">'+p.team+'</span></div>';
   }).join('');
 }
 
