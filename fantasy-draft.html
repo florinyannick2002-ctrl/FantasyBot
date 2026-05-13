@@ -1,10 +1,10 @@
 <!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8"/>
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<!-- saved from url=(0054)file:///C:/Users/Flori/Downloads/fantasy-draft_13.html -->
+<html lang="de"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🏈 Fantasy Draft Cheat Sheet</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+<link href="./fantasy-draft_files/css2" rel="stylesheet">
 <style>
 :root{
   --bg:#0f1117;--bg2:#181c27;--bg3:#1f2535;--bg4:#252b3b;
@@ -157,14 +157,14 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   <div class="divider"></div>
   <div style="display:flex;flex-direction:column;gap:4px;">
     <div class="section-label" style="margin-bottom:4px;">Navigation</div>
-    <button class="nav-item active" onclick="goTab('draft',this)" data-tab="draft"><span>📋</span> Draft Board</button>
-    <button class="nav-item" onclick="goTab('myteam',this)" data-tab="myteam"><span>⭐</span> Mein Team</button>
-    <button class="nav-item" onclick="goTab('rankings',this)" data-tab="rankings"><span>⚙️</span> Rankings</button>
+    <button class="nav-item active" onclick="goTab(&#39;draft&#39;,this)" data-tab="draft"><span>📋</span> Draft Board</button>
+    <button class="nav-item" onclick="goTab(&#39;myteam&#39;,this)" data-tab="myteam"><span>⭐</span> Mein Team</button>
+    <button class="nav-item" onclick="goTab(&#39;rankings&#39;,this)" data-tab="rankings"><span>⚙️</span> Rankings</button>
   </div>
   <div class="divider"></div>
   <div style="display:flex;flex-direction:column;gap:6px;">
     <div class="section-label">Sleeper Draft ID</div>
-    <input type="text" id="draft-id-input" placeholder="z.B. 114020987..."/>
+    <input type="text" id="draft-id-input" placeholder="z.B. 114020987...">
     <button class="btn-primary" id="load-btn" onclick="loadDraft()">Draft laden ↗</button>
     <button class="btn-ghost" onclick="toggleDemo()">Demo starten</button>
     <p style="font-size:11px;color:var(--text3);line-height:1.5;">Sleeper → Drafts → Share → lange Zahl in der URL</p>
@@ -198,14 +198,14 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
     <div class="controls" id="controls-row" style="display:none;">
-      <button class="pos-btn active" onclick="setPos('ALL')" id="btn-ALL">ALL</button>
-      <button class="pos-btn" onclick="setPos('QB')" id="btn-QB">QB</button>
-      <button class="pos-btn" onclick="setPos('RB')" id="btn-RB">RB</button>
-      <button class="pos-btn" onclick="setPos('WR')" id="btn-WR">WR</button>
-      <button class="pos-btn" onclick="setPos('TE')" id="btn-TE">TE</button>
-      <button class="pos-btn" onclick="setPos('K')" id="btn-K">K</button>
-      <button class="pos-btn" onclick="setPos('DEF')" id="btn-DEF">DEF</button>
-      <input type="text" id="search-input" placeholder="Spieler suchen..." oninput="renderPlayers()" style="margin-left:auto;width:150px;"/>
+      <button class="pos-btn active" onclick="setPos(&#39;ALL&#39;)" id="btn-ALL">ALL</button>
+      <button class="pos-btn" onclick="setPos(&#39;QB&#39;)" id="btn-QB">QB</button>
+      <button class="pos-btn" onclick="setPos(&#39;RB&#39;)" id="btn-RB">RB</button>
+      <button class="pos-btn" onclick="setPos(&#39;WR&#39;)" id="btn-WR">WR</button>
+      <button class="pos-btn" onclick="setPos(&#39;TE&#39;)" id="btn-TE">TE</button>
+      <button class="pos-btn" onclick="setPos(&#39;K&#39;)" id="btn-K">K</button>
+      <button class="pos-btn" onclick="setPos(&#39;DEF&#39;)" id="btn-DEF">DEF</button>
+      <input type="text" id="search-input" placeholder="Spieler suchen..." oninput="renderPlayers()" style="margin-left:auto;width:150px;">
     </div>
     <div id="player-grid">
       <div class="empty-state">// Draft ID laden → Demo starten → oder Rankings importieren</div>
@@ -218,7 +218,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <div>
         <div class="section-label" style="margin-bottom:8px;">Manuell hinzufügen</div>
         <div class="row" style="margin-bottom:6px;">
-          <input type="text" id="mypick-name" placeholder="Spielername" list="player-suggestions" style="flex:1;"/>
+          <input type="text" id="mypick-name" placeholder="Spielername" list="player-suggestions" style="flex:1;">
           <datalist id="player-suggestions"></datalist>
           <select id="mypick-pos" style="width:80px;"><option value="">Pos</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>K</option><option>DEF</option></select>
         </div>
@@ -226,7 +226,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       </div>
       <div>
         <div class="section-label" style="margin-bottom:8px;">Via Sleeper Username</div>
-        <input type="text" id="sleeper-user-id" placeholder="Sleeper Username" style="margin-bottom:6px;"/>
+        <input type="text" id="sleeper-user-id" placeholder="Sleeper Username" style="margin-bottom:6px;">
         <button class="btn-ghost" onclick="loadMyPicks()" style="width:100%;">Meine Picks laden ↗</button>
       </div>
     </div>
@@ -242,34 +242,48 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   <div class="panel" id="tab-rankings">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
       <div>
-        <div class="section-label" style="margin-bottom:8px;">FantasyPros Rankings einfügen</div>
+        <div class="section-label" style="margin-bottom:8px;">FantasyPros Rankings importieren</div>
         <div class="hint-box">
-          📄 <strong style="color:var(--text2);">So gehts:</strong> FantasyPros PDF im Browser öffnen → <strong style="color:var(--text2);">Ctrl+A</strong> → <strong style="color:var(--text2);">Ctrl+C</strong> → hier einfügen.<br/>
-          Tiers, Namen, Positionen, Teams und Bye Week werden automatisch erkannt.
+          <strong style="color:var(--text2);">Option 1 — PDF hochladen:</strong> FantasyPros PDF direkt hier reinziehen oder klicken.<br>
+          <strong style="color:var(--text2);">Option 2 — Text einfügen:</strong> PDF im Browser öffnen → Ctrl+A → Ctrl+C → unten einfügen.<br>
+          Rankings werden <strong style="color:var(--green);">automatisch gespeichert</strong> und bleiben beim nächsten Besuch erhalten.
         </div>
+        <div id="pdf-drop-zone" onclick="document.getElementById(&#39;pdf-file-input&#39;).click()" ondragover="event.preventDefault();this.style.borderColor=&#39;var(--blue)&#39;;this.style.background=&#39;var(--blue-bg)&#39;" ondragleave="this.style.borderColor=&#39;var(--border2)&#39;;this.style.background=&#39;var(--bg3)&#39;" ondrop="handlePdfDrop(event)" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:8px;transition:all .2s;">
+          <div style="font-size:28px;margin-bottom:6px;">📄</div>
+          <div style="font-size:13px;font-weight:500;color:var(--text);">PDF hier reinziehen</div>
+          <div style="font-size:11px;color:var(--text3);margin-top:3px;">oder klicken zum Auswählen</div>
+        </div>
+        <input type="file" id="pdf-file-input" accept=".pdf" style="display:none" onchange="handlePdfFile(this.files[0])">
         <div id="pdf-status" style="font-size:12px;font-family:var(--mono);margin-bottom:6px;min-height:16px;"></div>
-        <textarea id="bulk-input" placeholder="Hier einfügen — FantasyPros Beispiel:&#10;&#10;Tier1&#10;1Ja'MarrChase(CIN)WR1-&#10;2BijanRobinson(ATL)RB1-&#10;&#10;Oder manuell mit ADP:&#10;1. Mahomes QB KC BYE:10 ADP:3"></textarea>
+        <textarea id="bulk-input" placeholder="Hier einfügen — FantasyPros Beispiel:
+
+Tier1
+1Ja&#39;MarrChase(CIN)WR1-
+2BijanRobinson(ATL)RB1-
+
+Oder manuell mit ADP:
+1. Mahomes QB KC BYE:10 ADP:3"></textarea>
         <div class="row" style="margin-top:8px;">
           <button class="btn-primary" onclick="importBulk()">Importieren ↗</button>
-          <button class="btn-ghost" onclick="document.getElementById('bulk-input').value=''">Leeren</button>
+          <button class="btn-ghost" onclick="document.getElementById(&#39;bulk-input&#39;).value=&#39;&#39;">Leeren</button>
         </div>
       </div>
       <div>
         <div class="section-label" style="margin-bottom:8px;">Einzeln hinzufügen</div>
-        <input type="text" id="add-name" placeholder="Name" style="margin-bottom:5px;"/>
+        <input type="text" id="add-name" placeholder="Name" style="margin-bottom:5px;">
         <div class="row" style="margin-bottom:5px;">
           <select id="add-pos" style="flex:1;"><option value="">Position</option><option>QB</option><option>RB</option><option>WR</option><option>TE</option><option>K</option><option>DEF</option></select>
-          <input type="text" id="add-team" placeholder="Team" style="width:60px;flex:none;"/>
+          <input type="text" id="add-team" placeholder="Team" style="width:60px;flex:none;">
           <select id="add-tier" style="width:80px;flex:none;">
             <option value="1">Tier 1</option><option value="2">Tier 2</option><option value="3">Tier 3</option>
             <option value="4">Tier 4</option><option value="5">Tier 5</option><option value="6">Tier 6</option>
           </select>
         </div>
         <div style="display:flex;gap:5px;margin-bottom:5px;">
-          <input type="number" id="add-bye" placeholder="Bye Wk" style="width:80px;flex:none;" min="1" max="18"/>
-          <input type="number" id="add-adp" placeholder="Mein ADP" style="flex:1;" min="1" max="500"/>
+          <input type="number" id="add-bye" placeholder="Bye Wk" style="width:80px;flex:none;" min="1" max="18">
+          <input type="number" id="add-adp" placeholder="Mein ADP" style="flex:1;" min="1" max="500">
         </div>
-        <input type="text" id="add-note" placeholder="Notiz (optional)" style="margin-bottom:5px;"/>
+        <input type="text" id="add-note" placeholder="Notiz (optional)" style="margin-bottom:5px;">
         <button class="btn-primary" onclick="addSingle()" style="width:100%;">+ Hinzufügen</button>
       </div>
     </div>
@@ -296,6 +310,26 @@ var currentPos = 'ALL', draftId = '', refreshTimer = null, useCustom = false;
 var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
 var tierNames = {1:'Elite',2:'Sehr stark',3:'Stark',4:'Solide',5:'Tiefschiessen',6:'Spätpicks'};
 var needPos = {QB:1,RB:2,WR:3,TE:1,K:1,DEF:1};
+
+// ── Persistence: save/load rankings from localStorage ──
+function saveRankings() {
+  try {
+    localStorage.setItem('fantasybot_rankings', JSON.stringify(customRankings));
+    console.log('Rankings saved:', customRankings.length, 'players');
+  } catch(e) { console.log('Save failed:', e); }
+}
+function loadSavedRankings() {
+  try {
+    var saved = localStorage.getItem('fantasybot_rankings');
+    if (saved) {
+      customRankings = JSON.parse(saved);
+      customRankings.forEach(function(p,i){ p.rank=i+1; });
+      console.log('Loaded saved rankings:', customRankings.length, 'players');
+      return true;
+    }
+  } catch(e) { console.log('Load failed:', e); }
+  return false;
+}
 
 // ── Name normalization for fuzzy matching ──
 function normName(n) {
@@ -600,7 +634,8 @@ function importBulk() {
   var added = customRankings.length - before;
   var status = document.getElementById('pdf-status');
   status.style.color = added>0?'var(--green)':'var(--red)';
-  status.textContent = added>0?'// ✓ '+added+' Spieler importiert':'// Keine Spieler erkannt';
+  status.textContent = added>0?'// ✓ '+added+' Spieler importiert und gespeichert':'// Keine Spieler erkannt';
+  if(added>0) saveRankings();
   renderRankingList();
   updateSuggestions();
 }
@@ -621,7 +656,7 @@ function addSingle() {
   renderRankingList(); updateSuggestions();
 }
 function removeRanking(i){customRankings.splice(i,1);customRankings.forEach(function(p,j){p.rank=j+1;});renderRankingList();}
-function clearRankings(){if(customRankings.length&&!confirm('Alle Rankings löschen?'))return;customRankings=[];useCustom=false;renderRankingList();}
+function clearRankings(){if(customRankings.length&&!confirm('Alle Rankings löschen?'))return;customRankings=[];useCustom=false;saveRankings();renderRankingList();}
 function renderRankingList() {
   customRankings.forEach(function(p,i){p.rank=i+1;});
   document.getElementById('rank-count').textContent=customRankings.length+' Spieler';
@@ -870,6 +905,91 @@ async function loadDraft() {
 }
 function manualRefresh(){if(draftId)fetchPicks();}
 
+// ── PDF parsing via pdf.js ──
+var pdfjsLib = null;
+
+function loadPdfJs(callback) {
+  if (pdfjsLib) { callback(); return; }
+  var script = document.createElement('script');
+  script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
+  script.onload = function() {
+    pdfjsLib = window['pdfjs-dist/build/pdf'];
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    callback();
+  };
+  document.head.appendChild(script);
+}
+
+function handlePdfDrop(e) {
+  e.preventDefault();
+  document.getElementById('pdf-drop-zone').style.borderColor = 'var(--border2)';
+  document.getElementById('pdf-drop-zone').style.background = 'var(--bg3)';
+  var file = e.dataTransfer.files[0];
+  if (file && file.type === 'application/pdf') handlePdfFile(file);
+}
+
+function handlePdfFile(file) {
+  if (!file) return;
+  var status = document.getElementById('pdf-status');
+  status.style.color = 'var(--text2)';
+  status.textContent = '// PDF wird gelesen...';
+
+  loadPdfJs(function() {
+    var reader = new FileReader();
+    reader.onload = async function(e) {
+      try {
+        var pdf = await pdfjsLib.getDocument({data: e.target.result}).promise;
+        var fullText = '';
+        for (var i = 1; i <= pdf.numPages; i++) {
+          var page = await pdf.getPage(i);
+          var textContent = await page.getTextContent();
+          // Join text items with spaces, preserve line structure
+          var pageText = '';
+          var lastY = null;
+          textContent.items.forEach(function(item) {
+            if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
+              pageText += '
+';
+            }
+            pageText += item.str;
+            lastY = item.transform[5];
+          });
+          fullText += pageText + '
+';
+        }
+        // Clear existing and import
+        var before = customRankings.length;
+        customRankings = [];
+        document.getElementById('bulk-input').value = fullText;
+        importBulk();
+        status.style.color = 'var(--green)';
+        status.textContent = '// ✓ PDF gelesen: ' + customRankings.length + ' Spieler importiert und gespeichert';
+      } catch(err) {
+        status.style.color = 'var(--red)';
+        status.textContent = '// PDF Fehler: ' + err.message + ' — bitte Text-Option verwenden';
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+// ── Init: load saved rankings on page load ──
+window.addEventListener('load', function() {
+  if (loadSavedRankings() && customRankings.length) {
+    useCustom = true;
+    applyBeatADPData();
+    updateSuggestions();
+    renderRankingList();
+    document.getElementById('stats-row').style.display = 'grid';
+    document.getElementById('controls-row').style.display = 'flex';
+    var savedMsg = document.getElementById('pdf-status');
+    if(savedMsg) {
+      savedMsg.style.color = 'var(--green)';
+      savedMsg.textContent = '// ✓ ' + customRankings.length + ' gespeicherte Rankings geladen';
+    }
+  }
+});
+
 // ── Demo ──
 function toggleDemo() {
   var demoPlayers = [
@@ -906,5 +1026,6 @@ function toggleDemo() {
   renderMyTeam(); renderPlayers(); updateSuggestions();
 }
 </script>
-</body>
-</html>
+
+
+</body></html>
