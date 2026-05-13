@@ -121,6 +121,40 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .slp-num{color:var(--blue);}
 
 .empty-state{text-align:center;padding:3rem;color:var(--text3);font-size:13px;font-family:var(--mono);}
+
+/* Note cards */
+.note-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:8px;display:flex;flex-direction:column;gap:8px;}
+.note-card-header{display:flex;align-items:center;gap:8px;}
+.note-card-name{font-size:14px;font-weight:600;color:var(--text);flex:1;}
+.note-card-meta{display:flex;gap:6px;align-items:center;}
+.label-select{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;padding:4px 8px;cursor:pointer;}
+.note-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;padding:7px 10px;resize:none;font-family:var(--font);min-height:60px;}
+.note-input:focus{outline:none;border-color:var(--blue);}
+.note-save-row{display:flex;justify-content:space-between;align-items:center;}
+.note-saved{font-size:11px;color:var(--green);font-family:var(--mono);opacity:0;transition:opacity .3s;}
+/* Player notes popup */
+.note-popup{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--bg2);border:1px solid var(--border2);border-radius:var(--radius-lg);padding:1.25rem;width:320px;z-index:1000;box-shadow:0 8px 32px rgba(0,0,0,.5);}
+.note-popup h4{font-size:14px;font-weight:600;color:var(--text);margin-bottom:12px;}
+.note-overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:999;}
+.label-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px;}
+.label-btn{padding:7px 10px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;font-size:12px;text-align:center;transition:all .15s;}
+.label-btn:hover{border-color:var(--border2);color:var(--text);}
+.label-btn.active{font-weight:600;}
+.label-btn.l1{border-color:#3dd68c;color:#3dd68c;background:#0a2a1a;}
+.label-btn.l2{border-color:#4a9eff;color:#4a9eff;background:#0d2240;}
+.label-btn.l3{border-color:#f5a623;color:#f5a623;background:#2a1e08;}
+.label-btn.l4{border-color:#ff6b6b;color:#ff6b6b;background:#2a1010;}
+.note-textarea{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-size:12px;padding:8px;min-height:70px;resize:vertical;font-family:var(--font);margin-bottom:10px;}
+.note-textarea:focus{outline:none;border-color:var(--blue);}
+.note-actions{display:flex;gap:6px;justify-content:flex-end;}
+
+/* Label badges in player rows */
+.lbadge{font-size:10px;padding:1px 7px;border-radius:4px;font-weight:600;flex-shrink:0;cursor:pointer;}
+.lbadge.l1{background:#0a2a1a;color:#3dd68c;}
+.lbadge.l2{background:#0d2240;color:#4a9eff;}
+.lbadge.l3{background:#2a1e08;color:#f5a623;}
+.lbadge.l4{background:#2a1010;color:#ff6b6b;}
+.note-icon{font-size:11px;color:var(--text3);cursor:pointer;flex-shrink:0;}
 .status-row{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text3);font-family:var(--mono);}
 .dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;}
 .dot.red{background:var(--red);}
@@ -160,6 +194,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <button class="nav-item active" onclick="goTab('draft',this)" data-tab="draft"><span>📋</span> Draft Board</button>
     <button class="nav-item" onclick="goTab('myteam',this)" data-tab="myteam"><span>⭐</span> Mein Team</button>
     <button class="nav-item" onclick="goTab('rankings',this)" data-tab="rankings"><span>⚙️</span> Rankings</button>
+    <button class="nav-item" onclick="goTab('notizen',this)" data-tab="notizen"><span>📝</span> Notizen</button>
   </div>
   <div class="divider"></div>
   <div style="display:flex;flex-direction:column;gap:6px;">
@@ -186,6 +221,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <button class="tab active" data-tab="draft" onclick="goTabBtn(this)">Draft Board</button>
     <button class="tab" data-tab="myteam" onclick="goTabBtn(this)">Mein Team</button>
     <button class="tab" data-tab="rankings" onclick="goTabBtn(this)">⚙ Rankings</button>
+    <button class="tab" data-tab="notizen" onclick="goTabBtn(this)">📝 Notizen</button>
   </div>
 
   <!-- DRAFT BOARD -->
@@ -293,6 +329,32 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     </div>
     <div class="ranking-list" id="ranking-list"><div class="empty-state">// Noch keine Rankings</div></div>
   </div>
+  <!-- NOTIZEN -->
+  <div class="panel" id="tab-notizen">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <h2 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:4px;">📝 Spieler Notizen</h2>
+        <p style="font-size:12px;color:var(--text3);">Notizen werden nach Spielername gespeichert — bleiben erhalten auch wenn du neue Rankings importierst.</p>
+      </div>
+    </div>
+
+    <!-- Search to add player -->
+    <div class="card" style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
+      <div class="section-label" style="margin-bottom:8px;">Spieler hinzufügen</div>
+      <div style="display:flex;gap:8px;margin-bottom:8px;">
+        <input type="text" id="note-search" placeholder="Spielername suchen..." list="note-player-suggestions" oninput="filterNotePlayers()" style="flex:1;"/>
+        <datalist id="note-player-suggestions"></datalist>
+        <button class="btn-primary" onclick="addNotePlayer()">+ Hinzufügen</button>
+      </div>
+      <div id="note-search-results" style="display:none;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);max-height:180px;overflow-y:auto;"></div>
+    </div>
+
+    <!-- Notes list -->
+    <div id="notes-list">
+      <div class="empty-state">// Noch keine Notizen — suche einen Spieler und füge ihn hinzu</div>
+    </div>
+  </div>
+
 </main>
 </div>
 
@@ -306,9 +368,183 @@ var draftedIds = new Set();
 var currentPos = 'ALL', draftId = '', refreshTimer = null, useCustom = false;
 var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
 var tierNames = {1:'Elite',2:'Sehr stark',3:'Stark',4:'Solide',5:'Tiefschiessen',6:'Spätpicks'};
+
+// ── Player Notes (stored by name, survive ranking updates) ──
+var playerNotes = {}; // name -> {label: 1-4|null, note: string}
+var LABELS = {1:{text:'🔥 Must Have',cls:'l1'}, 2:{text:'✅ Interessant',cls:'l2'}, 3:{text:'⚠️ Vorsicht',cls:'l3'}, 4:{text:'❌ Kein Interesse',cls:'l4'}};
+
+function saveNotes() {
+  try { localStorage.setItem('fantasybot_notes', JSON.stringify(playerNotes)); } catch(e){}
+}
+function loadNotes() {
+  try {
+    var saved = localStorage.getItem('fantasybot_notes');
+    if (saved) { playerNotes = JSON.parse(saved); console.log('Notes loaded:', Object.keys(playerNotes).length); }
+  } catch(e){}
+}
+
+// ── Notizen Tab functions ──
+function filterNotePlayers() {
+  var q = document.getElementById('note-search').value.toLowerCase().trim();
+  var results = document.getElementById('note-search-results');
+  if (!q || q.length < 2) { results.style.display='none'; return; }
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  var matches = source.filter(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; }).slice(0,8);
+  if (!matches.length) { results.style.display='none'; return; }
+  results.style.display = 'block';
+  results.innerHTML = matches.map(function(p){
+    var pc = posColors[p.pos]||'b-k';
+    return '<div onclick="selectNotePlayer(''+p.name.replace(/'/g,"\'")+'',this)" style="padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);" onmouseover="this.style.background='var(--bg4)'" onmouseout="this.style.background=''"><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+p.pos+'</span>'+p.name+'<span style="font-size:11px;color:var(--text3);">'+p.team+'</span></div>';
+  }).join('');
+}
+
+function selectNotePlayer(name) {
+  document.getElementById('note-search').value = name;
+  document.getElementById('note-search-results').style.display = 'none';
+  addNotePlayer();
+}
+
+function addNotePlayer() {
+  var name = document.getElementById('note-search').value.trim();
+  if (!name) return;
+  if (!playerNotes[name]) playerNotes[name] = {label:null, note:''};
+  document.getElementById('note-search').value = '';
+  document.getElementById('note-search-results').style.display = 'none';
+  saveNotes();
+  renderNotesList();
+}
+
+function renderNotesList() {
+  var list = document.getElementById('notes-list');
+  var entries = Object.entries(playerNotes);
+  if (!entries.length) {
+    list.innerHTML = '<div class="empty-state">// Noch keine Notizen</div>';
+    return;
+  }
+  // Update note-player-suggestions datalist
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  document.getElementById('note-player-suggestions').innerHTML = source.map(function(p){ return '<option value="'+p.name+'">'; }).join('');
+
+  list.innerHTML = entries.map(function(e, i) {
+    var name = e[0], data = e[1];
+    var labelOpts = '<option value="">— Kein Label —</option>' + Object.entries(LABELS).map(function(le){
+      return '<option value="'+le[0]+'"'+(data.label==le[0]?' selected':'')+'>'+le[1].text+'</option>';
+    }).join('');
+    var source2 = (useCustom && customRankings.length) ? customRankings : allPlayers;
+    var player = source2.find(function(p){ return p.name === name; });
+    var posBadge = player ? '<span class="badge '+(posColors[player.pos]||'b-k')+'" style="font-size:10px;padding:1px 6px;">'+player.pos+'</span>' : '';
+    return '<div class="note-card" id="nc-'+i+'">'+
+      '<div class="note-card-header">'+posBadge+'<span class="note-card-name">'+name+'</span>'+
+      '<select class="label-select" onchange="updateNoteLabel(''+name.replace(/'/g,"\'")+'',this.value)">'+labelOpts+'</select>'+
+      '<button onclick="deleteNote(''+name.replace(/'/g,"\'")+'','+i+')" style="background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;" title="Löschen">×</button>'+
+      '</div>'+
+      '<textarea class="note-input" placeholder="Notiz: z.B. starke Saison erwartet, verletzt im Juli..." onblur="updateNoteText(''+name.replace(/'/g,"\'")+'',this.value)" onkeydown="if(event.ctrlKey&&event.key==='Enter')updateNoteText(''+name.replace(/'/g,"\'")+'',this.value)">'+( data.note||'')+'</textarea>'+
+      '<div class="note-save-row"><span style="font-size:11px;color:var(--text3);">Ctrl+Enter oder Klick woanders zum Speichern</span><span class="note-saved" id="ns-'+i+'">✓ Gespeichert</span></div>'+
+      '</div>';
+  }).join('');
+}
+
+function updateNoteLabel(name, val) {
+  if (!playerNotes[name]) playerNotes[name] = {label:null, note:''};
+  playerNotes[name].label = val ? parseInt(val) : null;
+  saveNotes();
+  renderPlayers();
+  showSaved(name);
+}
+
+function updateNoteText(name, val) {
+  if (!playerNotes[name]) playerNotes[name] = {label:null, note:''};
+  playerNotes[name].note = val.trim();
+  saveNotes();
+  renderPlayers();
+}
+
+function deleteNote(name, i) {
+  delete playerNotes[name];
+  saveNotes();
+  renderNotesList();
+  renderPlayers();
+}
+
+function showSaved(name) {
+  var entries = Object.keys(playerNotes);
+  var i = entries.indexOf(name);
+  var el = document.getElementById('ns-'+i);
+  if(el){ el.style.opacity='1'; setTimeout(function(){ el.style.opacity='0'; },1500); }
+}
+
+function openNotePopup(name) {
+  var existing = playerNotes[name] || {label:null, note:''};
+  // Remove existing popup
+  var old = document.getElementById('note-popup-el');
+  if(old) old.remove();
+  var ov = document.getElementById('note-overlay-el');
+  if(ov) ov.remove();
+
+  var overlay = document.createElement('div');
+  overlay.className = 'note-overlay'; overlay.id = 'note-overlay-el';
+  overlay.onclick = closeNotePopup;
+  document.body.appendChild(overlay);
+
+  var popup = document.createElement('div');
+  popup.className = 'note-popup'; popup.id = 'note-popup-el';
+  var labelBtns = Object.entries(LABELS).map(function(e) {
+    var id=e[0], l=e[1];
+    var active = existing.label == id ? ' active '+l.cls : '';
+    return '<button class="label-btn'+active+'" onclick="selectLabel(''+name+'','+id+',this)">'+l.text+'</button>';
+  }).join('');
+
+  popup.innerHTML = '<h4>📝 '+name+'</h4>'
+    + '<div class="label-grid">'+labelBtns+'</div>'
+    + '<textarea class="note-textarea" id="note-text-input" placeholder="Notiz (optional): z.B. verletzt im Juli, abwarten...">'+( existing.note||'')+'</textarea>'
+    + '<div class="note-actions">'
+    + '<button class="btn-ghost btn-sm" onclick="clearNote(''+name+'')">Löschen</button>'
+    + '<button class="btn-primary btn-sm" onclick="saveNote(''+name+'')">Speichern</button>'
+    + '</div>';
+  document.body.appendChild(popup);
+  document.getElementById('note-text-input').focus();
+}
+
+function closeNotePopup() {
+  var p = document.getElementById('note-popup-el'); if(p) p.remove();
+  var o = document.getElementById('note-overlay-el'); if(o) o.remove();
+}
+
+function selectLabel(name, id, btn) {
+  // Toggle active state
+  document.querySelectorAll('.label-btn').forEach(function(b){
+    b.classList.remove('active','l1','l2','l3','l4');
+  });
+  if (!btn.classList.contains('active')) {
+    btn.classList.add('active', LABELS[id].cls);
+    btn._selectedLabel = id;
+  }
+}
+
+function saveNote(name) {
+  var noteText = document.getElementById('note-text-input').value.trim();
+  var activeBtn = document.querySelector('.label-btn.active');
+  var label = activeBtn ? (activeBtn._selectedLabel || Object.keys(LABELS).find(function(k){ return activeBtn.classList.contains(LABELS[k].cls); })) : null;
+  if (label || noteText) {
+    playerNotes[name] = {label: label ? parseInt(label) : null, note: noteText};
+  } else {
+    delete playerNotes[name];
+  }
+  saveNotes();
+  closeNotePopup();
+  renderPlayers();
+}
+
+function clearNote(name) {
+  delete playerNotes[name];
+  saveNotes();
+  closeNotePopup();
+  renderPlayers();
+}
 var needPos = {QB:1,RB:2,WR:3,TE:1,K:1,DEF:1};
 
 // ── Persistence: save/load rankings from localStorage ──
+loadNotes(); // Load player notes on startup
 function saveRankings() {
   try {
     localStorage.setItem('fantasybot_rankings', JSON.stringify(customRankings));
@@ -366,6 +602,7 @@ function showPanel(t) {
   document.querySelectorAll('.tab').forEach(function(b){
     b.classList.toggle('active', b.dataset.tab === t);
   });
+  if(t==='notizen') renderNotesList();
 }
 function setPos(p) {
   currentPos = p;
@@ -505,7 +742,11 @@ function renderPlayers() {
       h += '<tr class="prow t'+tc+'">';
       h += '<td class="c-rk">'+p.rank+'</td>';
       h += '<td><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span></td>';
-      h += '<td class="c-name">'+p.name+(p.note?' <span style="font-size:11px;color:var(--text3);font-style:italic;">'+p.note+'</span>':'')+(isMyPick?' <span class="my-pick-tag">MY PICK</span>':'')+'</td>';
+      var pnote = playerNotes[p.name] || {};
+      var labelHtml = pnote.label ? '<span class="lbadge '+LABELS[pnote.label].cls+'" onclick="openNotePopup(''+p.name.replace(/'/g,"\'")+'')" title="'+LABELS[pnote.label].text+'">'+LABELS[pnote.label].text+'</span>' : '';
+      var noteHtml = pnote.note ? '<span class="note-icon" onclick="openNotePopup(''+p.name.replace(/'/g,"\'")+'')" title="'+pnote.note+'">💬</span>' : '';
+      var editIcon = !pnote.label && !pnote.note ? '<span class="note-icon" onclick="openNotePopup(''+p.name.replace(/'/g,"\'")+'')" title="Notiz hinzufügen" style="opacity:0.3;">✎</span>' : '';
+      h += '<td class="c-name" style="cursor:pointer;" onclick="openNotePopup(''+p.name.replace(/'/g,"\'")+'')" title="Klicken für Notiz">'+p.name+' '+labelHtml+' '+noteHtml+editIcon+(isMyPick?' <span class="my-pick-tag">MY PICK</span>':'')+'</td>';
       h += '<td class="c-team">'+(p.team||'')+'</td>';
       h += '<td class="c-bye">'+byeHtml+'</td>';
       h += '<td class="c-slp r">'+slpHtml+'</td>';
