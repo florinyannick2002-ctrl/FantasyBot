@@ -392,11 +392,26 @@ function filterNotePlayers() {
   var matches = source.filter(function(p){ return p.name.toLowerCase().indexOf(q) >= 0; }).slice(0,8);
   if (!matches.length) { results.style.display='none'; return; }
   results.style.display = 'block';
-  results.innerHTML = matches.map(function(p){
+  results.innerHTML = '';
+  matches.forEach(function(p) {
     var pc = posColors[p.pos]||'b-k';
-    var safeName = p.name.replace(/'/g,'\x27');
-    return '<div onclick="selectNotePlayer(\"'+safeName+'\")" style="padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);" onmouseover="this.style.background=\'var(--bg4)\'" onmouseout="this.style.background=\'\'"><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+p.pos+'</span>'+p.name+'<span style="font-size:11px;color:var(--text3);">'+p.team+'</span></div>';
-  }).join('');
+    var div = document.createElement('div');
+    div.style.cssText = 'padding:7px 12px;cursor:pointer;display:flex;align-items:center;gap:8px;font-size:13px;border-bottom:1px solid var(--border);';
+    div.onmouseover = function(){ this.style.background='var(--bg4)'; };
+    div.onmouseout = function(){ this.style.background=''; };
+    div.addEventListener('click', (function(name){ return function(){ selectNotePlayer(name); }; })(p.name));
+    var badge = document.createElement('span');
+    badge.className = 'badge '+pc;
+    badge.style.cssText = 'font-size:10px;padding:1px 6px;';
+    badge.textContent = p.pos;
+    var nameSpan = document.createElement('span');
+    nameSpan.textContent = p.name;
+    var teamSpan = document.createElement('span');
+    teamSpan.style.cssText = 'font-size:11px;color:var(--text3);';
+    teamSpan.textContent = p.team;
+    div.appendChild(badge); div.appendChild(nameSpan); div.appendChild(teamSpan);
+    results.appendChild(div);
+  });
 }
 
 function selectNotePlayer(name) {
@@ -418,31 +433,94 @@ function addNotePlayer() {
 function renderNotesList() {
   var list = document.getElementById('notes-list');
   var entries = Object.entries(playerNotes);
+
+  // Update suggestions
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  var sugg = document.getElementById('note-player-suggestions');
+  if(sugg) sugg.innerHTML = source.map(function(p){ return '<option value="'+p.name+'">'; }).join('');
+
   if (!entries.length) {
     list.innerHTML = '<div class="empty-state">// Noch keine Notizen</div>';
     return;
   }
-  // Update note-player-suggestions datalist
-  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
-  document.getElementById('note-player-suggestions').innerHTML = source.map(function(p){ return '<option value="'+p.name+'">'; }).join('');
 
-  list.innerHTML = entries.map(function(e, i) {
+  // Build using DOM to avoid quote issues
+  list.innerHTML = '';
+  entries.forEach(function(e, i) {
     var name = e[0], data = e[1];
-    var labelOpts = '<option value="">— Kein Label —</option>' + Object.entries(LABELS).map(function(le){
-      return '<option value="'+le[0]+'"'+(data.label==le[0]?' selected':'')+'>'+le[1].text+'</option>';
-    }).join('');
-    var source2 = (useCustom && customRankings.length) ? customRankings : allPlayers;
-    var player = source2.find(function(p){ return p.name === name; });
-    var posBadge = player ? '<span class="badge '+(posColors[player.pos]||'b-k')+'" style="font-size:10px;padding:1px 6px;">'+player.pos+'</span>' : '';
-    return '<div class="note-card" id="nc-'+i+'">'+
-      '<div class="note-card-header">'+posBadge+'<span class="note-card-name">'+name+'</span>'+
-      '<select class="label-select" onchange="updateNoteLabel(''+name.replace(/'/g,"\'")+'',this.value)">'+labelOpts+'</select>'+
-      '<button onclick="deleteNote(''+name.replace(/'/g,"\'")+'','+i+')" style="background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;" title="Löschen">×</button>'+
-      '</div>'+
-      '<textarea class="note-input" placeholder="Notiz: z.B. starke Saison erwartet, verletzt im Juli..." onblur="updateNoteText(''+name.replace(/'/g,"\'")+'',this.value)" onkeydown="if(event.ctrlKey&&event.key==='Enter')updateNoteText(''+name.replace(/'/g,"\'")+'',this.value)">'+( data.note||'')+'</textarea>'+
-      '<div class="note-save-row"><span style="font-size:11px;color:var(--text3);">Ctrl+Enter oder Klick woanders zum Speichern</span><span class="note-saved" id="ns-'+i+'">✓ Gespeichert</span></div>'+
-      '</div>';
-  }).join('');
+    var player = source.find(function(p){ return p.name === name; });
+
+    var card = document.createElement('div');
+    card.className = 'note-card';
+
+    // Header
+    var header = document.createElement('div');
+    header.className = 'note-card-header';
+
+    if(player && player.pos) {
+      var badge = document.createElement('span');
+      badge.className = 'badge '+(posColors[player.pos]||'b-k');
+      badge.style.cssText = 'font-size:10px;padding:1px 6px;';
+      badge.textContent = player.pos;
+      header.appendChild(badge);
+    }
+
+    var nameSpan = document.createElement('span');
+    nameSpan.className = 'note-card-name';
+    nameSpan.textContent = name;
+    header.appendChild(nameSpan);
+
+    // Label select
+    var sel = document.createElement('select');
+    sel.className = 'label-select';
+    var defOpt = document.createElement('option');
+    defOpt.value = '';
+    defOpt.textContent = '— Kein Label —';
+    sel.appendChild(defOpt);
+    Object.entries(LABELS).forEach(function(le) {
+      var opt = document.createElement('option');
+      opt.value = le[0];
+      opt.textContent = le[1].text;
+      if(data.label == le[0]) opt.selected = true;
+      sel.appendChild(opt);
+    });
+    sel.addEventListener('change', (function(n){ return function(){ updateNoteLabel(n, this.value); }; })(name));
+    header.appendChild(sel);
+
+    // Delete button
+    var delBtn = document.createElement('button');
+    delBtn.textContent = '×';
+    delBtn.style.cssText = 'background:transparent;border:none;cursor:pointer;color:var(--text3);font-size:16px;padding:0 4px;';
+    delBtn.title = 'Löschen';
+    delBtn.addEventListener('click', (function(n,idx){ return function(){ deleteNote(n,idx); }; })(name,i));
+    header.appendChild(delBtn);
+    card.appendChild(header);
+
+    // Textarea
+    var ta = document.createElement('textarea');
+    ta.className = 'note-input';
+    ta.placeholder = 'Notiz: z.B. starke Saison erwartet, verletzt im Juli...';
+    ta.value = data.note || '';
+    ta.addEventListener('blur', (function(n){ return function(){ updateNoteText(n, this.value); }; })(name));
+    ta.addEventListener('keydown', (function(n){ return function(ev){ if(ev.ctrlKey&&ev.key==='Enter') updateNoteText(n,this.value); }; })(name));
+    card.appendChild(ta);
+
+    // Save row
+    var saveRow = document.createElement('div');
+    saveRow.className = 'note-save-row';
+    var hint = document.createElement('span');
+    hint.style.cssText = 'font-size:11px;color:var(--text3);';
+    hint.textContent = 'Ctrl+Enter oder Klick woanders zum Speichern';
+    var saved = document.createElement('span');
+    saved.className = 'note-saved';
+    saved.id = 'ns-'+i;
+    saved.textContent = '✓ Gespeichert';
+    saveRow.appendChild(hint);
+    saveRow.appendChild(saved);
+    card.appendChild(saveRow);
+
+    list.appendChild(card);
+  });
 }
 
 function updateNoteLabel(name, val) {
