@@ -614,6 +614,12 @@ function importBulk() {
     }
     if(!name||name.length<2) return;
     if(/^\d+$/.test(name)) return;
+    // Filter out VS.ADP numbers like "+12", "-10", "□ +6", "+26 -13" etc.
+    if(/^[+\-\d\s□□±.,]+$/.test(name)) return;
+    // Filter out lines that are just symbols/numbers with no real name
+    if(/^[\W\d]+$/.test(name)) return;
+    // Must have at least one letter sequence of 2+ chars (real name)
+    if(!/[A-Za-z]{2,}/.test(name)) return;
     if(customRankings.some(function(r){return r.name.toLowerCase()===name.toLowerCase();})) return;
 
     customRankings.push({
