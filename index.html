@@ -945,14 +945,12 @@ function handlePdfFile(file) {
           var lastY = null;
           textContent.items.forEach(function(item) {
             if (lastY !== null && Math.abs(item.transform[5] - lastY) > 5) {
-              pageText += '
-';
+              pageText += String.fromCharCode(10);
             }
             pageText += item.str;
             lastY = item.transform[5];
           });
-          fullText += pageText + '
-';
+          fullText += pageText + String.fromCharCode(10);
         }
         // Clear existing and import
         var before = customRankings.length;
