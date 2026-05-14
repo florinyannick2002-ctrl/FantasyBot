@@ -713,6 +713,22 @@ async function fetchProjectedPicks(){
   }catch(e){ console.log('projections error', e); }
 }
 
+function saveDraftSettings(){
+  var slot=parseInt(document.getElementById('my-slot-input').value);
+  var teams=parseInt(document.getElementById('teams-input').value);
+  var type=document.getElementById('draft-type-select').value;
+  var status=document.getElementById('myteam-status');
+  if(!slot||slot<1||slot>20){status.textContent='Bitte Slot eingeben';status.style.color='var(--red)';return;}
+  myDraftSlot=slot;
+  totalTeams=teams||12;
+  draftType=type;
+  try{localStorage.setItem('fantasybot_slot',JSON.stringify({slot:slot,teams:totalTeams,draftType:type}));}catch(e){}
+  var typeLabel=type==='linear'?'Linear':type==='3rdReversal'?'Snake+3rd':'Snake';
+  status.textContent='✓ Slot #'+slot+' | '+totalTeams+' Teams | '+typeLabel;
+  status.style.color='var(--green)';
+  renderPlayers();
+}
+
 async function loadMyTeam(){
   var username=document.getElementById('sleeper-username-input').value.trim();
   if(!username){alert('Bitte Username eingeben');return;}
