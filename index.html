@@ -301,34 +301,23 @@ function renderPlayers(){
   
   // Find ALL projected picks for me across all rounds
   var highlightNames = {};
-  if(myDraftSlot && totalTeams) {
+  if(myDraftSlot && totalTeams && window._picksUntilMe !== undefined) {
     var allAvail = (useCustom && customRankings.length ? customRankings : allPlayers)
       .filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
     
-    // Step 1: find all my future pick numbers (snake draft)
+    // picksUntilMe = picks before my NEXT pick (0 = I'm on the clock)
+    // After each of my picks, there are (totalTeams-1) picks before me again
+    var avIndex = window._picksUntilMe; // skip this many for first pick
     var totalPicked = draftedIds.size;
-    var myFuturePicks = []; // [{pickNo, round}]
-    for(var pn = totalPicked+1; pn <= totalTeams*20; pn++) {
-      var rnd = Math.ceil(pn/totalTeams);
-      var slot = rnd%2===1 ? ((pn-1)%totalTeams)+1 : totalTeams-((pn-1)%totalTeams);
-      if(slot === myDraftSlot) myFuturePicks.push({pickNo:pn, round:rnd});
-    }
+    var currentRound = Math.ceil((totalPicked + 1) / totalTeams);
     
-    // Step 2: for each of my picks, figure out which player I'd get
-    // Between pick N and pick N+K, K-1 other teams pick, taking the next K-1 best players
-    var prevPickNo = totalPicked; // last pick already made
-    var avIndex = 0; // current index into allAvail
-    
-    myFuturePicks.forEach(function(myPick) {
-      // How many picks happen before this pick of mine?
-      var picksBefore = myPick.pickNo - prevPickNo - 1;
-      avIndex += picksBefore; // skip that many players (others took them)
+    for(var r = 0; r < 20; r++) {
       if(avIndex < allAvail.length) {
-        highlightNames[allAvail[avIndex].name] = myPick.round;
-      }
-      // Don't advance avIndex for my own pick (I take from current position)
-      prevPickNo = myPick.pickNo;
-    });
+        highlightNames[allAvail[avIndex].name] = currentRound + r;
+      } else break;
+      // After my pick, all other teams pick (totalTeams-1 picks)
+      avIndex += totalTeams; // skip totalTeams-1 others + my own pick = totalTeams
+    }
   }
   var h='<table class="player-table"><thead><tr>';
   h+='<th class="c-rk">#</th><th class="c-pos">Pos</th><th>Spieler</th>';
@@ -836,7 +825,7 @@ function renderRecentPicks(){
   var list=document.getElementById('recent-picks-list');
   if(!recentPicks.length){bar.style.display='none';return;}
   bar.style.display='block';
-  var last5=recentPicks.slice(-5).reverse();
+  var last5=recentPicks.slice(-8).reverse();
   list.innerHTML='';
   // Show picks until my turn if known
   if(myDraftSlot){
