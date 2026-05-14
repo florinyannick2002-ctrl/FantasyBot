@@ -295,12 +295,21 @@ function renderPlayers(){
   var byTier={};
   filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   
-  // Find the player to highlight: top available when it's my turn
+  // Find player to highlight: simulate picks until my turn
+  // We know: picksUntilMe = how many more picks before I pick
+  // The top (picksUntilMe + 1)th available player = who I'd likely get
   var highlightName = null;
   if(myDraftSlot && window._picksUntilMe !== undefined) {
-    // Highlight top available player (first in list = best available by user's ranking)
-    if(filtered.length > 0) {
-      highlightName = filtered[0].name;
+    var skip = window._picksUntilMe;
+    // Get all available players in order (before tier filtering)
+    var allAvailable = (useCustom && customRankings.length ? customRankings : allPlayers)
+      .filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
+    // The player at position 'skip' is who I'd likely get
+    // (assuming each pick before mine takes the next best player)
+    if(allAvailable.length > skip) {
+      highlightName = allAvailable[skip].name;
+    } else if(allAvailable.length > 0) {
+      highlightName = allAvailable[allAvailable.length-1].name;
     }
   }
   var h='<table class="player-table"><thead><tr>';
