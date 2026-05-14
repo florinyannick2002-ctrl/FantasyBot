@@ -104,6 +104,14 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .lbadge.l3{background:#2a1e08;color:#f5a623;}
 .lbadge.l4{background:#2a1010;color:#ff6b6b;}
 .fp-note-icon{font-size:11px;color:var(--text3);cursor:help;margin-left:4px;}
+.recent-picks{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1rem;margin-bottom:1rem;display:none;}
+.recent-picks-title{font-size:10px;font-weight:600;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.recent-picks-list{display:flex;gap:8px;flex-wrap:wrap;}
+.recent-pick-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;}
+.recent-pick-chip.mine{border-color:var(--purple);background:var(--purple-bg);}
+.my-next-pick-above{border-top:2px solid #f5a623 !important;position:relative;}
+.my-next-pick-above td{padding-top:10px !important;}
+.my-next-pick-above td:first-child::before{content:'▶ Dein nächster Pick';position:absolute;top:-18px;left:0;font-size:10px;color:#f5a623;font-family:var(--mono);font-weight:600;white-space:nowrap;}
 .tooltip-box{position:fixed;background:#1e2433;border:1px solid var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text);max-width:320px;line-height:1.6;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;display:none;}
 </style>
 </head>
@@ -141,6 +149,10 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   </div>
 
   <div class="panel active" id="tab-draft">
+    <div class="recent-picks" id="recent-picks-bar">
+      <div class="recent-picks-title">🏈 Letzte Picks</div>
+      <div class="recent-picks-list" id="recent-picks-list"></div>
+    </div>
     <div class="stats" id="stats-row" style="display:none;">
       <div class="stat"><div class="lbl">Gesamt</div><div class="val" id="s-total">—</div></div>
       <div class="stat"><div class="lbl">Verfügbar</div><div class="val" id="s-avail" style="color:var(--green)">—</div></div>
@@ -163,7 +175,15 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   </div>
 
   <div class="panel" id="tab-myteam">
-    <div class="empty-state">Mein Team — coming soon</div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
+      <div class="section-label" style="margin-bottom:8px;">Sleeper Username</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="sleeper-username-input" placeholder="Dein Sleeper Username..." style="flex:1;"/>
+        <button class="btn-primary" id="load-myteam-btn">Laden ↗</button>
+      </div>
+      <p style="font-size:11px;color:var(--text3);margin-top:6px;" id="myteam-status"></p>
+    </div>
+    <div id="myteam-picks-list"><div class="empty-state">// Username eingeben und Draft ID laden</div></div>
   </div>
 
   <div class="panel" id="tab-rankings">
@@ -206,6 +226,11 @@ var sleeperMap = {};
 var draftedIds = new Set();
 var playerNotes = {};
 var currentPos = 'ALL';
+var sleeperUsername = '';
+var mySleeperUserId = '';
+var myDraftSlot = null;
+var totalTeams = 12;
+var recentPicks = []; // {pickNo, playerName, pos, team, ismine}
 var draftId = '';
 var useCustom = false;
 var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
@@ -281,6 +306,7 @@ function renderPlayers(){
       var pc=posColors[p.pos]||'b-k';
       var pid=p.sleeperId||p.id||p.name;
       var note=playerNotes[p.name]||{};
+      var isNextPick=window._nextMyPick&&p.rank===window._nextMyPick;
       var fpNote=p.fpNote||'';
       var lhtml=note.label?'<span class="lbadge '+LABELS[note.label].cls+'">'+LABELS[note.label].text+'</span>':'';
       var nhtml=note.note?' <span style="font-size:11px;color:var(--text3);font-style:italic;" title="'+note.note+'">💬</span>':'';
@@ -292,10 +318,11 @@ function renderPlayers(){
         var cls=d>0?'adp-pos':d<0?'adp-neg':'';
         diff='<span class="adp-d '+cls+'">'+s+d+'</span>';
       }
-      h+='<tr class="prow t'+tc+'">';
+      h+='<tr class="prow t'+tc+(isNextPick?' my-next-pick-above':'')+'">';
       h+='<td class="c-rk">'+p.rank+'</td>';
       h+='<td><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span></td>';
-      var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-note="'+fpNote.replace(/"/g,'&quot;').substring(0,400)+'">📋</span>' : '';
+      var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
+      if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
       h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
@@ -312,7 +339,10 @@ function renderPlayers(){
     b.addEventListener('click',function(){draftedIds.add(this.dataset.pid);renderPlayers();});
   });
   grid.querySelectorAll('.fp-note-icon').forEach(function(icon){
-    icon.addEventListener('mouseenter',function(){showTooltip(this, this.dataset.note);});
+    icon.addEventListener('mouseenter',function(){
+      var note=(window._fpNotes&&window._fpNotes[this.dataset.pid])||'';
+      showTooltip(this, note);
+    });
     icon.addEventListener('mouseleave',hideTooltip);
   });
   // Update stats
@@ -593,6 +623,43 @@ function readPdf(file){
   reader.readAsArrayBuffer(file);
 }
 
+async function loadMyTeam(){
+  var username=document.getElementById('sleeper-username-input').value.trim();
+  if(!username){alert('Bitte Username eingeben');return;}
+  var status=document.getElementById('myteam-status');
+  status.textContent='Lade...';
+  try{
+    var r=await fetch('https://api.sleeper.app/v1/user/'+username);
+    if(!r.ok)throw new Error('User nicht gefunden');
+    var user=await r.json();
+    mySleeperUserId=user.user_id;
+    sleeperUsername=username;
+    status.textContent='✓ Eingeloggt als '+username;
+    status.style.color='var(--green)';
+    // Find draft slot
+    if(draftId){
+      var dr=await fetch('https://api.sleeper.app/v1/draft/'+draftId);
+      var draft=await dr.json();
+      if(draft.slot_to_roster_id){
+        Object.entries(draft.slot_to_roster_id).forEach(function(e){
+          // We need roster_id for this user - fetch league rosters
+        });
+      }
+      totalTeams=draft.settings&&draft.settings.teams?draft.settings.teams:12;
+      // Find my slot from draft order
+      if(draft.draft_order&&draft.draft_order[user.user_id]){
+        myDraftSlot=draft.draft_order[user.user_id];
+        status.textContent='✓ '+username+' — Draft Slot #'+myDraftSlot;
+      }
+    }
+    // Reload picks to mark mine
+    if(draftId)await loadPicks();
+  }catch(e){
+    status.textContent='Fehler: '+e.message;
+    status.style.color='var(--red)';
+  }
+}
+
 // Tooltip
 var tooltipEl = null;
 function showTooltip(el, text){
@@ -675,16 +742,58 @@ async function loadPicks(){
     if(!r.ok)return;
     var picks=await r.json();
     draftedIds.clear();
+    recentPicks=[];
     picks.forEach(function(pk){
       if(pk.player_id)draftedIds.add(String(pk.player_id));
-      // Update ADP from real pick data
       if(pk.metadata&&pk.metadata.adp&&pk.player_id){
         var adp=Math.round(parseFloat(pk.metadata.adp)*10)/10;
         customRankings.forEach(function(cr){if(cr.sleeperId===String(pk.player_id))cr.sleeperRank=adp;});
       }
+      // Track recent picks
+      recentPicks.push({
+        pickNo:pk.pick_no,
+        playerName:pk.metadata&&pk.metadata.first_name?(pk.metadata.first_name+' '+pk.metadata.last_name):(pk.player_id||'?'),
+        pos:pk.metadata&&pk.metadata.position?pk.metadata.position:'',
+        team:pk.metadata&&pk.metadata.nfl_team?pk.metadata.nfl_team:'',
+        isMine:mySleeperUserId&&pk.picked_by===mySleeperUserId
+      });
     });
+    // Calculate next pick for my slot
+    if(myDraftSlot){
+      var totalPicks=picks.length;
+      var currentRound=Math.floor(totalPicks/totalTeams)+1;
+      var posInRound=totalPicks%totalTeams;
+      // Snake draft logic
+      var nextMyPick=null;
+      for(var pick=totalPicks+1;pick<=totalTeams*20;pick++){
+        var round=Math.ceil(pick/totalTeams);
+        var pos=round%2===1?(pick-1)%totalTeams+1:totalTeams-(pick-1)%totalTeams;
+        if(pos===myDraftSlot){nextMyPick=pick;break;}
+      }
+      window._nextMyPick=nextMyPick;
+    }
+    renderRecentPicks();
     renderPlayers();
   }catch(e){console.log('picks error',e);}
+}
+
+function renderRecentPicks(){
+  var bar=document.getElementById('recent-picks-bar');
+  var list=document.getElementById('recent-picks-list');
+  if(!recentPicks.length){bar.style.display='none';return;}
+  bar.style.display='block';
+  var last5=recentPicks.slice(-5).reverse();
+  list.innerHTML='';
+  last5.forEach(function(pk){
+    var chip=document.createElement('div');
+    chip.className='recent-pick-chip'+(pk.isMine?' mine':'');
+    var pc=posColors[pk.pos]||'b-k';
+    chip.innerHTML='<span style="font-size:10px;font-family:var(--mono);color:var(--text3);">#'+pk.pickNo+'</span>'
+      +'<span class="badge '+pc+'" style="font-size:10px;padding:1px 5px;">'+(pk.pos||'?')+'</span>'
+      +'<span style="font-size:12px;font-weight:500;">'+pk.playerName+'</span>'
+      +(pk.isMine?'<span style="font-size:10px;color:var(--purple);">YOU</span>':'');
+    list.appendChild(chip);
+  });
 }
 
 // Init
@@ -721,6 +830,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // import triggered by PDF drop only
   document.getElementById('clear-rank-btn').addEventListener('click',clearRankings);
   document.getElementById('add-note-btn').addEventListener('click',addNote);
+  document.getElementById('load-myteam-btn').addEventListener('click',loadMyTeam);
   document.getElementById('note-search').addEventListener('keypress',function(e){if(e.key==='Enter')addNote();});
 
   // PDF
