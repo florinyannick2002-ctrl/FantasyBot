@@ -180,9 +180,52 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   </div>
 
   <div class="panel" id="tab-myteam">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;">
-      <h3 style="font-size:14px;font-weight:600;margin-bottom:1rem;">Draft Einstellungen</h3>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+
+    <!-- Sleeper Username -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
+      <div class="section-label" style="margin-bottom:8px;">Sleeper Username</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="sleeper-username-input" placeholder="Dein Sleeper Username..." style="flex:1;"/>
+        <button class="btn-primary" id="load-myteam-btn">Laden ↗</button>
+      </div>
+      <p style="font-size:11px;margin-top:6px;" id="myteam-status"></p>
+    </div>
+
+    <!-- Mein Lineup -->
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+        <div class="section-label">Mein Lineup</div>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="lineup-summary"></span>
+      </div>
+      <div id="lineup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">
+        <div class="empty-state" style="grid-column:1/-1;padding:1rem;">// Draft laden &amp; Username eingeben</div>
+      </div>
+    </div>
+
+    <!-- Analyse -->
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem;" id="analysis-row" style="display:none;">
+      <!-- Team Stärke -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.875rem;">
+        <div class="section-label" style="margin-bottom:8px;">Team Stärke</div>
+        <div id="team-strength" style="font-size:22px;font-weight:700;color:var(--green);">—</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Ø Ranking meiner Picks</div>
+      </div>
+      <!-- Positionsbedarf -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.875rem;">
+        <div class="section-label" style="margin-bottom:8px;">Positionsbedarf</div>
+        <div id="pos-need" style="font-size:12px;line-height:1.8;"></div>
+      </div>
+      <!-- Bye Weeks -->
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.875rem;">
+        <div class="section-label" style="margin-bottom:8px;">Bye Weeks</div>
+        <div id="bye-weeks" style="font-size:12px;line-height:1.8;"></div>
+      </div>
+    </div>
+
+    <!-- Draft Einstellungen (Notfall) -->
+    <details style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
+      <summary style="cursor:pointer;font-size:12px;color:var(--text3);font-family:var(--mono);">⚙ Draft Einstellungen (Notfall)</summary>
+      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
         <div>
           <div class="section-label" style="margin-bottom:6px;">Mein Draft Slot</div>
           <input type="number" id="my-slot-input" placeholder="z.B. 5" min="1" max="20" style="width:100%;"/>
@@ -192,7 +235,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
           <input type="number" id="teams-input" placeholder="z.B. 10" min="2" max="20" value="10" style="width:100%;"/>
         </div>
       </div>
-      <div style="margin-bottom:12px;">
+      <div style="margin-bottom:10px;">
         <div class="section-label" style="margin-bottom:6px;">Draft Typ</div>
         <select id="draft-type-select" style="width:100%;">
           <option value="snake">Snake Draft</option>
@@ -200,16 +243,9 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
           <option value="3rdReversal">Snake + Third Round Reversal</option>
         </select>
       </div>
-      <button class="btn-primary" id="save-draft-settings-btn" style="width:100%;">✓ Speichern & Anwenden</button>
-      <p style="font-size:11px;color:var(--text3);margin-top:8px;" id="myteam-status"></p>
-    </div>
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
-      <div class="section-label" style="margin-bottom:8px;">Sleeper Username (optional)</div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="sleeper-username-input" placeholder="Für Live-Picks laden..." style="flex:1;"/>
-        <button class="btn-ghost" id="load-myteam-btn">Laden ↗</button>
-      </div>
-    </div>
+      <button class="btn-ghost" id="save-draft-settings-btn" style="width:100%;">✓ Speichern</button>
+    </details>
+
   </div>
 
   <div class="panel" id="tab-rankings">
@@ -255,8 +291,10 @@ var sleeperUsername = '';
 var mySleeperUserId = '';
 var myDraftSlot = null;
 var totalTeams = 12;
-var draftType = 'snake'; // snake, linear, auction
-var recentPicks = []; // {pickNo, playerName, pos, team, ismine}
+var draftType = 'snake';
+var recentPicks = [];
+var myPicks = []; // players I've drafted
+var rosterSlots = {qb:1,rb:2,wr:2,te:1,flex:2,k:1,def:1,bn:6}; // {pickNo, playerName, pos, team, ismine}
 var draftId = '';
 var useCustom = false;
 var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
@@ -714,6 +752,111 @@ async function fetchProjectedPicks(){
   }catch(e){ console.log('projections error', e); }
 }
 
+function renderMyTeam(){
+  if(!myPicks.length) return;
+  
+  // Lineup grid
+  var grid = document.getElementById('lineup-grid');
+  var slots = [];
+  // Starters first
+  var posOrder = [];
+  for(var i=0;i<rosterSlots.qb;i++) posOrder.push('QB');
+  for(var i=0;i<rosterSlots.rb;i++) posOrder.push('RB');
+  for(var i=0;i<rosterSlots.wr;i++) posOrder.push('WR');
+  for(var i=0;i<rosterSlots.te;i++) posOrder.push('TE');
+  for(var i=0;i<rosterSlots.flex;i++) posOrder.push('FLEX');
+  for(var i=0;i<rosterSlots.k;i++) posOrder.push('K');
+  for(var i=0;i<rosterSlots.def;i++) posOrder.push('DEF');
+  for(var i=0;i<rosterSlots.bn;i++) posOrder.push('BN');
+
+  // Assign picks to slots
+  var assigned = [];
+  var remaining = myPicks.slice();
+  var slotPlayers = posOrder.map(function(slot){
+    if(slot==='BN') return {slot:'BN',player:null};
+    var idx = remaining.findIndex(function(p){
+      if(slot==='FLEX') return ['RB','WR','TE'].includes(p.pos);
+      return p.pos===slot;
+    });
+    if(idx>=0){ var p=remaining.splice(idx,1)[0]; return {slot:slot,player:p}; }
+    return {slot:slot,player:null};
+  });
+  // Fill BN with remaining
+  var bnIdx=0;
+  slotPlayers.forEach(function(s){
+    if(s.slot==='BN'&&bnIdx<remaining.length){ s.player=remaining[bnIdx++]; }
+  });
+
+  grid.innerHTML = slotPlayers.map(function(s){
+    var pc = s.player ? (posColors[s.player.pos]||'b-k') : '';
+    var slotColor = s.slot==='BN'?'color:var(--text3)':'color:var(--text2)';
+    var html = '<div style="background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px 10px;">';
+    html += '<div style="font-size:10px;font-family:var(--mono);'+slotColor+';margin-bottom:4px;">'+s.slot+'</div>';
+    if(s.player){
+      html += '<span class="badge '+pc+'" style="font-size:10px;padding:1px 5px;margin-bottom:3px;">'+s.player.pos+'</span>';
+      html += '<div style="font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">'+s.player.name+'</div>';
+      html += '<div style="font-size:10px;color:var(--text3);">'+s.player.team+' · Pick #'+s.player.pickNo+'</div>';
+    } else {
+      html += '<div style="font-size:12px;color:var(--text3);font-style:italic;">Leer</div>';
+    }
+    html += '</div>';
+    return html;
+  }).join('');
+
+  // Summary
+  document.getElementById('lineup-summary').textContent = myPicks.length+' Picks';
+
+  // Analysis
+  document.getElementById('analysis-row').style.display='grid';
+
+  // Team Stärke - average ranking
+  var rankedPicks = myPicks.filter(function(p){
+    var cr=customRankings.find(function(r){return r.name===p.name;});
+    return cr&&cr.rank;
+  });
+  if(rankedPicks.length){
+    var avg=rankedPicks.reduce(function(s,p){
+      var cr=customRankings.find(function(r){return r.name===p.name;});
+      return s+(cr?cr.rank:0);
+    },0)/rankedPicks.length;
+    var strength=document.getElementById('team-strength');
+    strength.textContent='Ø '+Math.round(avg);
+    strength.style.color=avg<50?'var(--green)':avg<100?'var(--amber)':'var(--red)';
+  }
+
+  // Positionsbedarf
+  var posCounts={QB:0,RB:0,WR:0,TE:0,K:0,DEF:0};
+  myPicks.forEach(function(p){if(posCounts[p.pos]!==undefined)posCounts[p.pos]++;});
+  var needs=[];
+  if(posCounts.QB<rosterSlots.qb)needs.push('QB: '+posCounts.QB+'/'+rosterSlots.qb+' ⚠️');
+  else needs.push('QB: '+posCounts.QB+'/'+rosterSlots.qb+' ✅');
+  if(posCounts.RB<rosterSlots.rb)needs.push('RB: '+posCounts.RB+'/'+rosterSlots.rb+' ⚠️');
+  else needs.push('RB: '+posCounts.RB+'/'+rosterSlots.rb+' ✅');
+  if(posCounts.WR<rosterSlots.wr)needs.push('WR: '+posCounts.WR+'/'+rosterSlots.wr+' ✅');
+  else needs.push('WR: '+posCounts.WR+'/'+rosterSlots.wr+' ✅');
+  if(posCounts.TE<rosterSlots.te)needs.push('TE: '+posCounts.TE+'/'+rosterSlots.te+' ⚠️');
+  else needs.push('TE: '+posCounts.TE+'/'+rosterSlots.te+' ✅');
+  document.getElementById('pos-need').innerHTML=needs.map(function(n){
+    var color=n.includes('⚠️')?'color:var(--amber)':'color:var(--green)';
+    return '<div style="'+color+';font-size:12px;">'+n+'</div>';
+  }).join('');
+
+  // Bye Weeks
+  var byeCount={};
+  myPicks.forEach(function(p){
+    var cr=customRankings.find(function(r){return r.name===p.name;});
+    if(cr&&cr.bye){byeCount[cr.bye]=(byeCount[cr.bye]||0)+1;}
+  });
+  var byeHtml='';
+  if(Object.keys(byeCount).length){
+    Object.entries(byeCount).sort(function(a,b){return+a[0]-+b[0];}).forEach(function(e){
+      var color=e[1]>=3?'color:var(--red)':e[1]>=2?'color:var(--amber)':'color:var(--text)';
+      byeHtml+='<div style="'+color+';">Woche '+e[0]+': '+e[1]+' Spieler'+(e[1]>=3?' ⚠️':e[1]>=2?' ⚠':'')+'</div>';
+    });
+  } else { byeHtml='<div style="color:var(--text3);">Noch keine Bye-Daten</div>'; }
+  document.getElementById('bye-weeks').innerHTML=byeHtml;
+}
+
 function saveDraftSettings(){
   var slot=parseInt(document.getElementById('my-slot-input').value);
   var teams=parseInt(document.getElementById('teams-input').value);
@@ -754,13 +897,35 @@ async function loadMyTeam(){
       }
       totalTeams=draft.settings&&draft.settings.teams?draft.settings.teams:12;
     draftType=draft.type||'snake';
-    console.log('Draft type:', draftType, 'Teams:', totalTeams);
+    if(draft.settings){
+      rosterSlots={
+        qb:draft.settings.slots_qb||1,
+        rb:draft.settings.slots_rb||2,
+        wr:draft.settings.slots_wr||2,
+        te:draft.settings.slots_te||1,
+        flex:draft.settings.slots_flex||2,
+        k:draft.settings.slots_k||1,
+        def:draft.settings.slots_def||1,
+        bn:draft.settings.slots_bn||6
+      };
+    }
       // Find my slot from draft order
       if(draft.draft_order&&draft.draft_order[user.user_id]){
         myDraftSlot=draft.draft_order[user.user_id];
         totalTeams=draft.settings&&draft.settings.teams?draft.settings.teams:12;
     draftType=draft.type||'snake';
-    console.log('Draft type:', draftType, 'Teams:', totalTeams);
+    if(draft.settings){
+      rosterSlots={
+        qb:draft.settings.slots_qb||1,
+        rb:draft.settings.slots_rb||2,
+        wr:draft.settings.slots_wr||2,
+        te:draft.settings.slots_te||1,
+        flex:draft.settings.slots_flex||2,
+        k:draft.settings.slots_k||1,
+        def:draft.settings.slots_def||1,
+        bn:draft.settings.slots_bn||6
+      };
+    }
         var typeLabel = draftType==='linear'?'Linear':draftType==='auction'?'Auction':'Snake';
         status.textContent='✓ '+username+' — Slot #'+myDraftSlot+' | '+totalTeams+' Teams | '+typeLabel+' Draft';
         status.style.color='var(--green)';
@@ -860,6 +1025,7 @@ async function loadPicks(){
     var picks=await r.json();
     draftedIds.clear();
     recentPicks=[];
+    myPicks=[];
     picks.forEach(function(pk){
       if(pk.player_id)draftedIds.add(String(pk.player_id));
       if(pk.metadata&&pk.metadata.adp&&pk.player_id){
@@ -867,13 +1033,12 @@ async function loadPicks(){
         customRankings.forEach(function(cr){if(cr.sleeperId===String(pk.player_id))cr.sleeperRank=adp;});
       }
       // Track recent picks
-      recentPicks.push({
-        pickNo:pk.pick_no,
-        playerName:pk.metadata&&pk.metadata.first_name?(pk.metadata.first_name+' '+pk.metadata.last_name):(pk.player_id||'?'),
-        pos:pk.metadata&&pk.metadata.position?pk.metadata.position:'',
-        team:pk.metadata&&pk.metadata.nfl_team?pk.metadata.nfl_team:'',
-        isMine:mySleeperUserId&&pk.picked_by===mySleeperUserId
-      });
+      var isMine = mySleeperUserId && pk.picked_by===mySleeperUserId;
+      var pName = pk.metadata&&pk.metadata.first_name?(pk.metadata.first_name+' '+pk.metadata.last_name):(pk.player_id||'?');
+      var pPos = pk.metadata&&pk.metadata.position?pk.metadata.position:'';
+      var pTeam = pk.metadata&&pk.metadata.nfl_team?pk.metadata.nfl_team:'';
+      recentPicks.push({pickNo:pk.pick_no,playerName:pName,pos:pPos,team:pTeam,isMine:isMine});
+      if(isMine) myPicks.push({name:pName,pos:pPos,team:pTeam,pickNo:pk.pick_no});
     });
     // Snake draft: find how many picks until my turn
     if(myDraftSlot){
@@ -903,6 +1068,7 @@ async function loadPicks(){
     }
     renderRecentPicks();
     renderPlayers();
+    renderMyTeam();
   }catch(e){console.log('picks error',e);}
 }
 
