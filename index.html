@@ -234,6 +234,7 @@ var sleeperUsername = '';
 var mySleeperUserId = '';
 var myDraftSlot = null;
 var totalTeams = 12;
+var draftType = 'snake'; // snake, linear, auction
 var recentPicks = []; // {pickNo, playerName, pos, team, ismine}
 var draftId = '';
 var useCustom = false;
@@ -312,10 +313,16 @@ function renderPlayers(){
     for(var pickNo = totalPicked + 1; pickNo <= totalTeams * 20; pickNo++) {
       if(avIndex >= allAvail.length) break;
       var round = Math.ceil(pickNo / totalTeams);
-      // Snake: odd rounds left->right, even rounds right->left
-      var slotThisPick = round % 2 === 1
-        ? ((pickNo - 1) % totalTeams) + 1          // odd round: 1,2,3...N
-        : totalTeams - ((pickNo - 1) % totalTeams); // even round: N,N-1...1
+      // Snake vs Linear
+      var slotThisPick;
+      if(draftType === 'linear') {
+        slotThisPick = ((pickNo - 1) % totalTeams) + 1; // always 1,2,3...N
+      } else {
+        // Snake: odd rounds left->right, even rounds right->left
+        slotThisPick = round % 2 === 1
+          ? ((pickNo - 1) % totalTeams) + 1
+          : totalTeams - ((pickNo - 1) % totalTeams);
+      }
       
       if(slotThisPick === myDraftSlot) {
         // This is MY pick - highlight this player
@@ -682,11 +689,16 @@ async function loadMyTeam(){
         });
       }
       totalTeams=draft.settings&&draft.settings.teams?draft.settings.teams:12;
+    draftType=draft.type||'snake';
+    console.log('Draft type:', draftType, 'Teams:', totalTeams);
       // Find my slot from draft order
       if(draft.draft_order&&draft.draft_order[user.user_id]){
         myDraftSlot=draft.draft_order[user.user_id];
         totalTeams=draft.settings&&draft.settings.teams?draft.settings.teams:12;
-        status.textContent='✓ '+username+' — Draft Slot #'+myDraftSlot+' ('+totalTeams+' Teams)';
+    draftType=draft.type||'snake';
+    console.log('Draft type:', draftType, 'Teams:', totalTeams);
+        var typeLabel = draftType==='linear'?'Linear':draftType==='auction'?'Auction':'Snake';
+        status.textContent='✓ '+username+' — Slot #'+myDraftSlot+' | '+totalTeams+' Teams | '+typeLabel+' Draft';
         status.style.color='var(--green)';
         try{localStorage.setItem('fantasybot_slot',JSON.stringify({slot:myDraftSlot,teams:totalTeams,userId:mySleeperUserId}));}catch(e){}
       }
@@ -808,7 +820,9 @@ async function loadPicks(){
         var round=Math.ceil(pickNo/totalTeams);
         // Snake: odd rounds go 1->N, even rounds go N->1
         var slotThisPick;
-        if(round%2===1){
+        if(draftType==='linear'){
+          slotThisPick=((pickNo-1)%totalTeams)+1;
+        } else if(round%2===1){
           slotThisPick=((pickNo-1)%totalTeams)+1;
         } else {
           slotThisPick=totalTeams-((pickNo-1)%totalTeams);
