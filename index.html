@@ -117,7 +117,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <div class="section-label" style="margin-bottom:4px;">Navigation</div>
     <button class="nav-item active" data-tab="draft"><span>📋</span> Draft Board</button>
     <button class="nav-item" data-tab="myteam"><span>⭐</span> Mein Team</button>
-    <button class="nav-item" data-tab="rankings"><span>⚙️</span> Rankings</button>
+    <button class="nav-item" data-tab="rankings"><span>📋</span> Mein Ranking</button>
     <button class="nav-item" data-tab="notizen"><span>📝</span> Notizen</button>
   </div>
   <div class="divider"></div>
@@ -133,7 +133,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   <div class="tabs">
     <button class="tab active" data-tab="draft">Draft Board</button>
     <button class="tab" data-tab="myteam">Mein Team</button>
-    <button class="tab" data-tab="rankings">⚙ Rankings</button>
+    <button class="tab" data-tab="rankings">📋 Mein Ranking</button>
     <button class="tab" data-tab="notizen">📝 Notizen</button>
   </div>
 
@@ -164,24 +164,24 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   </div>
 
   <div class="panel" id="tab-rankings">
-    <div class="hint-box">
-      <strong>PDF hochladen</strong> oder FantasyPros Text einfügen. Rankings werden gespeichert.
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
+      <div>
+        <h2 style="font-size:16px;font-weight:600;">📋 Mein Ranking</h2>
+        <p style="font-size:12px;color:var(--text3);margin-top:3px;">PDF hochladen → wird gespeichert → bleibt erhalten bis du ein neues hochlädst</p>
+      </div>
+      <button class="btn-sm btn-danger" id="clear-rank-btn" style="display:none;">Löschen</button>
     </div>
-    <div id="pdf-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:8px;">
-      <div style="font-size:28px;margin-bottom:6px;">📄</div>
-      <div style="font-size:13px;font-weight:500;">PDF hier reinziehen oder klicken</div>
+
+    <div id="pdf-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:1rem;transition:all .2s;">
+      <div style="font-size:36px;margin-bottom:8px;">📄</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">FantasyPros PDF hier reinziehen</div>
+      <div style="font-size:12px;color:var(--text3);">oder klicken zum Auswählen</div>
     </div>
     <input type="file" id="pdf-file-input" accept=".pdf" style="display:none"/>
-    <div id="pdf-status" style="font-size:12px;font-family:var(--mono);margin-bottom:6px;min-height:16px;"></div>
-    <textarea id="bulk-input" placeholder="Oder Text einfügen..."></textarea>
-    <div class="row" style="margin-top:8px;">
-      <button class="btn-primary" id="import-btn">Importieren ↗</button>
-      <button class="btn-ghost" id="clear-rank-btn">Rankings löschen</button>
-    </div>
-    <div style="margin-top:1rem;">
-      <div class="section-label" style="margin-bottom:8px;">Meine Rankings <span id="rank-count">0</span></div>
-      <div id="ranking-list"></div>
-    </div>
+    <div id="pdf-status" style="font-size:12px;font-family:var(--mono);margin-bottom:1rem;min-height:16px;"></div>
+    <textarea id="bulk-input" style="display:none;"></textarea>
+
+    <div id="ranking-list"></div>
   </div>
 
   <div class="panel" id="tab-notizen">
@@ -315,12 +315,32 @@ function renderPlayers(){
 
 function renderRankingList(){
   var list=document.getElementById('ranking-list');
-  document.getElementById('rank-count').textContent=customRankings.length+' Spieler';
-  if(!customRankings.length){list.innerHTML='<div class="empty-state">// Keine Rankings</div>';return;}
-  list.innerHTML=customRankings.slice(0,20).map(function(p){
-    return '<div style="padding:6px 10px;background:var(--bg3);border-radius:var(--radius);margin-bottom:3px;font-size:12px;">#'+p.rank+' '+(p.pos||'')+' '+p.name+' '+(p.team||'')+'</div>';
-  }).join('');
-  if(customRankings.length>20)list.innerHTML+='<div style="font-size:11px;color:var(--text3);padding:6px;">... und '+(customRankings.length-20)+' weitere</div>';
+  var delBtn=document.getElementById('clear-rank-btn');
+  if(!customRankings.length){
+    list.innerHTML='<div class="empty-state">// Noch kein Ranking — PDF hochladen</div>';
+    if(delBtn)delBtn.style.display='none';
+    return;
+  }
+  if(delBtn)delBtn.style.display='inline-flex';
+  // Group by tier
+  var byTier={};
+  customRankings.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
+  var h='<div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+customRankings.length+' Spieler importiert</div>';
+  Object.keys(byTier).sort(function(a,b){return+a-+b;}).forEach(function(tier){
+    h+='<div style="font-size:10px;font-weight:600;font-family:var(--mono);color:var(--text3);padding:8px 0 4px;text-transform:uppercase;letter-spacing:.06em;">Tier '+tier+'</div>';
+    byTier[tier].forEach(function(p){
+      var pc=posColors[p.pos]||'b-k';
+      var slp=p.sleeperRank!=null?' <span style="color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>':'';
+      h+='<div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:var(--bg3);border-radius:var(--radius);margin-bottom:2px;font-size:12px;">';
+      h+='<span style="color:var(--text3);font-family:var(--mono);width:28px;text-align:right;">'+p.rank+'</span>';
+      h+='<span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span>';
+      h+='<span style="flex:1;font-weight:500;">'+p.name+'</span>';
+      h+='<span style="color:var(--text3);">'+(p.team||'')+'</span>';
+      if(p.bye)h+='<span style="color:var(--text3);font-family:var(--mono);">Bye '+p.bye+'</span>';
+      h+=slp+'</div>';
+    });
+  });
+  list.innerHTML=h;
 }
 
 function importBulk(){
@@ -357,7 +377,6 @@ function importBulk(){
   document.getElementById('pdf-status').style.color='var(--green)';
   renderRankingList();
   renderPlayers();
-  showTab('draft');
 }
 
 function clearRankings(){
@@ -596,7 +615,7 @@ document.addEventListener('DOMContentLoaded',function(){
   // Buttons
   document.getElementById('load-btn').addEventListener('click',loadDraft);
   document.getElementById('demo-btn').addEventListener('click',loadDemo);
-  document.getElementById('import-btn').addEventListener('click',importBulk);
+  // import triggered by PDF drop only
   document.getElementById('clear-rank-btn').addEventListener('click',clearRankings);
   document.getElementById('add-note-btn').addEventListener('click',addNote);
   document.getElementById('note-search').addEventListener('keypress',function(e){if(e.key==='Enter')addNote();});
