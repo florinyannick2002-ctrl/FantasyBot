@@ -490,6 +490,81 @@ function readPdf(file){
   reader.readAsArrayBuffer(file);
 }
 
+function normSleeperName(n){return String(n).toLowerCase().replace(/['\.\-]/g,'').replace(/\s+/g,'').replace(/(jr|sr|ii|iii|iv)$/,'');}
+
+async function loadDraft(){
+  draftId=document.getElementById('draft-id-input').value.trim();
+  if(!draftId){alert('Bitte Draft ID eingeben.');return;}
+  var btn=document.getElementById('load-btn');
+  btn.textContent='Laden...';btn.disabled=true;
+  document.getElementById('player-grid').innerHTML='<div class="empty-state">// Verbinde mit Sleeper...</div>';
+  try{
+    var r=await fetch('https://api.sleeper.app/v1/draft/'+draftId);
+    if(!r.ok)throw new Error('Draft nicht gefunden');
+    var draft=await r.json();
+    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Lade Spieler...</div>';
+    await loadSleeperPlayers(draft.sport||'nfl');
+    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Lade Picks...</div>';
+    await loadPicks();
+    document.getElementById('stats-row').style.display='grid';
+    document.getElementById('controls-row').style.display='flex';
+    if(!useCustom){
+      allPlayers=Object.values(sleeperMap)
+        .filter(function(p){return p.sleeperRank;})
+        .sort(function(a,b){return a.sleeperRank-b.sleeperRank;})
+        .map(function(p,i){return Object.assign({},p,{rank:i+1,tier:Math.min(Math.ceil((i+1)/30),6),bye:null});});
+    }
+    useCustom=customRankings.length>0;
+    if(useCustom)applyADP();
+    renderPlayers();
+    setInterval(loadPicks,15000);
+  }catch(e){
+    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Fehler: '+e.message+'</div>';
+  }
+  btn.textContent='Draft laden ↗';btn.disabled=false;
+}
+
+async function loadSleeperPlayers(sport){
+  var r=await fetch('https://api.sleeper.app/v1/players/'+(sport||'nfl'));
+  if(!r.ok)return;
+  var players=await r.json();
+  sleeperMap={};
+  var positions=['QB','RB','WR','TE','K','DEF'];
+  Object.entries(players).forEach(function(e){
+    var id=e[0],p=e[1];
+    if(!positions.includes(p.position))return;
+    if(!p.active&&p.position!=='DEF')return;
+    var nm=p.full_name||(p.first_name+' '+p.last_name)||id;
+    var sr=(p.search_rank&&p.search_rank<500)?p.search_rank:null;
+    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr};
+  });
+  // Enrich customRankings with sleeper IDs
+  if(customRankings.length){
+    customRankings.forEach(function(cr){
+      var match=sleeperMap[normSleeperName(cr.name)];
+      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;}
+    });
+  }
+}
+
+async function loadPicks(){
+  try{
+    var r=await fetch('https://api.sleeper.app/v1/draft/'+draftId+'/picks');
+    if(!r.ok)return;
+    var picks=await r.json();
+    draftedIds.clear();
+    picks.forEach(function(pk){
+      if(pk.player_id)draftedIds.add(String(pk.player_id));
+      // Update ADP from real pick data
+      if(pk.metadata&&pk.metadata.adp&&pk.player_id){
+        var adp=Math.round(parseFloat(pk.metadata.adp)*10)/10;
+        customRankings.forEach(function(cr){if(cr.sleeperId===String(pk.player_id))cr.sleeperRank=adp;});
+      }
+    });
+    renderPlayers();
+  }catch(e){console.log('picks error',e);}
+}
+
 // Init
 document.addEventListener('DOMContentLoaded',function(){
   loadNotes();
@@ -519,6 +594,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('search-input').addEventListener('input',renderPlayers);
 
   // Buttons
+  document.getElementById('load-btn').addEventListener('click',loadDraft);
   document.getElementById('demo-btn').addEventListener('click',loadDemo);
   document.getElementById('import-btn').addEventListener('click',importBulk);
   document.getElementById('clear-rank-btn').addEventListener('click',clearRankings);
