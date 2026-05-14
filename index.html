@@ -219,15 +219,14 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <button class="btn-sm btn-danger" id="clear-rank-btn" style="display:none;">Löschen</button>
     </div>
 
-    <div id="pdf-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:1rem;transition:all .2s;">
+    <label for="pdf-file-input" id="pdf-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:1rem;transition:all .2s;display:block;">
       <div style="font-size:36px;margin-bottom:8px;">📄</div>
       <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">FantasyPros CSV oder PDF hier reinziehen</div>
       <div style="font-size:12px;color:var(--text3);">oder klicken zum Auswählen — CSV wird empfohlen</div>
-    </div>
+    </label>
     <input type="file" id="pdf-file-input" accept=".pdf,.csv" style="display:none"/>
-    <div id="pdf-status" style="font-size:12px;font-family:var(--mono);margin-bottom:1rem;min-height:16px;"></div>
+    <div id="pdf-status" style="font-size:13px;font-family:var(--mono);margin-bottom:1rem;min-height:20px;text-align:center;"></div>
     <textarea id="bulk-input" style="display:none;"></textarea>
-
     <div id="ranking-list"></div>
   </div>
 
@@ -427,12 +426,11 @@ function renderRankingList(){
   var list=document.getElementById('ranking-list');
   var delBtn=document.getElementById('clear-rank-btn');
   if(!customRankings.length){
-    list.innerHTML='<div class="empty-state">// Noch kein Ranking — PDF hochladen</div>';
+    list.innerHTML='<div class="empty-state">// Noch kein Ranking — CSV hochladen</div>';
     if(delBtn)delBtn.style.display='none';
     return;
   }
   if(delBtn)delBtn.style.display='inline-flex';
-  // Group by tier
   var byTier={};
   customRankings.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   var h='<div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+customRankings.length+' Spieler importiert</div>';
@@ -631,8 +629,7 @@ function parseCSV(text){
     var name=(cols[nameIdx]||'').trim();
     var team=(cols[teamIdx]||'').trim();
     var posRaw=(cols[posIdx]||'').trim();
-    // POS in FantasyPros is like "QB1", "WR2" etc - extract base position
-    var pos=posRaw.replace(/\d+/g,'');
+    var pos=posRaw.replace(/\d+/g,'').toUpperCase();
     if(pos==='DST')pos='DEF';
     var bye=cols[byeIdx]&&cols[byeIdx]!=='-'?parseInt(cols[byeIdx]):null;
     var note=(noteIdx>=0&&cols[noteIdx])?cols[noteIdx].trim():'';
@@ -984,9 +981,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('note-search').addEventListener('keypress',function(e){if(e.key==='Enter')addNote();});
 
   // PDF
-  document.getElementById('pdf-drop-zone').addEventListener('click',function(){
-    document.getElementById('pdf-file-input').click();
-  });
+  // pdf-drop-zone is now a label, click handled natively
   document.getElementById('pdf-drop-zone').addEventListener('dragover',function(e){e.preventDefault();this.style.borderColor='var(--blue)';});
   document.getElementById('pdf-drop-zone').addEventListener('dragleave',function(){this.style.borderColor='var(--border2)';});
   document.getElementById('pdf-drop-zone').addEventListener('drop',function(e){
