@@ -300,37 +300,24 @@ function renderPlayers(){
   var byTier={};
   filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   
-  // Find ALL projected picks - correct snake draft logic
+  // Project all my picks using snake draft simulation
   var highlightNames = {};
-  if(myDraftSlot && totalTeams && window._picksUntilMe !== undefined) {
+  if(myDraftSlot && totalTeams) {
     var allAvail = (useCustom && customRankings.length ? customRankings : allPlayers)
       .filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
-    
     var totalPicked = draftedIds.size;
     var avIndex = 0;
-    
-    // Go through every future pick number, simulate who gets what
     for(var pickNo = totalPicked + 1; pickNo <= totalTeams * 20; pickNo++) {
       if(avIndex >= allAvail.length) break;
-      var round = Math.ceil(pickNo / totalTeams);
-      // Snake vs Linear
-      var slotThisPick;
-      if(draftType === 'linear') {
-        slotThisPick = ((pickNo - 1) % totalTeams) + 1; // always 1,2,3...N
-      } else {
-        // Snake: odd rounds left->right, even rounds right->left
-        slotThisPick = round % 2 === 1
-          ? ((pickNo - 1) % totalTeams) + 1
-          : totalTeams - ((pickNo - 1) % totalTeams);
+      var rnd = Math.ceil(pickNo / totalTeams);
+      var posInRound = (pickNo - 1) % totalTeams;
+      var slot = (draftType === 'linear' || rnd % 2 === 1)
+        ? posInRound + 1
+        : totalTeams - posInRound;
+      if(slot === myDraftSlot) {
+        highlightNames[allAvail[avIndex].name] = rnd;
       }
-      
-      if(slotThisPick === myDraftSlot) {
-        // This is MY pick - highlight this player
-        highlightNames[allAvail[avIndex].name] = round;
-        // I take this player, so don't advance avIndex for myself
-        // but DO advance for next iteration
-      }
-      avIndex++; // every pick (mine or others) removes one player
+      avIndex++;
     }
   }
   var h='<table class="player-table"><thead><tr>';
