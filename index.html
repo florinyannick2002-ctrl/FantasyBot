@@ -174,10 +174,10 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 
     <div id="pdf-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:1rem;transition:all .2s;">
       <div style="font-size:36px;margin-bottom:8px;">📄</div>
-      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">FantasyPros PDF hier reinziehen</div>
-      <div style="font-size:12px;color:var(--text3);">oder klicken zum Auswählen</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">FantasyPros CSV oder PDF hier reinziehen</div>
+      <div style="font-size:12px;color:var(--text3);">oder klicken zum Auswählen — CSV wird empfohlen</div>
     </div>
-    <input type="file" id="pdf-file-input" accept=".pdf" style="display:none"/>
+    <input type="file" id="pdf-file-input" accept=".pdf,.csv" style="display:none"/>
     <div id="pdf-status" style="font-size:12px;font-family:var(--mono);margin-bottom:1rem;min-height:16px;"></div>
     <textarea id="bulk-input" style="display:none;"></textarea>
 
@@ -278,6 +278,7 @@ function renderPlayers(){
       var pc=posColors[p.pos]||'b-k';
       var pid=p.sleeperId||p.id||p.name;
       var note=playerNotes[p.name]||{};
+      var fpNote=p.fpNote||'';
       var lhtml=note.label?'<span class="lbadge '+LABELS[note.label].cls+'">'+LABELS[note.label].text+'</span>':'';
       var nhtml=note.note?' <span style="font-size:11px;color:var(--text3);font-style:italic;" title="'+note.note+'">💬</span>':'';
       var slp=p.sleeperRank!=null?'<span class="slp-num">'+p.sleeperRank+'</span>':'<span class="dash">—</span>';
@@ -291,7 +292,8 @@ function renderPlayers(){
       h+='<tr class="prow t'+tc+'">';
       h+='<td class="c-rk">'+p.rank+'</td>';
       h+='<td><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span></td>';
-      h+='<td class="c-name">'+p.name+lhtml+nhtml+'</td>';
+      var nameTitle=fpNote?(' title="'+fpNote.replace(/"/g,'&quot;').substring(0,300)+'"'):'';
+      h+='<td class="c-name"><span'+nameTitle+' style="cursor:'+(fpNote?'help':'default')+';">'+p.name+'</span>'+lhtml+nhtml+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
       h+='<td class="c-slp r">'+slp+'</td>';
@@ -471,6 +473,19 @@ function loadDemo(){
 function handlePdfFile(file){
   if(!file)return;
   var status=document.getElementById('pdf-status');
+  // CSV file
+  if(file.name.toLowerCase().endsWith('.csv')){
+    status.style.color='var(--text2)';
+    status.textContent='// CSV wird gelesen...';
+    var reader=new FileReader();
+    reader.onload=function(e){
+      parseCSV(e.target.result);
+    };
+    reader.readAsText(file,'UTF-8');
+    return;
+  }
+  // PDF file
+  status.style.color='var(--text2)';
   status.textContent='// PDF wird gelesen...';
   if(!window.pdfjsLib){
     var s=document.createElement('script');
@@ -483,6 +498,68 @@ function handlePdfFile(file){
     document.head.appendChild(s);
   }else readPdf(file);
 }
+
+function parseCSV(text){
+  var status=document.getElementById('pdf-status');
+  var lines=text.split('\n');
+  customRankings=[];
+  // Parse header
+  var header=parseCSVLine(lines[0]);
+  var rkIdx=header.findIndex(function(h){return h.toUpperCase().includes('RK');});
+  var tierIdx=header.findIndex(function(h){return h.toUpperCase().includes('TIER');});
+  var nameIdx=header.findIndex(function(h){return h.toUpperCase().includes('PLAYER');});
+  var teamIdx=header.findIndex(function(h){return h.toUpperCase().includes('TEAM');});
+  var posIdx=header.findIndex(function(h){return h.toUpperCase().includes('POS');});
+  var byeIdx=header.findIndex(function(h){return h.toUpperCase().includes('BYE');});
+  var noteIdx=header.findIndex(function(h){return h.toUpperCase().includes('NOTE');});
+
+  for(var i=1;i<lines.length;i++){
+    var line=lines[i].trim();
+    if(!line)continue;
+    var cols=parseCSVLine(line);
+    if(cols.length<3)continue;
+    var rank=parseInt(cols[rkIdx])||i;
+    var tier=parseInt(cols[tierIdx])||6;
+    var name=(cols[nameIdx]||'').trim();
+    var team=(cols[teamIdx]||'').trim();
+    var posRaw=(cols[posIdx]||'').trim();
+    // POS in FantasyPros is like "QB1", "WR2" etc - extract base position
+    var pos=posRaw.replace(/\d+/g,'');
+    if(pos==='DST')pos='DEF';
+    var bye=cols[byeIdx]&&cols[byeIdx]!=='-'?parseInt(cols[byeIdx]):null;
+    var note=(noteIdx>=0&&cols[noteIdx])?cols[noteIdx].trim():'';
+    if(!name||name.length<2)continue;
+    customRankings.push({
+      id:'c_'+rank,name:name,pos:pos,team:team,
+      bye:bye,tier:Math.min(tier,16),
+      rank:customRankings.length+1,
+      sleeperRank:null,sleeperId:null,
+      fpNote:note  // FantasyPros note stored separately
+    });
+  }
+  applyADP();
+  useCustom=true;
+  saveRankings();
+  document.getElementById('stats-row').style.display='grid';
+  document.getElementById('controls-row').style.display='flex';
+  status.style.color='var(--green)';
+  status.textContent='✓ '+customRankings.length+' Spieler importiert';
+  renderRankingList();
+  renderPlayers();
+}
+
+function parseCSVLine(line){
+  var result=[],current='',inQuotes=false;
+  for(var i=0;i<line.length;i++){
+    var c=line[i];
+    if(c==='"'){inQuotes=!inQuotes;}
+    else if(c===','&&!inQuotes){result.push(current);current='';}
+    else{current+=c;}
+  }
+  result.push(current);
+  return result;
+}
+
 function readPdf(file){
   var reader=new FileReader();
   reader.onload=async function(e){
@@ -502,7 +579,7 @@ function readPdf(file){
       document.getElementById('bulk-input').value=fullText;
       importBulk();
     }catch(err){
-      document.getElementById('pdf-status').textContent='// PDF Fehler';
+      document.getElementById('pdf-status').textContent='// PDF Fehler: '+err.message;
       document.getElementById('pdf-status').style.color='var(--red)';
     }
   };
