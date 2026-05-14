@@ -109,8 +109,9 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .recent-picks-list{display:flex;gap:8px;flex-wrap:wrap;}
 .recent-pick-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;}
 .recent-pick-chip.mine{border-color:var(--purple);background:var(--purple-bg);}
-.my-next-pick-above td{background:#2a2208 !important;outline:2px solid #f5a623;}
+.my-next-pick-above td{background:#221e08 !important;}
 .my-next-pick-above td:first-child{border-left:4px solid #f5a623 !important;}
+.my-next-pick-above:hover td{filter:brightness(1.3);}
 .tooltip-box{position:fixed;background:#1e2433;border:1px solid var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text);max-width:320px;line-height:1.6;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;display:none;}
 </style>
 </head>
@@ -155,7 +156,10 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
     <div class="recent-picks" id="recent-picks-bar">
-      <div class="recent-picks-title">🏈 Letzte Picks</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
+        <div class="recent-picks-title" style="margin-bottom:0;">🏈 Letzte Picks</div>
+        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);">← neueste zuerst</span>
+      </div>
       <div class="recent-picks-list" id="recent-picks-list"></div>
     </div>
     <div class="controls" id="controls-row" style="display:none;">
@@ -166,7 +170,8 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <button class="pos-btn" data-pos="TE">TE</button>
       <button class="pos-btn" data-pos="K">K</button>
       <button class="pos-btn" data-pos="DEF">DEF</button>
-      <input type="text" id="search-input" placeholder="Suchen..." style="margin-left:auto;width:150px;"/>
+      <button id="scroll-to-pick-btn" style="margin-left:auto;background:var(--amber-bg);border:1px solid #f5a623;color:#f5a623;font-size:12px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-weight:600;display:none;">⬇ Mein Pick</button>
+      <input type="text" id="search-input" placeholder="Suchen..." style="width:150px;"/>
     </div>
     <div id="player-grid">
       <div class="empty-state">// Draft ID laden → Demo starten → oder Rankings importieren</div>
@@ -354,7 +359,7 @@ function renderPlayers(){
       h+='<td><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span></td>';
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
-      var pickLabel = myPickRound ? '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;font-weight:600;margin-left:6px;background:#2a1e08;padding:1px 6px;border-radius:3px;">R'+myPickRound+'</span>' : '';
+      var pickLabel = myPickRound ? '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;font-weight:700;margin-left:8px;background:#2a1e08;border:1px solid #f5a623;padding:1px 7px;border-radius:4px;">Runde '+myPickRound+'</span>' : '';
       h+='<td class="c-name">'+p.name+lhtml+nhtml+pickLabel+noteIconHtml+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
@@ -367,6 +372,9 @@ function renderPlayers(){
   h+='</tbody></table>';
   grid.innerHTML=h;
   // Attach draft button handlers
+  var hasHighlight = grid.querySelector('.my-next-pick-above');
+  var scrollBtn = document.getElementById('scroll-to-pick-btn');
+  if(scrollBtn) scrollBtn.style.display = hasHighlight ? 'block' : 'none';
   grid.querySelectorAll('.draft-btn').forEach(function(b){
     b.addEventListener('click',function(){draftedIds.add(this.dataset.pid);renderPlayers();});
   });
@@ -887,6 +895,10 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // Search
   document.getElementById('search-input').addEventListener('input',renderPlayers);
+  document.getElementById('scroll-to-pick-btn').addEventListener('click',function(){
+    var el=document.querySelector('.my-next-pick-above');
+    if(el)el.scrollIntoView({behavior:'smooth',block:'center'});
+  });
 
   // Buttons
   document.getElementById('load-btn').addEventListener('click',loadDraft);
