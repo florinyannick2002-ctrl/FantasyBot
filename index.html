@@ -109,9 +109,8 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .recent-picks-list{display:flex;gap:8px;flex-wrap:wrap;}
 .recent-pick-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;}
 .recent-pick-chip.mine{border-color:var(--purple);background:var(--purple-bg);}
-.my-next-pick-above td{background:#221e08 !important;}
-.my-next-pick-above td:first-child{border-left:4px solid #f5a623 !important;}
-.my-next-pick-above:hover td{filter:brightness(1.3);}
+.my-next-pick-above td{background:#1e1a06 !important;border-top:1px solid #f5a62355 !important;border-bottom:1px solid #f5a62355 !important;}
+.my-next-pick-above td:first-child{border-left:3px solid #f5a623 !important;}
 .tooltip-box{position:fixed;background:#1e2433;border:1px solid var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text);max-width:320px;line-height:1.6;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;display:none;}
 </style>
 </head>
@@ -363,7 +362,13 @@ function renderPlayers(){
       var pc=posColors[p.pos]||'b-k';
       var pid=p.sleeperId||p.id||p.name;
       var note=playerNotes[p.name]||{};
+      // Use Sleeper projections if available, else fall back to our calculation
       var myPickRound = highlightNames && highlightNames[p.name];
+      var sleeperProj = null;
+      if(window._sleeperProjections && p.sleeperId && window._sleeperProjections[p.sleeperId]) {
+        sleeperProj = window._sleeperProjections[p.sleeperId];
+        if(myDraftSlot) myPickRound = sleeperProj.round; // override with Sleeper's own projection
+      }
       var fpNote=p.fpNote||'';
       var lhtml=note.label?'<span class="lbadge '+LABELS[note.label].cls+'">'+LABELS[note.label].text+'</span>':'';
       var nhtml=note.note?' <span style="font-size:11px;color:var(--text3);font-style:italic;" title="'+note.note+'">💬</span>':'';
@@ -380,8 +385,13 @@ function renderPlayers(){
       h+='<td><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span></td>';
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
-      var pickLabel = myPickRound ? '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;font-weight:700;margin-left:8px;background:#2a1e08;border:1px solid #f5a623;padding:1px 7px;border-radius:4px;">Runde '+myPickRound+'</span>' : '';
-      h+='<td class="c-name">'+p.name+lhtml+nhtml+pickLabel+noteIconHtml+'</td>';
+      var projLabel = '';
+      if(sleeperProj) {
+        projLabel = '<br><span style="font-size:10px;color:#f5a623;font-family:var(--mono);">Projected: Round '+sleeperProj.round+', Overall #'+sleeperProj.overall+'</span>';
+      } else if(myPickRound) {
+        projLabel = '<br><span style="font-size:10px;color:#f5a623;font-family:var(--mono);">Projected: Runde '+myPickRound+'</span>';
+      }
+      h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+projLabel+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
       h+='<td class="c-slp r">'+slp+'</td>';
@@ -684,6 +694,28 @@ function readPdf(file){
   reader.readAsArrayBuffer(file);
 }
 
+async function fetchProjectedPicks(){
+  if(!draftId) return;
+  try{
+    var r = await fetch('https://api.sleeper.app/v1/draft/'+draftId+'/players');
+    if(!r.ok) return;
+    var data = await r.json();
+    // data: {player_id: {adp, rank, projected_pick, ...}}
+    window._sleeperProjections = {};
+    Object.entries(data).forEach(function(e){
+      var pid = e[0], info = e[1];
+      if(info.projected_pick) {
+        window._sleeperProjections[pid] = {
+          round: Math.ceil(info.projected_pick / totalTeams),
+          overall: info.projected_pick
+        };
+      }
+    });
+    console.log('Projections loaded:', Object.keys(window._sleeperProjections).length);
+    renderPlayers();
+  }catch(e){ console.log('projections error', e); }
+}
+
 async function loadMyTeam(){
   var username=document.getElementById('sleeper-username-input').value.trim();
   if(!username){alert('Bitte Username eingeben');return;}
@@ -767,6 +799,7 @@ async function loadDraft(){
     await loadPicks();
     document.getElementById('stats-row').style.display='grid';
     document.getElementById('controls-row').style.display='flex';
+    fetchProjectedPicks();
     if(!useCustom){
       allPlayers=Object.values(sleeperMap)
         .filter(function(p){return p.sleeperRank;})
@@ -915,6 +948,7 @@ document.addEventListener('DOMContentLoaded',function(){
     applyADP();
     document.getElementById('stats-row').style.display='grid';
     document.getElementById('controls-row').style.display='flex';
+    fetchProjectedPicks();
   }
 
   // Tab navigation
