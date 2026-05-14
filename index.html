@@ -498,7 +498,7 @@ function renderRankingList(){
     if(delBtn)delBtn.style.display='none';
     return;
   }
-  if(delBtn)delBtn.style.display='inline-flex';
+  if(delBtn)delBtn.style.display='block';
   var byTier={};
   customRankings.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   var h='<div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+customRankings.length+' Spieler importiert</div>';
