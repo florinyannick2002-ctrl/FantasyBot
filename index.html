@@ -104,11 +104,13 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .lbadge.l3{background:#2a1e08;color:#f5a623;}
 .lbadge.l4{background:#2a1010;color:#ff6b6b;}
 .fp-note-icon{font-size:11px;color:var(--text3);cursor:help;margin-left:4px;}
-.recent-picks{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1rem;margin-bottom:1rem;display:none;}
-.recent-picks-title{font-size:10px;font-weight:600;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
-.recent-picks-list{display:flex;gap:8px;flex-wrap:wrap;}
-.recent-pick-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;}
+.recent-picks{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.6rem 1rem;margin-bottom:1rem;display:none;}
+.recent-picks-inner{display:flex;align-items:center;gap:8px;}
+.recent-picks-list{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;}
+.recent-picks-list::-webkit-scrollbar{display:none;}
+.recent-pick-chip{display:flex;align-items:center;gap:5px;padding:3px 9px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;flex-shrink:0;}
 .recent-pick-chip.mine{border-color:var(--purple);background:var(--purple-bg);}
+.next-pick-badge{flex-shrink:0;padding:4px 12px;border-radius:var(--radius);font-size:12px;font-weight:700;font-family:var(--mono);border:1px solid;white-space:nowrap;}
 .my-next-pick-above td{background:#1e1a06 !important;border-top:1px solid #f5a62355 !important;border-bottom:1px solid #f5a62355 !important;}
 .my-next-pick-above td:first-child{border-left:3px solid #f5a623 !important;}
 .tooltip-box{position:fixed;background:#1e2433;border:1px solid var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text);max-width:320px;line-height:1.6;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;display:none;}
@@ -155,11 +157,10 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
     <div class="recent-picks" id="recent-picks-bar">
-      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;">
-        <div class="recent-picks-title" style="margin-bottom:0;">🏈 Letzte Picks</div>
-        <span style="font-size:11px;color:var(--text3);font-family:var(--mono);">← neueste zuerst</span>
+      <div class="recent-picks-inner">
+        <div id="next-pick-badge" class="next-pick-badge" style="display:none;"></div>
+        <div class="recent-picks-list" id="recent-picks-list"></div>
       </div>
-      <div class="recent-picks-list" id="recent-picks-list"></div>
     </div>
     <div class="controls" id="controls-row" style="display:none;">
       <button class="pos-btn active" data-pos="ALL">ALL</button>
@@ -385,10 +386,9 @@ function renderPlayers(){
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
       var projLabel = '';
-      if(sleeperProj) {
-        projLabel = '<br><span style="font-size:10px;color:#f5a623;font-family:var(--mono);">Projected: Round '+sleeperProj.round+', Overall #'+sleeperProj.overall+'</span>';
-      } else if(myPickRound) {
-        projLabel = '<br><span style="font-size:10px;color:#f5a623;font-family:var(--mono);">Projected: Runde '+myPickRound+'</span>';
+      if(myPickRound) {
+        var overall = sleeperProj ? sleeperProj.overall : null;
+        projLabel = '<br><span style="font-size:10px;color:var(--amber);font-family:var(--mono);">Projected pick: Round '+myPickRound+(overall?', Overall #'+overall:'')+'</span>';
       }
       h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+projLabel+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
@@ -908,28 +908,36 @@ async function loadPicks(){
 function renderRecentPicks(){
   var bar=document.getElementById('recent-picks-bar');
   var list=document.getElementById('recent-picks-list');
-  if(!recentPicks.length){bar.style.display='none';return;}
+  var badge=document.getElementById('next-pick-badge');
+  if(!recentPicks.length&&!myDraftSlot){bar.style.display='none';return;}
   bar.style.display='block';
-  var last5=recentPicks.slice(-8).reverse();
-  list.innerHTML='';
-  // Show picks until my turn if known
-  if(myDraftSlot){
-    var turnChip=document.createElement('div');
-    var picksLeft=window._picksUntilMe!==undefined?window._picksUntilMe:'?';
-    var label=picksLeft===0?'🟡 DU BIST DRAN!':picksLeft===1?'⏳ Noch 1 Pick':'⏳ Noch '+picksLeft+' Picks';
-    var bg=picksLeft===0?'background:#2a1e08;border-color:#f5a623;color:#f5a623;':'background:var(--bg3);border-color:var(--border);color:var(--text2);';
-    turnChip.style.cssText='display:flex;align-items:center;padding:4px 12px;border-radius:var(--radius);border:1px solid;font-size:12px;font-weight:600;'+bg;
-    turnChip.textContent=label+' (Slot #'+myDraftSlot+')';
-    list.appendChild(turnChip);
+
+  // Next pick badge
+  if(myDraftSlot && window._picksUntilMe !== undefined){
+    var n = window._picksUntilMe;
+    badge.style.display='block';
+    if(n===0){
+      badge.textContent='🟡 DU BIST DRAN!';
+      badge.style.cssText='flex-shrink:0;padding:4px 12px;border-radius:var(--radius);font-size:12px;font-weight:700;font-family:var(--mono);border:1px solid;white-space:nowrap;background:#2a1e08;border-color:#f5a623;color:#f5a623;';
+    } else {
+      badge.textContent='⏳ '+n+' Pick'+(n===1?'':'s');
+      badge.style.cssText='flex-shrink:0;padding:4px 12px;border-radius:var(--radius);font-size:12px;font-weight:700;font-family:var(--mono);border:1px solid;white-space:nowrap;background:var(--bg3);border-color:var(--border);color:var(--text2);';
+    }
+  } else {
+    badge.style.display='none';
   }
-  last5.forEach(function(pk){
+
+  // Recent picks - newest first, scrollable
+  list.innerHTML='';
+  var picks=recentPicks.slice().reverse();
+  picks.forEach(function(pk){
     var chip=document.createElement('div');
     chip.className='recent-pick-chip'+(pk.isMine?' mine':'');
     var pc=posColors[pk.pos]||'b-k';
-    chip.innerHTML='<span style="font-size:10px;font-family:var(--mono);color:var(--text3);">#'+pk.pickNo+'</span>'
+    chip.innerHTML='<span style="color:var(--text3);font-family:var(--mono);font-size:10px;">#'+pk.pickNo+'</span>'
       +'<span class="badge '+pc+'" style="font-size:10px;padding:1px 5px;">'+(pk.pos||'?')+'</span>'
-      +'<span style="font-size:12px;font-weight:500;">'+pk.playerName+'</span>'
-      +(pk.isMine?'<span style="font-size:10px;color:var(--purple);">YOU</span>':'');
+      +'<span style="font-weight:500;">'+pk.playerName+'</span>'
+      +(pk.isMine?'<span style="font-size:10px;color:var(--purple);font-weight:700;">YOU</span>':'');
     list.appendChild(chip);
   });
 }
