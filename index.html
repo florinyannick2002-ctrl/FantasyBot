@@ -94,6 +94,23 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .pos-btn{font-size:12px;padding:5px 13px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg2);color:var(--text2);cursor:pointer;font-family:var(--mono);font-weight:500;}
 .pos-btn.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);}
 .hint-box{background:var(--bg4);border-radius:var(--radius);padding:10px 12px;font-size:11px;color:var(--text3);line-height:1.7;margin-bottom:8px;}
+.strat-btn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:12px;padding:8px 12px;text-align:left;transition:all .15s;font-family:var(--font);}
+.strat-btn:hover{border-color:var(--border2);color:var(--text);}
+.strat-btn.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);font-weight:600;}
+.strat-btn-sm{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);cursor:pointer;font-size:11px;padding:6px 10px;text-align:left;transition:all .15s;font-family:var(--font);}
+.strat-btn-sm:hover{border-color:var(--border2);color:var(--text);}
+.strat-btn-sm.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue);font-weight:600;}
+.rec-box-main{background:var(--bg2);border:1px solid var(--blue-dim);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;}
+.rec-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:.75rem;margin-bottom:6px;display:flex;gap:12px;align-items:flex-start;}
+.rec-card.rec-1{border-color:var(--amber);background:#1e1a06;}
+.rec-card.rec-2{border-color:var(--blue-dim);background:#0a1525;}
+.rec-card.rec-3{border-color:var(--border2);}
+.rec-score{font-size:22px;font-weight:800;font-family:var(--mono);min-width:46px;text-align:center;}
+.rec-factors{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px;}
+.rec-factor{font-size:10px;padding:1px 6px;border-radius:3px;font-family:var(--mono);}
+.rec-factor.pos{background:#0a2a1a;color:var(--green);}
+.rec-factor.neg{background:#2a1010;color:var(--red);}
+.rec-factor.neu{background:var(--bg4);color:var(--text3);}
 .note-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:8px;}
 .note-card-header{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
 .note-card-name{font-size:14px;font-weight:600;flex:1;}
@@ -147,6 +164,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <button class="tab" data-tab="myteam">Mein Team</button>
     <button class="tab" data-tab="rankings">📋 Mein Ranking</button>
     <button class="tab" data-tab="notizen">📝 Notizen</button>
+    <button class="tab" data-tab="strategie">🎯 Strategie</button>
   </div>
 
   <div class="panel active" id="tab-draft">
@@ -293,8 +311,19 @@ var myDraftSlot = null;
 var totalTeams = 12;
 var draftType = 'snake';
 var recentPicks = [];
-var myPicks = []; // players I've drafted
-var rosterSlots = {qb:1,rb:2,wr:2,te:1,flex:2,k:1,def:1,bn:6}; // {pickNo, playerName, pos, team, ismine}
+var myPicks = [];
+var rosterSlots = {qb:1,rb:2,wr:2,te:1,flex:2,k:1,def:1,bn:6};
+var strategy = {
+  main: 'best_available',  // best_available, rb_heavy, wr_heavy, zero_rb, hero_rb, te_premium
+  qbTiming: 'late',        // early(1-4), mid(5-8), late(9+), two_qb
+  teTiming: 'mid',         // early(1-3), mid(4-7), late
+  risk: 'balanced',        // safe, balanced, boom
+  handcuff: 'yes',
+  byeAvoidance: 'moderate', // strict, moderate, ignore
+  scoring: 'ppr',          // ppr, half_ppr, standard
+  rosterType: 'standard',  // standard, superflex, 2qb
+  runReaction: 'reactive'  // reactive, ignore, aggressive
+}; // {pickNo, playerName, pos, team, ismine}
 var draftId = '';
 var useCustom = false;
 var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
@@ -857,6 +886,271 @@ function renderMyTeam(){
   document.getElementById('bye-weeks').innerHTML=byeHtml;
 }
 
+// ══════════════════════════════════════════════
+// DRAFT ASSISTANT — SCORING ALGORITHM
+// ══════════════════════════════════════════════
+
+function calcDraftScore(player) {
+  // player: {name, pos, team, rank, tier, bye, sleeperRank, sleeperId}
+  // Returns: {score: 0-100, factors: [{text, type, points}]}
+  
+  var score = 0;
+  var factors = [];
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  var available = source.filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
+  
+  // ── A. VALUE FACTORS (max 40 pts) ──────────────────
+  
+  // A1. Value over Replacement (VOR) — 15pts
+  // How much better than the next player at same position?
+  var posAvail = available.filter(function(p){ return p.pos===player.pos && p.name!==player.name; });
+  var vorScore = 0;
+  if(posAvail.length > 0) {
+    var nextBest = posAvail[0]; // next best at same position
+    var vorGap = (nextBest.rank - player.rank); // bigger gap = more value
+    if(vorGap >= 20) { vorScore=15; factors.push({text:'Elite VOR (+'+vorGap+')',type:'pos',pts:15}); }
+    else if(vorGap >= 10) { vorScore=10; factors.push({text:'Hoher VOR (+'+vorGap+')',type:'pos',pts:10}); }
+    else if(vorGap >= 5) { vorScore=6; factors.push({text:'Guter VOR (+'+vorGap+')',type:'pos',pts:6}); }
+    else if(vorGap >= 2) { vorScore=3; factors.push({text:'VOR (+'+vorGap+')',type:'pos',pts:3}); }
+    else { vorScore=1; }
+  }
+  score += vorScore;
+
+  // A2. ADP Value — 10pts
+  // Taking player later than ADP = value
+  if(player.sleeperRank != null) {
+    var adpDiff = player.sleeperRank - player.rank; // positive = ADP is later = value
+    if(adpDiff >= 15) { score+=10; factors.push({text:'Massive ADP Value (+'+Math.round(adpDiff)+')',type:'pos',pts:10}); }
+    else if(adpDiff >= 8) { score+=7; factors.push({text:'Grosser ADP Value (+'+Math.round(adpDiff)+')',type:'pos',pts:7}); }
+    else if(adpDiff >= 3) { score+=4; factors.push({text:'ADP Value (+'+Math.round(adpDiff)+')',type:'pos',pts:4}); }
+    else if(adpDiff <= -10) { score-=5; factors.push({text:'Zu früh! ADP ('+Math.round(adpDiff)+')',type:'neg',pts:-5}); }
+    else if(adpDiff <= -5) { score-=2; factors.push({text:'Leicht früh ('+Math.round(adpDiff)+')',type:'neg',pts:-2}); }
+  }
+
+  // A3. Tier Drop Urgency — 10pts
+  // Is this the last or second-to-last player in their tier?
+  var tierMates = available.filter(function(p){ return p.tier===player.tier && p.pos===player.pos && p.name!==player.name; });
+  var picksUntilMe = window._picksUntilMe || 0;
+  if(tierMates.length === 0) { 
+    score+=10; factors.push({text:'Letzter in Tier '+player.tier+'!',type:'pos',pts:10}); 
+  } else if(tierMates.length <= picksUntilMe) { 
+    score+=8; factors.push({text:'Tier '+player.tier+' läuft aus!',type:'pos',pts:8}); 
+  } else if(tierMates.length <= 2) { 
+    score+=4; factors.push({text:'Tier fast leer ('+tierMates.length+' übrig)',type:'pos',pts:4}); 
+  }
+
+  // A4. Overall Ranking Value — 5pts
+  // How good is their overall rank?
+  if(player.rank <= 12) { score+=5; factors.push({text:'Top 12 Overall',type:'pos',pts:5}); }
+  else if(player.rank <= 24) { score+=3; factors.push({text:'Top 24 Overall',type:'pos',pts:3}); }
+  else if(player.rank <= 50) { score+=1; }
+
+  // ── B. TEAM/ROSTER FACTORS (max 30 pts) ────────────
+
+  // B1. Positional Need — 12pts
+  var posCounts = {QB:0,RB:0,WR:0,TE:0,K:0,DEF:0};
+  myPicks.forEach(function(p){ if(posCounts[p.pos]!==undefined) posCounts[p.pos]++; });
+  var totalPicks = myPicks.length;
+  var currentRound = totalPicks + 1;
+  
+  var needScore = 0;
+  var pos = player.pos;
+  
+  // Check if we urgently need this position
+  if(pos==='QB') {
+    if(posCounts.QB === 0) {
+      if(strategy.qbTiming==='early' && currentRound<=4) { needScore=12; factors.push({text:'QB jetzt! (Dein Timing)',type:'pos',pts:12}); }
+      else if(strategy.qbTiming==='mid' && currentRound>=5 && currentRound<=8) { needScore=12; factors.push({text:'QB jetzt! (Dein Timing)',type:'pos',pts:12}); }
+      else if(strategy.qbTiming==='late' && currentRound>=9) { needScore=12; factors.push({text:'QB jetzt! (Dein Timing)',type:'pos',pts:12}); }
+      else if(currentRound>=12) { needScore=10; factors.push({text:'QB dringend!',type:'pos',pts:10}); }
+      else { needScore=2; }
+    } else if(posCounts.QB===1 && strategy.qbTiming==='two_qb') { needScore=8; factors.push({text:'2. QB (Deine Strategie)',type:'pos',pts:8}); }
+    else { needScore=0; factors.push({text:'QB bereits besetzt',type:'neg',pts:0}); }
+  }
+  else if(pos==='RB') {
+    var rbNeed = Math.max(0, rosterSlots.rb + Math.ceil(rosterSlots.flex/2) - posCounts.RB);
+    if(rbNeed >= 2) { needScore=12; factors.push({text:'RB dringend needed ('+posCounts.RB+'/'+rosterSlots.rb+')',type:'pos',pts:12}); }
+    else if(rbNeed === 1) { needScore=7; factors.push({text:'RB gesucht',type:'pos',pts:7}); }
+    else { needScore=2; }
+  }
+  else if(pos==='WR') {
+    var wrNeed = Math.max(0, rosterSlots.wr + Math.ceil(rosterSlots.flex/2) - posCounts.WR);
+    if(wrNeed >= 2) { needScore=12; factors.push({text:'WR dringend needed ('+posCounts.WR+'/'+rosterSlots.wr+')',type:'pos',pts:12}); }
+    else if(wrNeed === 1) { needScore=7; factors.push({text:'WR gesucht',type:'pos',pts:7}); }
+    else { needScore=2; }
+  }
+  else if(pos==='TE') {
+    if(posCounts.TE === 0) {
+      if(strategy.teTiming==='early' && currentRound<=3) { needScore=12; factors.push({text:'Elite TE jetzt! (Dein Timing)',type:'pos',pts:12}); }
+      else if(strategy.teTiming==='mid' && currentRound>=4 && currentRound<=7) { needScore=10; factors.push({text:'TE jetzt! (Dein Timing)',type:'pos',pts:10}); }
+      else if(currentRound>=10) { needScore=10; factors.push({text:'TE dringend!',type:'pos',pts:10}); }
+      else { needScore=3; }
+    } else { needScore=0; }
+  }
+  else if(pos==='K' || pos==='DEF') {
+    if(currentRound < 13) { needScore=0; factors.push({text:'K/DEF zu früh',type:'neg',pts:0}); }
+    else { needScore=8; }
+  }
+  score += needScore;
+
+  // B2. Strategy Match — 10pts
+  var stratScore = 0;
+  if(strategy.main === 'rb_heavy') {
+    if(pos==='RB' && currentRound<=4) { stratScore=10; factors.push({text:'RB-Heavy ✓',type:'pos',pts:10}); }
+    else if(pos==='WR' && currentRound<=3 && posCounts.RB>=1) { stratScore=5; }
+    else if(pos==='RB') { stratScore=6; }
+  }
+  else if(strategy.main === 'wr_heavy') {
+    if(pos==='WR' && currentRound<=4) { stratScore=10; factors.push({text:'WR-Heavy ✓',type:'pos',pts:10}); }
+    else if(pos==='RB' && posCounts.WR>=2) { stratScore=6; }
+  }
+  else if(strategy.main === 'zero_rb') {
+    if(pos==='WR' && currentRound<=4) { stratScore=10; factors.push({text:'Zero RB — WR First ✓',type:'pos',pts:10}); }
+    else if(pos==='TE' && currentRound<=4) { stratScore=8; factors.push({text:'Zero RB — TE viable ✓',type:'pos',pts:8}); }
+    else if(pos==='RB' && currentRound<=4) { stratScore=0; factors.push({text:'Zero RB — RB zu früh!',type:'neg',pts:0}); }
+    else if(pos==='RB' && currentRound>=5) { stratScore=8; factors.push({text:'Zero RB — RB jetzt OK',type:'pos',pts:8}); }
+  }
+  else if(strategy.main === 'hero_rb') {
+    if(pos==='RB' && posCounts.RB===0 && player.rank<=15) { stratScore=10; factors.push({text:'Hero RB — Elite RB ✓',type:'pos',pts:10}); }
+    else if(pos==='WR' && posCounts.RB>=1) { stratScore=8; }
+    else if(pos==='RB' && posCounts.RB>=1) { stratScore=3; }
+  }
+  else if(strategy.main === 'te_premium') {
+    if(pos==='TE' && player.rank<=20) { stratScore=10; factors.push({text:'TE Premium ✓',type:'pos',pts:10}); }
+    else if(pos==='TE' && player.rank<=40) { stratScore=6; }
+  }
+  else { // best_available
+    stratScore=5; // neutral
+  }
+  score += stratScore;
+
+  // B3. Bye Week Conflict — 8pts max penalty
+  if(strategy.byeAvoidance !== 'ignore' && player.bye) {
+    var byeConflicts = myPicks.filter(function(p){
+      var cr = customRankings.find(function(r){ return r.name===p.name; });
+      return cr && cr.bye && cr.bye===player.bye;
+    }).length;
+    var maxAllowed = strategy.byeAvoidance==='strict' ? 1 : 2;
+    if(byeConflicts >= maxAllowed+1) { 
+      score-=8; factors.push({text:'Bye Wk '+player.bye+': '+byeConflicts+' Konflikte!',type:'neg',pts:-8}); 
+    } else if(byeConflicts >= maxAllowed) { 
+      score-=4; factors.push({text:'Bye Wk '+player.bye+': '+byeConflicts+' Spieler',type:'neg',pts:-4}); 
+    }
+  }
+
+  // ── C. DRAFT SITUATION (max 20 pts) ────────────────
+
+  // C1. Positional Run Detection — 8pts
+  // Are other teams currently drafting this position a lot?
+  var last5picks = recentPicks.slice(-5);
+  var runPos = last5picks.filter(function(p){ return p.pos===player.pos && !p.isMine; }).length;
+  if(runPos >= 3) { 
+    score+=8; factors.push({text:'QB/'+player.pos+'-Run! ('+runPos+'/5 zuletzt)',type:'pos',pts:8}); 
+  } else if(runPos >= 2 && strategy.runReaction !== 'ignore') { 
+    score+=4; factors.push({text:'Pos-Run erkannt ('+runPos+'/5)',type:'neu',pts:4}); 
+  }
+
+  // C2. Snake Position Bonus — 6pts
+  // At the turn (end/start of round) = take 2 players effectively
+  if(window._picksUntilMe === 0) { 
+    score+=6; factors.push({text:'Du bist dran — jetzt zuschlagen!',type:'pos',pts:6}); 
+  } else if(window._picksUntilMe === 1) { 
+    score+=3; factors.push({text:'Fast dran — 1 Pick noch',type:'neu',pts:3}); 
+  }
+
+  // C3. Late Round Value — 6pts
+  // In late rounds, scarce positions matter more
+  if(currentRound >= 10) {
+    if(pos==='TE' && posCounts.TE===0) { score+=6; factors.push({text:'Letzter Chance TE',type:'pos',pts:6}); }
+    if(pos==='QB' && posCounts.QB===0) { score+=6; factors.push({text:'Letzter Chance QB',type:'pos',pts:6}); }
+  }
+
+  // ── D. PLAYER QUALITY (max 10 pts) ────────────────
+
+  // D1. Scoring format bonus for WR/TE in PPR
+  if(strategy.scoring==='ppr') {
+    if(pos==='WR') { score+=3; }
+    else if(pos==='TE') { score+=2; }
+  } else if(strategy.scoring==='standard') {
+    if(pos==='RB') { score+=3; }
+  }
+
+  // D2. Superflex/2QB adjustment
+  if(strategy.rosterType==='superflex' || strategy.rosterType==='2qb') {
+    if(pos==='QB') { 
+      score+=8; factors.push({text:'Superflex: QB sehr wertvoll!',type:'pos',pts:8}); 
+    }
+  }
+
+  // D3. FantasyPros Note bonus (if player has expert note)
+  var cr = customRankings.find(function(r){ return r.name===player.name; });
+  if(cr && cr.fpNote && cr.fpNote.length > 5) {
+    score+=2; // Has expert analysis = slight bonus
+  }
+
+  // Clamp score 0-100
+  score = Math.max(0, Math.min(100, score));
+  
+  return {score: Math.round(score), factors: factors};
+}
+
+function getTopRecommendations() {
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  var available = source.filter(function(p){ 
+    return !draftedIds.has(p.sleeperId||p.id||p.name); 
+  }).slice(0, 80); // Only consider top 80 available
+
+  var scored = available.map(function(p){
+    var result = calcDraftScore(p);
+    return {player: p, score: result.score, factors: result.factors};
+  }).sort(function(a,b){ return b.score - a.score; });
+
+  return scored.slice(0, 3);
+}
+
+function renderRecommendations() {
+  var area = document.getElementById('rec-area');
+  if(!area) return;
+  
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  if(!source.length) { area.innerHTML=''; return; }
+
+  var recs = getTopRecommendations();
+  if(!recs.length) { area.innerHTML=''; return; }
+
+  var medals = ['🥇','🥈','🥉'];
+  var scoreColors = ['#f5a623','#4a9eff','#8b91a8'];
+
+  var h = '<div class="rec-box-main">';
+  h += '<div style="font-size:11px;font-weight:700;color:var(--blue);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;">💡 Draft Empfehlungen';
+  if(window._picksUntilMe===0) h += ' — <span style="color:#f5a623;">DU BIST DRAN!</span>';
+  else if(window._picksUntilMe!==undefined) h += ' — <span style="color:var(--text3);">'+window._picksUntilMe+' Picks bis zu dir</span>';
+  h += '</div>';
+
+  recs.forEach(function(rec, i) {
+    var p = rec.player;
+    var pc = posColors[p.pos]||'b-k';
+    h += '<div class="rec-card rec-'+(i+1)+'">';
+    h += '<div class="rec-score" style="color:'+scoreColors[i]+';">'+medals[i]+'<br><span style="font-size:16px;">'+rec.score+'</span></div>';
+    h += '<div style="flex:1;">';
+    h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
+    h += '<span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+p.pos+'</span>';
+    h += '<span style="font-size:14px;font-weight:700;">'+p.name+'</span>';
+    h += '<span style="font-size:11px;color:var(--text3);">'+p.team+'</span>';
+    h += '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);">Rank #'+p.rank+'</span>';
+    if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>';
+    h += '</div>';
+    h += '<div class="rec-factors">';
+    rec.factors.slice(0,5).forEach(function(f){
+      h += '<span class="rec-factor '+f.type+'">'+f.text+'</span>';
+    });
+    h += '</div>';
+    h += '</div></div>';
+  });
+  h += '</div>';
+  area.innerHTML = h;
+}
+
 function saveDraftSettings(){
   var slot=parseInt(document.getElementById('my-slot-input').value);
   var teams=parseInt(document.getElementById('teams-input').value);
@@ -1170,6 +1464,45 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('add-note-btn').addEventListener('click',addNote);
   document.getElementById('load-myteam-btn').addEventListener('click',loadMyTeam);
   document.getElementById('save-draft-settings-btn').addEventListener('click',saveDraftSettings);
+  
+  // Strategy buttons
+  document.querySelectorAll('.strat-btn').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      document.querySelectorAll('.strat-btn').forEach(function(b){b.classList.remove('active');});
+      this.classList.add('active');
+      strategy.main = this.dataset.strat;
+    });
+  });
+  document.querySelectorAll('.strat-btn-sm').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var parent = this.closest('[id$="-buttons"]');
+      if(parent){
+        parent.querySelectorAll('.strat-btn-sm').forEach(function(b){b.classList.remove('active');});
+      }
+      this.classList.add('active');
+      if(this.dataset.qb) strategy.qbTiming = this.dataset.qb;
+      if(this.dataset.te) strategy.teTiming = this.dataset.te;
+    });
+  });
+  document.getElementById('save-strategy-btn').addEventListener('click',function(){
+    strategy.risk = document.getElementById('risk-setting').value;
+    strategy.handcuff = document.getElementById('handcuff-setting').value;
+    strategy.byeAvoidance = document.getElementById('bye-setting').value;
+    strategy.scoring = document.getElementById('scoring-setting').value;
+    strategy.rosterType = document.getElementById('roster-setting').value;
+    strategy.runReaction = document.getElementById('run-setting').value;
+    try{localStorage.setItem('fantasybot_strategy',JSON.stringify(strategy));}catch(e){}
+    document.getElementById('strategy-status').textContent='✓ Strategie gespeichert!';
+    document.getElementById('strategy-status').style.color='var(--green)';
+    renderRecommendations();
+    setTimeout(function(){document.getElementById('strategy-status').textContent='';},2000);
+  });
+
+  // Load saved strategy
+  try{
+    var ss=localStorage.getItem('fantasybot_strategy');
+    if(ss){ strategy=Object.assign(strategy,JSON.parse(ss)); }
+  }catch(e){}
   document.getElementById('note-search').addEventListener('keypress',function(e){if(e.key==='Enter')addNote();});
 
   // PDF
