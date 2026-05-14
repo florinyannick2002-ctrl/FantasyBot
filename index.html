@@ -179,15 +179,36 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
   </div>
 
   <div class="panel" id="tab-myteam">
-    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
-      <div class="section-label" style="margin-bottom:8px;">Sleeper Username</div>
-      <div style="display:flex;gap:8px;">
-        <input type="text" id="sleeper-username-input" placeholder="Dein Sleeper Username..." style="flex:1;"/>
-        <button class="btn-primary" id="load-myteam-btn">Laden ↗</button>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;margin-bottom:1rem;">
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:1rem;">Draft Einstellungen</h3>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+        <div>
+          <div class="section-label" style="margin-bottom:6px;">Mein Draft Slot</div>
+          <input type="number" id="my-slot-input" placeholder="z.B. 5" min="1" max="20" style="width:100%;"/>
+        </div>
+        <div>
+          <div class="section-label" style="margin-bottom:6px;">Anzahl Teams</div>
+          <input type="number" id="teams-input" placeholder="z.B. 10" min="2" max="20" value="10" style="width:100%;"/>
+        </div>
       </div>
-      <p style="font-size:11px;color:var(--text3);margin-top:6px;" id="myteam-status"></p>
+      <div style="margin-bottom:12px;">
+        <div class="section-label" style="margin-bottom:6px;">Draft Typ</div>
+        <select id="draft-type-select" style="width:100%;">
+          <option value="snake">Snake Draft</option>
+          <option value="linear">Linear Draft</option>
+          <option value="3rdReversal">Snake + Third Round Reversal</option>
+        </select>
+      </div>
+      <button class="btn-primary" id="save-draft-settings-btn" style="width:100%;">✓ Speichern & Anwenden</button>
+      <p style="font-size:11px;color:var(--text3);margin-top:8px;" id="myteam-status"></p>
     </div>
-    <div id="myteam-picks-list"><div class="empty-state">// Username eingeben und Draft ID laden</div></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
+      <div class="section-label" style="margin-bottom:8px;">Sleeper Username (optional)</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="sleeper-username-input" placeholder="Für Live-Picks laden..." style="flex:1;"/>
+        <button class="btn-ghost" id="load-myteam-btn">Laden ↗</button>
+      </div>
+    </div>
   </div>
 
   <div class="panel" id="tab-rankings">
@@ -311,9 +332,19 @@ function renderPlayers(){
       if(avIndex >= allAvail.length) break;
       var rnd = Math.ceil(pickNo / totalTeams);
       var posInRound = (pickNo - 1) % totalTeams;
-      var slot = (draftType === 'linear' || rnd % 2 === 1)
-        ? posInRound + 1
-        : totalTeams - posInRound;
+      var slot;
+      if(draftType === 'linear') {
+        slot = posInRound + 1;
+      } else if(draftType === '3rdReversal') {
+        // Rounds 1+2: normal snake (1->N, N->1)
+        // Round 3+: reverses again (so R3 goes N->1, R4 goes 1->N etc)
+        // Effectively: R1=normal, R2=reversed, R3=reversed, R4=normal, R5=normal...
+        var effectiveRound = rnd <= 2 ? rnd : (rnd % 2 === 1 ? 2 : 1);
+        slot = effectiveRound % 2 === 1 ? posInRound + 1 : totalTeams - posInRound;
+      } else {
+        // Standard snake
+        slot = rnd % 2 === 1 ? posInRound + 1 : totalTeams - posInRound;
+      }
       if(slot === myDraftSlot) {
         highlightNames[allAvail[avIndex].name] = rnd;
       }
@@ -865,7 +896,18 @@ document.addEventListener('DOMContentLoaded',function(){
     var savedSlot=localStorage.getItem('fantasybot_slot');
     if(savedSlot){
       var sd=JSON.parse(savedSlot);
-      myDraftSlot=sd.slot;totalTeams=sd.teams||12;mySleeperUserId=sd.userId||'';
+      myDraftSlot=sd.slot||null;
+      totalTeams=sd.teams||12;
+      draftType=sd.draftType||'snake';
+      // Restore UI
+      if(sd.slot) document.getElementById('my-slot-input').value=sd.slot;
+      if(sd.teams) document.getElementById('teams-input').value=sd.teams;
+      if(sd.draftType) document.getElementById('draft-type-select').value=sd.draftType;
+      if(sd.slot){
+        var typeLabel=draftType==='linear'?'Linear':draftType==='3rdReversal'?'Snake + 3rd Round Reversal':'Snake';
+        document.getElementById('myteam-status').textContent='✓ Slot #'+sd.slot+' | '+sd.teams+' Teams | '+typeLabel;
+        document.getElementById('myteam-status').style.color='var(--green)';
+      }
     }
   }catch(e){}
   if(loadRankings() && customRankings.length){
@@ -904,6 +946,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('clear-rank-btn').addEventListener('click',clearRankings);
   document.getElementById('add-note-btn').addEventListener('click',addNote);
   document.getElementById('load-myteam-btn').addEventListener('click',loadMyTeam);
+  document.getElementById('save-draft-settings-btn').addEventListener('click',saveDraftSettings);
   document.getElementById('note-search').addEventListener('keypress',function(e){if(e.key==='Enter')addNote();});
 
   // PDF
