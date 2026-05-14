@@ -181,6 +181,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
         <div class="recent-picks-list" id="recent-picks-list"></div>
       </div>
     </div>
+    <div id="rec-area"></div>
     <div class="controls" id="controls-row" style="display:none;">
       <button class="pos-btn active" data-pos="ALL">ALL</button>
       <button class="pos-btn" data-pos="QB">QB</button>
@@ -529,6 +530,7 @@ function renderPlayers(){
   var hasHighlight = grid.querySelector('.my-next-pick-above');
   var scrollBtn = document.getElementById('scroll-to-pick-btn');
   if(scrollBtn) scrollBtn.style.display = hasHighlight ? 'block' : 'none';
+  renderRecommendations();
   grid.querySelectorAll('.draft-btn').forEach(function(b){
     b.addEventListener('click',function(){draftedIds.add(this.dataset.pid);renderPlayers();});
   });
