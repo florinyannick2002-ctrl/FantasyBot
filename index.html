@@ -109,9 +109,8 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 .recent-picks-list{display:flex;gap:8px;flex-wrap:wrap;}
 .recent-pick-chip{display:flex;align-items:center;gap:6px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:12px;}
 .recent-pick-chip.mine{border-color:var(--purple);background:var(--purple-bg);}
-.my-next-pick-above{border-top:3px solid #f5a623 !important;position:relative;}
-.my-next-pick-above td{background:#1f1a08 !important;padding-top:10px !important;}
-.my-next-pick-above td:first-child::before{content:'';position:absolute;top:-20px;left:0;font-size:10px;color:#f5a623;font-family:var(--mono);font-weight:600;white-space:nowrap;}
+.my-next-pick-above td{background:#2a2208 !important;outline:2px solid #f5a623;}
+.my-next-pick-above td:first-child{border-left:4px solid #f5a623 !important;}
 .tooltip-box{position:fixed;background:#1e2433;border:1px solid var(--border2);border-radius:var(--radius);padding:10px 12px;font-size:12px;color:var(--text);max-width:320px;line-height:1.6;z-index:9999;box-shadow:0 4px 20px rgba(0,0,0,.5);pointer-events:none;display:none;}
 </style>
 </head>
@@ -295,21 +294,35 @@ function renderPlayers(){
   var byTier={};
   filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   
-  // Find player to highlight: simulate picks until my turn
-  // We know: picksUntilMe = how many more picks before I pick
-  // The top (picksUntilMe + 1)th available player = who I'd likely get
-  var highlightName = null;
-  if(myDraftSlot && window._picksUntilMe !== undefined) {
-    var skip = window._picksUntilMe;
-    // Get all available players in order (before tier filtering)
+  // Find ALL projected picks for me this draft
+  // Snake draft: calculate all my pick numbers, then find who'd be available at each
+  var highlightNames = {};
+  if(myDraftSlot && totalTeams) {
     var allAvailable = (useCustom && customRankings.length ? customRankings : allPlayers)
       .filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
-    // The player at position 'skip' is who I'd likely get
-    // (assuming each pick before mine takes the next best player)
-    if(allAvailable.length > skip) {
-      highlightName = allAvailable[skip].name;
-    } else if(allAvailable.length > 0) {
-      highlightName = allAvailable[allAvailable.length-1].name;
+    var totalPicked = draftedIds.size;
+    var maxRounds = 20;
+    var pickIndex = 0; // index into allAvailable simulating picks in order
+    for(var pickNo = 1; pickNo <= totalTeams * maxRounds; pickNo++) {
+      var round = Math.ceil(pickNo / totalTeams);
+      var slotThisPick = round % 2 === 1
+        ? ((pickNo - 1) % totalTeams) + 1
+        : totalTeams - ((pickNo - 1) % totalTeams);
+      if(pickNo <= totalPicked) {
+        // Already drafted - advance simulation
+        if(slotThisPick !== myDraftSlot) pickIndex++;
+        continue;
+      }
+      // Future pick
+      if(slotThisPick === myDraftSlot) {
+        // This is my pick - mark the player at current pickIndex
+        if(pickIndex < allAvailable.length) {
+          highlightNames[allAvailable[pickIndex].name] = round;
+        }
+        // Don't advance pickIndex for my own picks
+      } else {
+        pickIndex++; // Someone else takes the next best
+      }
     }
   }
   var h='<table class="player-table"><thead><tr>';
@@ -324,7 +337,7 @@ function renderPlayers(){
       var pc=posColors[p.pos]||'b-k';
       var pid=p.sleeperId||p.id||p.name;
       var note=playerNotes[p.name]||{};
-      var isNextPick = highlightName && p.name === highlightName;
+      var myPickRound = highlightNames && highlightNames[p.name];
       var fpNote=p.fpNote||'';
       var lhtml=note.label?'<span class="lbadge '+LABELS[note.label].cls+'">'+LABELS[note.label].text+'</span>':'';
       var nhtml=note.note?' <span style="font-size:11px;color:var(--text3);font-style:italic;" title="'+note.note+'">💬</span>':'';
@@ -336,12 +349,13 @@ function renderPlayers(){
         var cls=d>0?'adp-pos':d<0?'adp-neg':'';
         diff='<span class="adp-d '+cls+'">'+s+d+'</span>';
       }
-      h+='<tr class="prow t'+tc+(isNextPick?' my-next-pick-above':'')+'">';
+      h+='<tr class="prow t'+tc+(myPickRound?' my-next-pick-above':'')+'">';
       h+='<td class="c-rk">'+p.rank+'</td>';
       h+='<td><span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+(p.pos||'?')+'</span></td>';
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
-      h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+'</td>';
+      var pickLabel = myPickRound ? '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;font-weight:600;margin-left:6px;background:#2a1e08;padding:1px 6px;border-radius:3px;">R'+myPickRound+'</span>' : '';
+      h+='<td class="c-name">'+p.name+lhtml+nhtml+pickLabel+noteIconHtml+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
       h+='<td class="c-slp r">'+slp+'</td>';
@@ -667,11 +681,15 @@ async function loadMyTeam(){
       // Find my slot from draft order
       if(draft.draft_order&&draft.draft_order[user.user_id]){
         myDraftSlot=draft.draft_order[user.user_id];
-        status.textContent='✓ '+username+' — Draft Slot #'+myDraftSlot;
+        totalTeams=draft.settings&&draft.settings.teams?draft.settings.teams:12;
+        status.textContent='✓ '+username+' — Draft Slot #'+myDraftSlot+' ('+totalTeams+' Teams)';
+        status.style.color='var(--green)';
+        try{localStorage.setItem('fantasybot_slot',JSON.stringify({slot:myDraftSlot,teams:totalTeams,userId:mySleeperUserId}));}catch(e){}
       }
     }
     // Reload picks to mark mine
-    if(draftId)await loadPicks();
+    if(draftId) await loadPicks();
+    else renderPlayers(); // still update highlight even without live draft
   }catch(e){
     status.textContent='Fehler: '+e.message;
     status.style.color='var(--red)';
@@ -813,13 +831,13 @@ function renderRecentPicks(){
   var last5=recentPicks.slice(-5).reverse();
   list.innerHTML='';
   // Show picks until my turn if known
-  if(myDraftSlot && window._picksUntilMe !== undefined){
+  if(myDraftSlot){
     var turnChip=document.createElement('div');
-    var picksLeft=window._picksUntilMe;
+    var picksLeft=window._picksUntilMe!==undefined?window._picksUntilMe:'?';
     var label=picksLeft===0?'🟡 DU BIST DRAN!':picksLeft===1?'⏳ Noch 1 Pick':'⏳ Noch '+picksLeft+' Picks';
     var bg=picksLeft===0?'background:#2a1e08;border-color:#f5a623;color:#f5a623;':'background:var(--bg3);border-color:var(--border);color:var(--text2);';
     turnChip.style.cssText='display:flex;align-items:center;padding:4px 12px;border-radius:var(--radius);border:1px solid;font-size:12px;font-weight:600;'+bg;
-    turnChip.textContent=label;
+    turnChip.textContent=label+' (Slot #'+myDraftSlot+')';
     list.appendChild(turnChip);
   }
   last5.forEach(function(pk){
@@ -837,6 +855,14 @@ function renderRecentPicks(){
 // Init
 document.addEventListener('DOMContentLoaded',function(){
   loadNotes();
+  // Restore draft slot if saved
+  try{
+    var savedSlot=localStorage.getItem('fantasybot_slot');
+    if(savedSlot){
+      var sd=JSON.parse(savedSlot);
+      myDraftSlot=sd.slot;totalTeams=sd.teams||12;mySleeperUserId=sd.userId||'';
+    }
+  }catch(e){}
   if(loadRankings() && customRankings.length){
     useCustom=true;
     applyADP();
