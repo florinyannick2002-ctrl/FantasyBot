@@ -294,36 +294,36 @@ function renderPlayers(){
   var byTier={};
   filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   
-  // Find ALL projected picks for me this draft
-  // Snake draft: calculate all my pick numbers, then find who'd be available at each
+  // Find ALL projected picks for me across all rounds
   var highlightNames = {};
   if(myDraftSlot && totalTeams) {
-    var allAvailable = (useCustom && customRankings.length ? customRankings : allPlayers)
+    var allAvail = (useCustom && customRankings.length ? customRankings : allPlayers)
       .filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
+    
+    // Step 1: find all my future pick numbers (snake draft)
     var totalPicked = draftedIds.size;
-    var maxRounds = 20;
-    var pickIndex = 0; // index into allAvailable simulating picks in order
-    for(var pickNo = 1; pickNo <= totalTeams * maxRounds; pickNo++) {
-      var round = Math.ceil(pickNo / totalTeams);
-      var slotThisPick = round % 2 === 1
-        ? ((pickNo - 1) % totalTeams) + 1
-        : totalTeams - ((pickNo - 1) % totalTeams);
-      if(pickNo <= totalPicked) {
-        // Already drafted - advance simulation
-        if(slotThisPick !== myDraftSlot) pickIndex++;
-        continue;
-      }
-      // Future pick
-      if(slotThisPick === myDraftSlot) {
-        // This is my pick - mark the player at current pickIndex
-        if(pickIndex < allAvailable.length) {
-          highlightNames[allAvailable[pickIndex].name] = round;
-        }
-        // Don't advance pickIndex for my own picks
-      } else {
-        pickIndex++; // Someone else takes the next best
-      }
+    var myFuturePicks = []; // [{pickNo, round}]
+    for(var pn = totalPicked+1; pn <= totalTeams*20; pn++) {
+      var rnd = Math.ceil(pn/totalTeams);
+      var slot = rnd%2===1 ? ((pn-1)%totalTeams)+1 : totalTeams-((pn-1)%totalTeams);
+      if(slot === myDraftSlot) myFuturePicks.push({pickNo:pn, round:rnd});
     }
+    
+    // Step 2: for each of my picks, figure out which player I'd get
+    // Between pick N and pick N+K, K-1 other teams pick, taking the next K-1 best players
+    var prevPickNo = totalPicked; // last pick already made
+    var avIndex = 0; // current index into allAvail
+    
+    myFuturePicks.forEach(function(myPick) {
+      // How many picks happen before this pick of mine?
+      var picksBefore = myPick.pickNo - prevPickNo - 1;
+      avIndex += picksBefore; // skip that many players (others took them)
+      if(avIndex < allAvail.length) {
+        highlightNames[allAvail[avIndex].name] = myPick.round;
+      }
+      // Don't advance avIndex for my own pick (I take from current position)
+      prevPickNo = myPick.pickNo;
+    });
   }
   var h='<table class="player-table"><thead><tr>';
   h+='<th class="c-rk">#</th><th class="c-pos">Pos</th><th>Spieler</th>';
