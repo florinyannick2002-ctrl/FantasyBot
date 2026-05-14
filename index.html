@@ -299,24 +299,31 @@ function renderPlayers(){
   var byTier={};
   filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   
-  // Find ALL projected picks for me across all rounds
+  // Find ALL projected picks - correct snake draft logic
   var highlightNames = {};
   if(myDraftSlot && totalTeams && window._picksUntilMe !== undefined) {
     var allAvail = (useCustom && customRankings.length ? customRankings : allPlayers)
       .filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
     
-    // picksUntilMe = picks before my NEXT pick (0 = I'm on the clock)
-    // After each of my picks, there are (totalTeams-1) picks before me again
-    var avIndex = window._picksUntilMe; // skip this many for first pick
     var totalPicked = draftedIds.size;
-    var currentRound = Math.ceil((totalPicked + 1) / totalTeams);
+    var avIndex = 0;
     
-    for(var r = 0; r < 20; r++) {
-      if(avIndex < allAvail.length) {
-        highlightNames[allAvail[avIndex].name] = currentRound + r;
-      } else break;
-      // After my pick, all other teams pick (totalTeams-1 picks)
-      avIndex += totalTeams; // skip totalTeams-1 others + my own pick = totalTeams
+    // Go through every future pick number, simulate who gets what
+    for(var pickNo = totalPicked + 1; pickNo <= totalTeams * 20; pickNo++) {
+      if(avIndex >= allAvail.length) break;
+      var round = Math.ceil(pickNo / totalTeams);
+      // Snake: odd rounds left->right, even rounds right->left
+      var slotThisPick = round % 2 === 1
+        ? ((pickNo - 1) % totalTeams) + 1          // odd round: 1,2,3...N
+        : totalTeams - ((pickNo - 1) % totalTeams); // even round: N,N-1...1
+      
+      if(slotThisPick === myDraftSlot) {
+        // This is MY pick - highlight this player
+        highlightNames[allAvail[avIndex].name] = round;
+        // I take this player, so don't advance avIndex for myself
+        // but DO advance for next iteration
+      }
+      avIndex++; // every pick (mine or others) removes one player
     }
   }
   var h='<table class="player-table"><thead><tr>';
