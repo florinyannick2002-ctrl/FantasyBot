@@ -1409,16 +1409,42 @@ async function loadSleeperPlayers(sport){
     if(!positions.includes(p.position))return;
     if(!p.active&&p.position!=='DEF')return;
     var nm=p.full_name||(p.first_name+' '+p.last_name)||id;
-    var sr=(p.search_rank&&p.search_rank<500)?p.search_rank:null;
+    var sr=(p.search_rank&&p.search_rank<9999)?p.search_rank:null;
     sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr};
   });
-  // Enrich customRankings with sleeper IDs
+  // Enrich customRankings with sleeper IDs + search_rank
   if(customRankings.length){
     customRankings.forEach(function(cr){
       var match=sleeperMap[normSleeperName(cr.name)];
       if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;}
     });
   }
+  // Now fetch Sleeper projections which have the real draft rankings
+  try{
+    var pos=['QB','RB','WR','TE','K','DEF'];
+    var yr=new Date().getFullYear();
+    var url='https://api.sleeper.app/projections/nfl/'+yr+'/1?season_type=regular&position[]=QB&position[]=RB&position[]=WR&position[]=TE&order_by=adp_ppr';
+    var r2=await fetch(url);
+    if(r2.ok){
+      var proj=await r2.json();
+      // proj is array of {player_id, stats:{...}, player:{...}}
+      proj.forEach(function(item,idx){
+        var pid=item.player_id;
+        // rank = position in array (0-indexed) = their draft ranking order
+        var rank=idx+1;
+        if(sleeperMap){
+          Object.values(sleeperMap).forEach(function(sm){
+            if(sm.id===String(pid)) sm.sleeperRank=rank;
+          });
+        }
+        // Update customRankings directly
+        customRankings.forEach(function(cr){
+          if(cr.sleeperId===String(pid)) cr.sleeperRank=rank;
+        });
+      });
+      renderPlayers();
+    }
+  }catch(e){ console.log('projections fetch error',e); }
 }
 
 async function loadPicks(){
