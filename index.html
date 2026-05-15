@@ -726,8 +726,12 @@ function renderPlayers(){
         var safetyMargin = Math.max(3, Math.round(totalTeams * 0.3));
         
         if(window._picksUntilMe === 0) {
-          // I'm on the clock - no availability concern
-          availLabel = '';
+          // I'm on the clock - show if safe or risky to wait
+          if(slpRank <= myNextPickOverall + totalTeams - 2) {
+            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;margin-left:6px;">⚡ Jetzt holen!</span>';
+          } else {
+            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--green);margin-left:6px;">✓ Sicher</span>';
+          }
         } else if(slpRank <= myNextPickOverall - safetyMargin) {
           // Very likely gone before my pick
           availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--red);margin-left:6px;">⚠ Wahrscheinlich weg</span>';
