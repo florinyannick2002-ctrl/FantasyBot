@@ -377,6 +377,40 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
 var customRankings = [];
 var allPlayers = [];
 var sleeperMap = {};
+var SOS = {
+  'ARI':{QB:3,RB:3,WR:3,TE:4},
+  'ATL':{QB:2,RB:3,WR:4,TE:2},
+  'BAL':{QB:4,RB:4,WR:3,TE:4},
+  'BUF':{QB:4,RB:4,WR:4,TE:3},
+  'CAR':{QB:1,RB:1,WR:2,TE:3},
+  'CHI':{QB:3,RB:2,WR:4,TE:3},
+  'CIN':{QB:2,RB:3,WR:3,TE:2},
+  'CLE':{QB:3,RB:2,WR:3,TE:4},
+  'DAL':{QB:3,RB:4,WR:3,TE:2},
+  'DEN':{QB:4,RB:2,WR:4,TE:3},
+  'DET':{QB:4,RB:3,WR:4,TE:3},
+  'GB': {QB:1,RB:3,WR:3,TE:3},
+  'HOU':{QB:3,RB:3,WR:3,TE:3},
+  'IND':{QB:2,RB:2,WR:4,TE:2},
+  'JAX':{QB:5,RB:4,WR:4,TE:5},
+  'KC': {QB:2,RB:3,WR:2,TE:4},
+  'LV': {QB:3,RB:4,WR:3,TE:5},
+  'LAC':{QB:3,RB:2,WR:2,TE:3},
+  'LAR':{QB:4,RB:3,WR:2,TE:4},
+  'MIA':{QB:3,RB:4,WR:3,TE:4},
+  'MIN':{QB:4,RB:4,WR:4,TE:4},
+  'NE': {QB:1,RB:2,WR:2,TE:3},
+  'NO': {QB:3,RB:3,WR:4,TE:2},
+  'NYG':{QB:5,RB:5,WR:5,TE:4},
+  'NYJ':{QB:2,RB:3,WR:2,TE:3},
+  'PHI':{QB:4,RB:4,WR:3,TE:2},
+  'PIT':{QB:4,RB:4,WR:4,TE:4},
+  'SF': {QB:2,RB:3,WR:1,TE:2},
+  'SEA':{QB:3,RB:4,WR:3,TE:3},
+  'TB': {QB:3,RB:2,WR:3,TE:2},
+  'TEN':{QB:4,RB:2,WR:3,TE:3},
+  'WAS':{QB:3,RB:2,WR:2,TE:2}
+};
 var draftedIds = new Set();
 var playerNotes = {};
 var currentPos = 'ALL';
@@ -1232,11 +1266,11 @@ function renderPlayers(){
   var h='<table class="player-table"><thead><tr>';
   h+='<th class="c-rk">#</th><th class="c-pos">Pos</th><th>Spieler</th>';
   h+='<th class="c-team">Team</th><th class="c-bye" style="text-align:center;">Bye</th>';
-  h+='<th class="c-slp r">Sleeper</th><th class="c-adp r">Diff</th><th class="c-act"></th>';
+  h+='<th class="c-slp r">Sleeper</th><th class="c-adp r">Diff</th><th class="c-sos r" style="min-width:38px;">SOS</th><th class="c-act"></th>';
   h+='</tr></thead><tbody>';
   Object.keys(byTier).sort(function(a,b){return+a-+b;}).forEach(function(tier){
     var tc=Math.min(+tier,6);
-    h+='<tr class="tier-row t'+tc+'"><td colspan="8" style="color:var(--text2);">Tier '+tier+' — '+(tierNames[tier]||'Weitere')+'</td></tr>';
+    h+='<tr class="tier-row t'+tc+'"><td colspan="9" style="color:var(--text2);">Tier '+tier+' — '+(tierNames[tier]||'Weitere')+'</td></tr>';
     byTier[tier].forEach(function(p){
       var pc=posColors[p.pos]||'b-k';
       var pid=p.sleeperId||p.id||p.name;
@@ -1302,6 +1336,15 @@ function renderPlayers(){
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
       h+='<td class="c-slp r">'+slp+'</td>';
       h+='<td class="c-adp r">'+diff+'</td>';
+      // SOS
+      var sosVal = '';
+      if(p.team && SOS[p.team] && p.pos && SOS[p.team][p.pos] !== undefined) {
+        var sv = SOS[p.team][p.pos];
+        var sosColor = sv >= 4 ? 'var(--green)' : sv <= 2 ? 'var(--red)' : 'var(--text2)';
+        var sosEmoji = sv === 5 ? '★★★★★' : sv === 4 ? '★★★★☆' : sv === 3 ? '★★★☆☆' : sv === 2 ? '★★☆☆☆' : '★☆☆☆☆';
+        sosVal = '<span style="color:'+sosColor+';font-size:10px;" title="Strength of Schedule: '+sv+'/5">'+sv+'</span>';
+      }
+      h+='<td class="c-sos r">'+sosVal+'</td>';
       h+='<td class="c-act"><button class="draft-btn" data-pid="'+pid+'">+ Draft</button></td>';
       h+='</tr>';
     });
@@ -2076,8 +2119,15 @@ function calcDraftScore(player) {
     }
   }
   
-  // ─────────────────────────────────────────────────────────
-  // PHASE 3: URGENCY BONUS (10 points max)
+  // 2E. Strength of Schedule Bonus (±4 pts)
+  if(player.team && SOS[player.team] && pos && SOS[player.team][pos] !== undefined) {
+    var sosScore = SOS[player.team][pos];
+    if(sosScore === 5) { phase2 += 4; factors.push({text:'SOS: Top Schedule 🟢',type:'pos'}); }
+    else if(sosScore === 4) { phase2 += 2; factors.push({text:'SOS: Guter Schedule 🟢',type:'pos'}); }
+    else if(sosScore === 2) { phase2 -= 2; factors.push({text:'SOS: Schwerer Schedule 🔴',type:'neg'}); }
+    else if(sosScore === 1) { phase2 -= 4; factors.push({text:'SOS: Härtester Schedule 🔴',type:'neg'}); }
+  }
+
   // Time-sensitive factors
   // ─────────────────────────────────────────────────────────
   
