@@ -823,10 +823,15 @@ async function fetchProjectedPicks(){
     var r = await fetch('https://api.sleeper.app/v1/draft/'+draftId+'/players');
     if(!r.ok) return;
     var data = await r.json();
-    // data: {player_id: {adp, rank, projected_pick, ...}}
+    // data: {player_id: {adp, rank, projected_pick, search_rank, ...}}
     window._sleeperProjections = {};
+    window._sleeperRanks = {}; // ECR rank from Sleeper
     Object.entries(data).forEach(function(e){
       var pid = e[0], info = e[1];
+      // Store ECR rank (expert consensus) - this is what Sleeper shows
+      if(info.rank != null) {
+        window._sleeperRanks[pid] = info.rank;
+      }
       if(info.projected_pick) {
         window._sleeperProjections[pid] = {
           round: Math.ceil(info.projected_pick / totalTeams),
@@ -834,7 +839,12 @@ async function fetchProjectedPicks(){
         };
       }
     });
-    console.log('Projections loaded:', Object.keys(window._sleeperProjections).length);
+    // Update customRankings with Sleeper ECR rank
+    customRankings.forEach(function(p){
+      if(p.sleeperId && window._sleeperRanks[p.sleeperId] != null) {
+        p.sleeperRank = window._sleeperRanks[p.sleeperId];
+      }
+    });
     renderPlayers();
   }catch(e){ console.log('projections error', e); }
 }
