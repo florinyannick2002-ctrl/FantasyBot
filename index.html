@@ -148,6 +148,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <button class="nav-item" data-tab="myteam"><span>⭐</span> Mein Team</button>
     <button class="nav-item" data-tab="rankings"><span>📋</span> Mein Ranking</button>
     <button class="nav-item" data-tab="notizen"><span>📝</span> Notizen</button>
+    <button class="nav-item" data-tab="todo"><span>✅</span> Todo</button>
   </div>
   <div class="divider"></div>
   <div style="display:flex;flex-direction:column;gap:6px;">
@@ -165,6 +166,7 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <button class="tab" data-tab="rankings">📋 Mein Ranking</button>
     <button class="tab" data-tab="notizen">📝 Notizen</button>
     <button class="tab" data-tab="strategie">🎯 Strategie</button>
+    <button class="tab" data-tab="todo">✅ Todo</button>
   </div>
 
   <div class="panel active" id="tab-draft">
@@ -369,6 +371,101 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       <button class="btn-primary" id="add-note-btn" style="width:100%;">+ Spieler hinzufügen</button>
     </div>
     <div id="notes-list"></div>
+  <div class="panel" id="tab-todo">
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">✅ Pre-Draft Todo Liste</h2>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1.5rem;">Diese Dinge vor dem Draft im September erledigen!</p>
+
+    <div style="display:flex;flex-direction:column;gap:12px;">
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;">
+        <div style="font-size:12px;font-weight:700;color:var(--amber);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">📊 Daten Updaten</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Sleeper ADP Dict updaten</div>
+              <div style="font-size:11px;color:var(--text3);">210 Spieler von BeatADP.com → Sleeper ADP Spalte kopieren → in HTML eintragen</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">SOS Dict updaten</div>
+              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Strength of Schedule → Balken abzählen → in HTML eintragen</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">FantasyPros Rankings CSV uploaden</div>
+              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Rankings → CSV herunterladen → Tab "Mein Ranking" uploaden</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">FantasyPros Projektionen CSV uploaden</div>
+              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Projections → QB/RB/WR/TE je herunterladen → Tab "Mein Ranking" uploaden</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;">
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">⚙️ App Einstellungen</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Sleeper Draft ID eintragen</div>
+              <div style="font-size:11px;color:var(--text3);">Sleeper App → Draft → Link kopieren → ID in Sidebar eingeben</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Strategie überprüfen</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "Strategie" → RB Heavy / QB Timing / TE Timing / Risiko-Toleranz einstellen</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Sleeper Username eintragen</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "Mein Team" → Username eingeben (YannickORG)</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;">
+        <div style="font-size:12px;font-weight:700;color:var(--green);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">🧠 Draft Vorbereitung</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Top 50 Spieler durchschauen</div>
+              <div style="font-size:11px;color:var(--text3);">Eigene Rankings mit Sleeper ADP vergleichen, grosse Unterschiede notieren</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Notizen zu Risiko-Spielern hinzufügen</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "Notizen" → Verletzungsanfällige oder unsichere Spieler markieren</div>
+            </div>
+          </label>
+          <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
+            <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
+            <div>
+              <div style="font-size:13px;font-weight:600;">Git Backup machen</div>
+              <div style="font-size:11px;color:var(--text3);">git tag working-vFinal && git push origin working-vFinal</div>
+            </div>
+          </label>
+        </div>
+      </div>
+
+    </div>
   </div>
 </main>
 </div>
