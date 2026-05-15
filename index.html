@@ -1874,244 +1874,173 @@ function renderMyTeam(){
 
 function calcDraftScore(player) {
   // ═══════════════════════════════════════════════════════════
-  // DRAFT ASSISTANT V2 — Multi-Phase Scoring (0-100 scale)
+  // DRAFT ASSISTANT V3 — Best-Practice Fantasy Scoring (0-100%)
   // ═══════════════════════════════════════════════════════════
-  // Philosophy: Strategy MODIFIES the order of objectively good
-  // picks, never elevates objectively weak players.
+  // 4 Kategorien: VALUE (40) + NEED (25) + CONTEXT (20) + TIMING (15)
+  // Risiko-Toleranz aus Strategie modifiziert Confidence/Upside-Gewichtung
   // ═══════════════════════════════════════════════════════════
   
   var factors = [];
   var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
   var available = source.filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
   if(!available.length) return {score:0, factors:[]};
-  // ── Marginal Score via FantasyPros projected points ──
-  var marginalBonus = 0;
-  if(player.projFpts && myDraftSlot && window._picksUntilMe !== undefined) {
-    var _picksLeft = window._picksUntilMe || 0;
-    var _myPickAfter = draftedIds.size + 1 + _picksLeft + totalTeams;
-    var _pos = player.pos;
-    var _posAvail = customRankings.filter(function(pp){
-      return pp.pos===_pos && !draftedIds.has(pp.sleeperId) && pp.name!==player.name && pp.projFpts;
-    }).sort(function(a,b){ return b.projFpts-a.projFpts; });
-    var _bestNext = 0;
-    for(var _pi=0; _pi<_posAvail.length; _pi++){
-      if((_posAvail[_pi].sleeperRank||999) >= _myPickAfter){ _bestNext=_posAvail[_pi].projFpts; break; }
-    }
-    if(!_bestNext && _posAvail.length>0) _bestNext=(_posAvail[_posAvail.length-1].projFpts)||0;
-    var _marginal = player.projFpts - _bestNext;
-    if(_marginal>40){marginalBonus=15;factors.push({text:'🔥 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
-    else if(_marginal>25){marginalBonus=10;factors.push({text:'📈 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
-    else if(_marginal>10){marginalBonus=5;factors.push({text:'📊 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
-    else if(_marginal<0){marginalBonus=-5;factors.push({text:'⬇ Kein Eile ('+Math.round(Math.abs(_marginal))+'pts)',type:'neg'});}
-  }
-  
-  // ── Confidence Score aus High-Low Spread ──
-  var confidenceBonus = 0;
-  if(player.projFpts && player.projHigh != null && player.projLow != null) {
-    var spread = player.projHigh - player.projLow;
-    var spreadPct = spread / player.projFpts; // relative spread
-    if(spreadPct < 0.05) {
-      // Sehr enger Spread — Experten einig, sicherer Pick
-      confidenceBonus = 5;
-      factors.push({text:'🟢 Sehr sicher (±'+Math.round(spread)+'pts)',type:'pos'});
-    } else if(spreadPct < 0.12) {
-      // Normaler Spread
-      confidenceBonus = 2;
-      factors.push({text:'🟡 Solide (±'+Math.round(spread)+'pts)',type:'neu'});
-    } else if(spreadPct < 0.22) {
-      // Grosser Spread — etwas unsicher
-      confidenceBonus = -3;
-      factors.push({text:'🟠 Unsicher (±'+Math.round(spread)+'pts)',type:'neg'});
-    } else {
-      // Sehr grosser Spread — hohes Risiko
-      confidenceBonus = -7;
-      factors.push({text:'🔴 Hohes Risiko (±'+Math.round(spread)+'pts)',type:'neg'});
-    }
-  }
-
-  
-  var totalPicks = myPicks.length;
-  var currentRound = totalPicks + 1;
-  var picksUntilMe = window._picksUntilMe || 0;
-  var nextPickInPicks = picksUntilMe + (totalTeams || 10) - 1; // approx picks until my pick AFTER this one
-  
-  // Position counts from my roster
-  var posCounts = {QB:0,RB:0,WR:0,TE:0,K:0,DEF:0};
-  myPicks.forEach(function(p){ if(posCounts[p.pos]!==undefined) posCounts[p.pos]++; });
-  
-  // ─────────────────────────────────────────────────────────
-  // PHASE 1: BASE QUALITY (60 points max)
-  // How good is this player objectively?
-  // ─────────────────────────────────────────────────────────
-  
-  // 1A. Overall Rank Score (30 points)
-  // Top 1-5: 30pts, 6-12: 26pts, 13-24: 22pts, 25-50: 16pts, 51-100: 10pts, 100+: 5pts
-  var rank = player.rank || 999;
-  var rankScore = 0;
-  if(rank <= 5) rankScore = 30;
-  else if(rank <= 12) rankScore = 27;
-  else if(rank <= 24) rankScore = 23;
-  else if(rank <= 36) rankScore = 19;
-  else if(rank <= 50) rankScore = 15;
-  else if(rank <= 75) rankScore = 11;
-  else if(rank <= 100) rankScore = 7;
-  else if(rank <= 150) rankScore = 4;
-  else rankScore = 2;
-  
-  // Adjust for relative position in available list
-  // If player is #1 available, big bonus
-  var avgRank = available.slice(0,10).reduce(function(s,p){return s+p.rank;},0)/Math.min(10,available.length);
-  var posInAvail = available.findIndex(function(p){ return p.name===player.name; });
-  if(posInAvail === 0) { rankScore += 3; factors.push({text:'#1 Verfügbarer',type:'pos',pts:3}); }
-  else if(posInAvail < 3) { rankScore += 1; }
-  
-  // 1B. Tier Quality (15 points)
-  var tier = player.tier || 8;
-  var tierScore = 0;
-  if(tier <= 1) tierScore = 15;
-  else if(tier === 2) tierScore = 13;
-  else if(tier === 3) tierScore = 10;
-  else if(tier === 4) tierScore = 7;
-  else if(tier === 5) tierScore = 5;
-  else if(tier === 6) tierScore = 3;
-  else tierScore = 1;
-  
-  // 1C. Opportunity Cost / Will player be there next pick? (15 points)
-  // If sleeperRank shows he won't be there, drafting now is correct
-  // If sleeperRank shows he'll definitely be there, waiting is better
-  var oppScore = 0;
-  if(player.sleeperRank != null) {
-    var myNextPickNum = totalPicks + 1 + nextPickInPicks;
-    if(player.sleeperRank <= myNextPickNum - 5) {
-      // Will likely be gone — must pick now
-      oppScore = 15;
-      factors.push({text:'Wird weg sein! (ADP '+Math.round(player.sleeperRank)+')',type:'pos',pts:15});
-    } else if(player.sleeperRank <= myNextPickNum) {
-      // 50/50 — slight urgency
-      oppScore = 10;
-      factors.push({text:'Risiko verloren zu gehen',type:'pos',pts:10});
-    } else if(player.sleeperRank <= myNextPickNum + 10) {
-      // Probably still there
-      oppScore = 5;
-    } else {
-      // Definitely still there next round — wait!
-      oppScore = 2;
-      if(player.sleeperRank > myNextPickNum + 20) {
-        factors.push({text:'Wird noch da sein',type:'neu',pts:0});
-      }
-    }
-  } else {
-    oppScore = 8; // Unknown — neutral
-  }
-  
-  var phase1 = rankScore + tierScore + oppScore;
-  
-  // ─────────────────────────────────────────────────────────
-  // PHASE 2: CONTEXT BONUS (30 points max)
-  // How well does this player fit my situation?
-  // ─────────────────────────────────────────────────────────
   
   var pos = player.pos;
-  var phase2 = 0;
+  var rank = player.rank || 999;
+  var tier = player.tier || 6;
   
-  // 2A. Positional Need (12 points)
-  // Calculate need based on roster slots vs what I have
+  // Roster counts
+  var posCounts = {QB:0,RB:0,WR:0,TE:0,K:0,DEF:0};
+  myPicks.forEach(function(p){ if(posCounts[p.pos] !== undefined) posCounts[p.pos]++; });
+  
+  // Picks bis nächster Pick
+  var picksLeft = window._picksUntilMe !== undefined ? window._picksUntilMe : 0;
+  var totalPicked = draftedIds.size;
+  var myNextPickOverall = totalPicked + 1 + picksLeft + totalTeams;
+  
+  // Hilfs-Funktion: Beste Alternative bei nächstem Pick an gleicher Pos
+  function bestAvailableAtNextPick(targetPos) {
+    var alts = available.filter(function(p){
+      return p.pos === targetPos && p.name !== player.name && (p.sleeperRank||999) >= myNextPickOverall;
+    }).sort(function(a,b){ return (a.rank||999) - (b.rank||999); });
+    return alts[0] || null;
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // 1. VALUE (40 Punkte) — Wie wertvoll ist der Spieler?
+  // ═══════════════════════════════════════════════════════════
+  var valueScore = 0;
+  
+  // 1A. VOR — Value Over Replacement (0-25 pts)
+  if(player.projFpts) {
+    var altPlayer = bestAvailableAtNextPick(pos);
+    var altPts = altPlayer && altPlayer.projFpts ? altPlayer.projFpts : 0;
+    var vor = player.projFpts - altPts;
+    var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
+    valueScore += vorScore;
+    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts vs Alternative 🔥',type:'pos'});
+    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts VOR 📈',type:'pos'});
+    else if(vor >= 5) factors.push({text:'+'+Math.round(vor)+'pts Mehrwert',type:'pos'});
+  } else {
+    // Fallback: Rank-basiert
+    if(rank <= 12) valueScore += 22;
+    else if(rank <= 24) valueScore += 18;
+    else if(rank <= 48) valueScore += 12;
+    else if(rank <= 72) valueScore += 6;
+  }
+  
+  // 1B. Tier Premium (0-10 pts)
+  var tierBonus = tier === 1 ? 10 : tier === 2 ? 8 : tier === 3 ? 6 : tier === 4 ? 4 : tier === 5 ? 2 : 0;
+  valueScore += tierBonus;
+  if(tier === 1) factors.push({text:'Elite Tier 1 ⭐',type:'pos'});
+  else if(tier === 2) factors.push({text:'Top Tier 2 ⭐',type:'pos'});
+  
+  // 1C. Opportunity Cost (0-5 pts) — verschwindet er?
+  if(player.sleeperRank && myDraftSlot) {
+    if(player.sleeperRank < totalPicked + 1) valueScore += 5; // schon "über ADP"
+    else if(player.sleeperRank < myNextPickOverall - totalTeams) valueScore += 5;
+    else if(player.sleeperRank < myNextPickOverall) valueScore += 3;
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // 2. NEED (25 Punkte) — Brauche ich diese Position?
+  // ═══════════════════════════════════════════════════════════
   var needScore = 0;
   
-  if(pos === 'QB') {
-    if(strategy.rosterType === 'superflex' || strategy.rosterType === '2qb') {
-      if(posCounts.QB === 0) { needScore = 12; factors.push({text:'Superflex: QB!',type:'pos',pts:12}); }
-      else if(posCounts.QB === 1) { needScore = 8; }
-    } else {
-      if(posCounts.QB === 0) {
-        if(currentRound >= 12) { needScore = 10; factors.push({text:'QB dringend!',type:'pos',pts:10}); }
-        else if(strategy.qbTiming === 'early' && currentRound <= 4) { needScore = 10; }
-        else if(strategy.qbTiming === 'mid' && currentRound >= 5 && currentRound <= 8) { needScore = 10; }
-        else if(strategy.qbTiming === 'late' && currentRound >= 9) { needScore = 10; }
-        else if(rank <= 24) { needScore = 6; } // Elite QB worth it anytime
-        else { needScore = 1; }
-      } else {
-        needScore = 0; // already have one
-      }
-    }
-  }
-  else if(pos === 'RB') {
-    var rbSlots = rosterSlots.rb + Math.ceil(rosterSlots.flex / 2);
-    var rbHave = posCounts.RB;
-    if(rbHave === 0 && currentRound <= 8) { needScore = 12; factors.push({text:'Noch kein RB!',type:'pos',pts:12}); }
-    else if(rbHave < rbSlots) { needScore = 10 - rbHave*2; }
-    else if(rbHave < rbSlots + 1) { needScore = 5; } // depth
-    else { needScore = 2; }
-  }
-  else if(pos === 'WR') {
-    var wrSlots = rosterSlots.wr + Math.ceil(rosterSlots.flex / 2);
-    var wrHave = posCounts.WR;
-    if(wrHave === 0 && currentRound <= 8) { needScore = 12; factors.push({text:'Noch kein WR!',type:'pos',pts:12}); }
-    else if(wrHave < wrSlots) { needScore = 10 - wrHave*2; }
-    else if(wrHave < wrSlots + 1) { needScore = 5; }
-    else { needScore = 2; }
-  }
-  else if(pos === 'TE') {
-    if(posCounts.TE === 0) {
-      if(rank <= 30) { needScore = 10; factors.push({text:'Elite TE verfügbar',type:'pos',pts:10}); }
-      else if(currentRound >= 10) { needScore = 10; factors.push({text:'TE dringend!',type:'pos',pts:10}); }
-      else if(strategy.teTiming === 'early' && currentRound <= 3) { needScore = 11; }
-      else if(strategy.teTiming === 'mid' && currentRound >= 4 && currentRound <= 7) { needScore = 9; }
-      else { needScore = 4; }
-    } else {
-      needScore = 0;
-    }
-  }
-  else if(pos === 'K' || pos === 'DEF') {
-    if(currentRound < 13) { needScore = -5; factors.push({text:'K/DEF zu früh!',type:'neg',pts:-5}); }
-    else if((pos === 'K' && posCounts.K === 0) || (pos === 'DEF' && posCounts.DEF === 0)) { needScore = 8; }
-    else { needScore = 0; }
-  }
-  phase2 += needScore;
+  // 2A. Roster Need (0-12 pts)
+  var slots = rosterSlots || {qb:1,rb:2,wr:2,te:1,flex:2,k:1,def:1};
+  var posKey = pos.toLowerCase();
+  var needed = slots[posKey] || 0;
+  var have = posCounts[pos] || 0;
   
-  // 2B. Position-Specific Tier Drop (8 points)
-  // How many players at THIS POSITION are still in this tier?
-  var samePosAvail = available.filter(function(p){ return p.pos === pos && p.name !== player.name; });
-  var sameTierSamePos = samePosAvail.filter(function(p){ return p.tier === tier; });
-  
-  if(sameTierSamePos.length === 0) {
-    phase2 += 8;
-    factors.push({text:'Letzter '+pos+' in Tier '+tier+'!',type:'pos',pts:8});
-  } else if(sameTierSamePos.length === 1) {
-    phase2 += 5;
-    factors.push({text:'2. letzter '+pos+' in Tier '+tier,type:'pos',pts:5});
-  } else if(sameTierSamePos.length <= picksUntilMe + 1) {
-    phase2 += 6;
-    factors.push({text:pos+'-Tier '+tier+' läuft aus',type:'pos',pts:6});
-  } else if(sameTierSamePos.length <= 3) {
-    phase2 += 2;
+  if(pos === 'QB' || pos === 'TE') {
+    if(have === 0 && needed >= 1) { needScore += 12; factors.push({text:'Noch kein '+pos+'!',type:'pos'}); }
+    else if(have >= needed) needScore += 0;
+  } else if(pos === 'RB' || pos === 'WR') {
+    if(have === 0) { needScore += 12; factors.push({text:'Noch kein '+pos+'!',type:'pos'}); }
+    else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'Brauche '+pos+'2',type:'pos'}); }
+    else if(have === 2) needScore += 4;
+    else if(have >= 3) needScore -= 2;
+  } else if(pos === 'K' || pos === 'DEF') {
+    if(have === 0 && totalPicked > totalTeams * 12) needScore += 6;
   }
   
-  // 2C. Strategy Tiebreaker (6 points)
-  // Strategy gives BONUS but doesn't elevate weak players
+  // 2B. Strategy Alignment (-5 bis +8 pts)
+  var round = Math.floor(totalPicked / totalTeams) + 1;
   var stratBonus = 0;
-  if(strategy.main === 'rb_heavy' && pos === 'RB' && currentRound <= 4 && posCounts.RB < 2) {
-    stratBonus = 6; factors.push({text:'RB Heavy Plan',type:'pos',pts:6});
-  }
-  else if(strategy.main === 'wr_heavy' && pos === 'WR' && currentRound <= 4 && posCounts.WR < 2) {
-    stratBonus = 6; factors.push({text:'WR Heavy Plan',type:'pos',pts:6});
-  }
-  else if(strategy.main === 'zero_rb' && currentRound <= 4) {
-    if(pos === 'WR' || pos === 'TE') { stratBonus = 6; factors.push({text:'Zero RB Plan',type:'pos',pts:6}); }
-    else if(pos === 'RB') { stratBonus = -5; factors.push({text:'Zero RB: nicht jetzt',type:'neg',pts:-5}); }
-  }
-  else if(strategy.main === 'hero_rb' && pos === 'RB' && posCounts.RB === 0 && rank <= 20) {
-    stratBonus = 6; factors.push({text:'Hero RB Pick',type:'pos',pts:6});
-  }
-  else if(strategy.main === 'hero_rb' && pos === 'RB' && posCounts.RB >= 1 && currentRound <= 6) {
-    stratBonus = -3; factors.push({text:'Hero RB: nur 1 RB',type:'neg',pts:-3});
-  }
-  else if(strategy.main === 'te_premium' && pos === 'TE' && rank <= 25 && posCounts.TE === 0) {
-    stratBonus = 6; factors.push({text:'TE Premium Plan',type:'pos',pts:6});
-  }
-  phase2 += stratBonus;
   
-  // 2D. Bye Week Conflict (4 points penalty)
+  if(strategy.main === 'rb_heavy' && pos === 'RB' && round <= 4 && have < 3) {
+    stratBonus = 8; factors.push({text:'RB Heavy Plan ✓',type:'pos'});
+  }
+  else if(strategy.main === 'wr_heavy' && pos === 'WR' && round <= 5 && have < 3) {
+    stratBonus = 8; factors.push({text:'WR Heavy Plan ✓',type:'pos'});
+  }
+  else if(strategy.main === 'zero_rb' && pos === 'RB' && round <= 4) {
+    stratBonus = -5; factors.push({text:'Zero RB: zu früh',type:'neg'});
+  }
+  else if(strategy.main === 'zero_rb' && pos === 'WR' && round <= 4) {
+    stratBonus = 6; factors.push({text:'Zero RB → WR',type:'pos'});
+  }
+  else if(strategy.main === 'hero_rb' && pos === 'RB' && have === 0 && round <= 2) {
+    stratBonus = 8; factors.push({text:'Hero RB Pick ✓',type:'pos'});
+  }
+  else if(strategy.main === 'hero_rb' && pos === 'RB' && have >= 1 && round <= 4) {
+    stratBonus = -4; factors.push({text:'Hero RB: nur 1 RB',type:'neg'});
+  }
+  else if(strategy.main === 'te_premium' && pos === 'TE' && rank <= 25 && have === 0) {
+    stratBonus = 8; factors.push({text:'TE Premium ✓',type:'pos'});
+  }
+  
+  // QB Timing
+  if(pos === 'QB') {
+    if(strategy.qbTiming === 'early' && round <= 4 && have === 0) stratBonus += 4;
+    else if(strategy.qbTiming === 'late' && round <= 8 && have === 0) { stratBonus -= 4; factors.push({text:'QB zu früh (Late Strat)',type:'neg'}); }
+    else if(strategy.qbTiming === 'mid' && round >= 5 && round <= 8 && have === 0) stratBonus += 3;
+    else if(strategy.qbTiming === 'two_qb' && have < 2) stratBonus += 5;
+  }
+  
+  // TE Timing
+  if(pos === 'TE') {
+    if(strategy.teTiming === 'early' && round <= 3 && have === 0) stratBonus += 4;
+    else if(strategy.teTiming === 'late' && round <= 7 && have === 0) { stratBonus -= 3; factors.push({text:'TE zu früh (Late Strat)',type:'neg'}); }
+    else if(strategy.teTiming === 'mid' && round >= 4 && round <= 7 && have === 0) stratBonus += 3;
+  }
+  
+  needScore += stratBonus;
+  
+  // 2C. Position Scarcity (0-5 pts)
+  var samePos = available.filter(function(p){ return p.pos === pos && p.tier <= tier; });
+  if(samePos.length <= 2 && tier <= 4) {
+    needScore += 5; factors.push({text:'Letzter Tier '+tier+' '+pos+'!',type:'pos'});
+  } else if(samePos.length <= 4 && tier <= 3) {
+    needScore += 3;
+  }
+  
+  // ═══════════════════════════════════════════════════════════
+  // 3. CONTEXT (20 Punkte) — Externe Faktoren
+  // ═══════════════════════════════════════════════════════════
+  var contextScore = 10; // Start bei 50% Context Default
+  
+  // 3A. Strength of Schedule (-4 bis +4)
+  if(player.team && SOS[player.team] && SOS[player.team][pos] !== undefined) {
+    var sv = SOS[player.team][pos];
+    if(sv === 5) { contextScore += 4; factors.push({text:'SOS: Top Schedule 🟢',type:'pos'}); }
+    else if(sv === 4) { contextScore += 2; factors.push({text:'SOS: Easy 🟢',type:'pos'}); }
+    else if(sv === 2) { contextScore -= 2; factors.push({text:'SOS: Schwer 🔴',type:'neg'}); }
+    else if(sv === 1) { contextScore -= 4; factors.push({text:'SOS: Sehr schwer 🔴',type:'neg'}); }
+  }
+  
+  // 3B. Age (-5 bis +5)
+  if(player.age) {
+    if(player.age <= 23) { contextScore += 4; factors.push({text:'Jung ('+player.age+'j) 🌱',type:'pos'}); }
+    else if(player.age <= 26) contextScore += 2; // Aufstieg
+    else if(player.age <= 28) { /* Peak, neutral */ }
+    else if(player.age <= 30) { contextScore -= 2; factors.push({text:'Älter ('+player.age+'j) 🟡',type:'neg'}); }
+    else if(player.age <= 32) { contextScore -= 4; factors.push({text:'30+ ('+player.age+'j) 🔴',type:'neg'}); }
+    else { contextScore -= 5; factors.push({text:'Veteran ('+player.age+'j) 🔴',type:'neg'}); }
+  }
+  
+  // 3C. Bye Week Konflikt (-4 bis 0)
   if(strategy.byeAvoidance !== 'ignore' && player.bye) {
     var byeConflicts = myPicks.filter(function(p){
       var cr = customRankings.find(function(r){ return r.name === p.name; });
@@ -2119,64 +2048,96 @@ function calcDraftScore(player) {
     }).length;
     var threshold = strategy.byeAvoidance === 'strict' ? 1 : 2;
     if(byeConflicts >= threshold + 1) {
-      phase2 -= 4;
-      factors.push({text:'Bye Wk '+player.bye+' Konflikt!',type:'neg',pts:-4});
+      contextScore -= 4; factors.push({text:'Bye Wk '+player.bye+' Konflikt!',type:'neg'});
     }
   }
   
-  // 2E. Strength of Schedule Bonus (±4 pts)
-  if(player.team && SOS[player.team] && pos && SOS[player.team][pos] !== undefined) {
-    var sosScore = SOS[player.team][pos];
-    if(sosScore === 5) { phase2 += 4; factors.push({text:'SOS: Top Schedule 🟢',type:'pos'}); }
-    else if(sosScore === 4) { phase2 += 2; factors.push({text:'SOS: Guter Schedule 🟢',type:'pos'}); }
-    else if(sosScore === 2) { phase2 -= 2; factors.push({text:'SOS: Schwerer Schedule 🔴',type:'neg'}); }
-    else if(sosScore === 1) { phase2 -= 4; factors.push({text:'SOS: Härtester Schedule 🔴',type:'neg'}); }
+  // 3D. Handcuff (0 bis +5)
+  if(strategy.handcuff === 'yes' && pos === 'RB' && player.team) {
+    var hasStarterOnTeam = myPicks.some(function(p){
+      var cr = customRankings.find(function(r){ return r.name === p.name; });
+      return cr && cr.team === player.team && cr.pos === 'RB' && (cr.rank||999) <= 30;
+    });
+    if(hasStarterOnTeam && rank > 50) {
+      contextScore += 5; factors.push({text:'Handcuff zu deinem RB 🛡️',type:'pos'});
+    }
   }
-
-  // 2F. Age Bonus/Malus (±6 pts)
-  if(player.age) {
-    if(player.age <= 22)      { phase2 += 5; factors.push({text:'Sehr jung ('+player.age+'j) 🟢',type:'pos'}); }
-    else if(player.age <= 24) { phase2 += 3; factors.push({text:'Jung ('+player.age+'j) 🟢',type:'pos'}); }
-    else if(player.age <= 27) { /* Peak — kein Bonus/Malus */ }
-    else if(player.age <= 29) { phase2 -= 2; factors.push({text:'Älter ('+player.age+'j) 🟡',type:'neg'}); }
-    else if(player.age <= 31) { phase2 -= 4; factors.push({text:'30+ ('+player.age+'j) 🔴',type:'neg'}); }
-    else                      { phase2 -= 6; factors.push({text:'Veteran ('+player.age+'j) 🔴',type:'neg'}); }
-  }
-
-  // Time-sensitive factors
-  // ─────────────────────────────────────────────────────────
   
-  var phase3 = 0;
+  contextScore = Math.max(0, Math.min(20, contextScore));
   
-  // 3A. Position Run Detection (5 points)
+  // ═══════════════════════════════════════════════════════════
+  // 4. TIMING (15 Punkte) — Jetzt oder warten?
+  // ═══════════════════════════════════════════════════════════
+  var timingScore = 0;
+  
+  // 4A. Position Run Detection (0-7 pts)
   var last8 = recentPicks.slice(-8);
   var posInRun = last8.filter(function(p){ return p.pos === pos; }).length;
   if(posInRun >= 5) {
-    phase3 += 5;
-    factors.push({text:pos+'-Run! ('+posInRun+'/8)',type:'pos',pts:5});
+    timingScore += 7; factors.push({text:pos+'-Run! ('+posInRun+'/8) 🚨',type:'pos'});
   } else if(posInRun >= 4 && strategy.runReaction !== 'ignore') {
-    phase3 += 3;
-    factors.push({text:pos+'-Run beginnt',type:'pos',pts:3});
+    timingScore += 4; factors.push({text:pos+'-Run beginnt',type:'pos'});
   }
   
-  // 3B. On the Clock Bonus (5 points)
-  if(picksUntilMe === 0) {
-    phase3 += 3; // small constant boost to top picks when you're up
+  // 4B. ADP Value (0-5 pts) — fällt der Spieler im Draft?
+  if(player.sleeperRank && rank) {
+    var adpDiff = player.sleeperRank - rank; // positiv = ich rate ihn höher
+    if(adpDiff >= 10) { timingScore += 5; factors.push({text:'ADP-Steal +'+adpDiff,type:'pos'}); }
+    else if(adpDiff >= 5) timingScore += 3;
+    else if(adpDiff <= -10) timingScore -= 2;
   }
   
-  // ─────────────────────────────────────────────────────────
+  // 4C. On-the-clock Urgency (0-3 pts)
+  if(picksLeft === 0) {
+    timingScore += 3;
+  }
+  
+  timingScore = Math.max(0, Math.min(15, timingScore));
+  
+  // ═══════════════════════════════════════════════════════════
+  // RISIKO-ADJUSTMENT — Confidence / Upside Gewichtung
+  // ═══════════════════════════════════════════════════════════
+  var riskBonus = 0;
+  
+  if(player.projFpts && player.projHigh != null && player.projLow != null) {
+    var spread = player.projHigh - player.projLow;
+    var spreadPct = spread / player.projFpts;
+    var upside = player.projHigh - player.projFpts;
+    
+    if(strategy.risk === 'safe') {
+      // Safe: kleine Spread belohnen, grosse bestrafen
+      if(spreadPct < 0.05)      { riskBonus += 8; factors.push({text:'🟢 Sehr sicher (±'+Math.round(spread)+'pts)',type:'pos'}); }
+      else if(spreadPct < 0.12) { riskBonus += 3; factors.push({text:'🟡 Solide (±'+Math.round(spread)+'pts)',type:'neu'}); }
+      else if(spreadPct < 0.22) { riskBonus -= 5; factors.push({text:'🟠 Unsicher (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      else                      { riskBonus -= 10; factors.push({text:'🔴 Hohes Risiko (±'+Math.round(spread)+'pts)',type:'neg'}); }
+    } else if(strategy.risk === 'boom') {
+      // Boom: Upside belohnen
+      if(upside >= 50)      { riskBonus += 10; factors.push({text:'🚀 Top Upside (+'+Math.round(upside)+')',type:'pos'}); }
+      else if(upside >= 30) { riskBonus += 6; factors.push({text:'📈 Solides Upside (+'+Math.round(upside)+')',type:'pos'}); }
+      else if(upside >= 15) { riskBonus += 2; }
+      else                  { riskBonus -= 3; factors.push({text:'Wenig Upside',type:'neg'}); }
+    } else {
+      // Balanced: leichte Confidence-Belohnung
+      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'🟢 Sicher (±'+Math.round(spread)+'pts)',type:'pos'}); }
+      else if(spreadPct < 0.18) { riskBonus += 1; factors.push({text:'🟡 Solide (±'+Math.round(spread)+'pts)',type:'neu'}); }
+      else if(spreadPct < 0.28) { riskBonus -= 3; factors.push({text:'🟠 Unsicher (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      else                      { riskBonus -= 6; factors.push({text:'🔴 Risiko (±'+Math.round(spread)+'pts)',type:'neg'}); }
+    }
+  }
+  
+  // ═══════════════════════════════════════════════════════════
   // FINAL SCORE
-  // ─────────────────────────────────────────────────────────
+  // ═══════════════════════════════════════════════════════════
+  // Clamp jede Kategorie
+  valueScore = Math.max(0, Math.min(40, valueScore));
+  needScore = Math.max(0, Math.min(25, needScore));
+  contextScore = Math.max(0, Math.min(20, contextScore));
+  timingScore = Math.max(0, Math.min(15, timingScore));
   
-  var totalScore = phase1 + phase2 + phase3;
+  var totalScore = valueScore + needScore + contextScore + timingScore + riskBonus;
+  totalScore = Math.max(0, Math.min(100, Math.round(totalScore)));
   
-  // Clamp to 0-100
-  totalScore = Math.max(0, Math.min(100, totalScore));
-  
-  // Round to integer
-  totalScore += marginalBonus;
-  totalScore += confidenceBonus;
-  return {score: Math.max(0, Math.min(100, Math.round(totalScore))), factors: factors.slice(0,6)};
+  return {score: totalScore, factors: factors.slice(0, 6)};
 }
 
 function getTopRecommendations() {
@@ -2218,7 +2179,7 @@ function renderRecommendations() {
     var p = rec.player;
     var pc = posColors[p.pos]||'b-k';
     h += '<div class="rec-card rec-'+(i+1)+'">';
-    h += '<div class="rec-score" style="color:'+scoreColors[i]+';">'+medals[i]+'<br><span style="font-size:16px;">'+rec.score+'</span></div>';
+    h += '<div class="rec-score" style="color:'+scoreColors[i]+';">'+medals[i]+'<br><span style="font-size:16px;">'+rec.score+'%</span></div>';
     h += '<div style="flex:1;">';
     h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
     h += '<span class="badge '+pc+'" style="font-size:10px;padding:1px 6px;">'+p.pos+'</span>';
