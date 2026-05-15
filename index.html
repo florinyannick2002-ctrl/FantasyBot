@@ -423,11 +423,18 @@ function showTab(name){
 }
 
 function applyADP(){
-  customRankings.forEach(function(cr){
-    if(cr.sleeperRank!=null)return;
-    if(SLEEPER_ADP[cr.name]!=null){cr.sleeperRank=SLEEPER_ADP[cr.name];return;}
-    var key=normName(cr.name);
-    for(var n in SLEEPER_ADP){if(normName(n)===key){cr.sleeperRank=SLEEPER_ADP[n];return;}}
+  // Match customRankings to sleeperMap using search_rank (integer rank, not ADP)
+  customRankings.forEach(function(p){
+    var key=normName(p.name);
+    var sm=sleeperMap[key];
+    if(sm){
+      p.sleeperId=sm.id;
+      if(sm.sleeperRank!=null) p.sleeperRank=sm.sleeperRank;
+    }
+    // Override with ECR from draft endpoint if available
+    if(p.sleeperId && window._sleeperRanks && window._sleeperRanks[p.sleeperId]!=null){
+      p.sleeperRank=window._sleeperRanks[p.sleeperId];
+    }
   });
 }
 
