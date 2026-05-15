@@ -1851,10 +1851,10 @@ function calcDraftScore(player) {
     }
     if(!_bestNext && _posAvail.length>0) _bestNext=(_posAvail[_posAvail.length-1].projFpts)||0;
     var _marginal = player.projFpts - _bestNext;
-    if(_marginal>40){marginalBonus=15;factors.push('🔥 +'+Math.round(_marginal)+' Marginal');}
-    else if(_marginal>25){marginalBonus=10;factors.push('📈 +'+Math.round(_marginal)+' Marginal');}
-    else if(_marginal>10){marginalBonus=5;factors.push('📊 +'+Math.round(_marginal)+' Marginal');}
-    else if(_marginal<0){marginalBonus=-5;factors.push('⬇ Kein Eile');}
+    if(_marginal>40){marginalBonus=15;factors.push({text:'🔥 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
+    else if(_marginal>25){marginalBonus=10;factors.push({text:'📈 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
+    else if(_marginal>10){marginalBonus=5;factors.push({text:'📊 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
+    else if(_marginal<0){marginalBonus=-5;factors.push({text:'⬇ Kein Eile ('+Math.round(Math.abs(_marginal))+'pts)',type:'neg'});}
   }
 
   
