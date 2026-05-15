@@ -846,10 +846,21 @@ async function fetchProjectedPicks(){
         };
       }
     });
-    // Update customRankings with Sleeper ECR rank
+    // Update customRankings with Sleeper ECR rank from draft endpoint
     customRankings.forEach(function(p){
       if(p.sleeperId && window._sleeperRanks[p.sleeperId] != null) {
         p.sleeperRank = window._sleeperRanks[p.sleeperId];
+      }
+    });
+    // Also try matching by name for players without sleeperId
+    customRankings.forEach(function(p){
+      if(p.sleeperRank == null) {
+        var key = normName(p.name);
+        var sm = sleeperMap[key];
+        if(sm && window._sleeperRanks[sm.id] != null) {
+          p.sleeperId = sm.id;
+          p.sleeperRank = window._sleeperRanks[sm.id];
+        }
       }
     });
     renderPlayers();
