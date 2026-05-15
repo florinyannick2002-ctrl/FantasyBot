@@ -716,11 +716,38 @@ function renderPlayers(){
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
       var projLabel = '';
+      // Availability prediction: will player be there at my next pick?
+      var availLabel = '';
+      if(myDraftSlot && window._picksUntilMe !== undefined && p.sleeperRank != null) {
+        var totalPicked = draftedIds.size;
+        var myNextPickOverall = totalPicked + 1 + window._picksUntilMe;
+        var myPickAfterOverall = myNextPickOverall + totalTeams; // approximate next-next pick
+        var slpRank = p.sleeperRank;
+        var safetyMargin = Math.max(3, Math.round(totalTeams * 0.3));
+        
+        if(window._picksUntilMe === 0) {
+          // I'm on the clock - no availability concern
+          availLabel = '';
+        } else if(slpRank <= myNextPickOverall - safetyMargin) {
+          // Very likely gone before my pick
+          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--red);margin-left:6px;">⚠ Wahrscheinlich weg</span>';
+        } else if(slpRank <= myNextPickOverall + 2) {
+          // Borderline - 50/50
+          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;margin-left:6px;">⏳ Riskant</span>';
+        } else if(slpRank <= myPickAfterOverall) {
+          // Should be there but gone by pick after
+          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--green);margin-left:6px;">✓ Noch da</span>';
+        } else {
+          // Comfortably available
+          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-left:6px;">✓ Sicher verfügbar</span>';
+        }
+      }
+      
       if(myPickRound) {
         var overall = sleeperProj ? sleeperProj.overall : null;
-        projLabel = '<br><span style="font-size:10px;color:var(--amber);font-family:var(--mono);">Projected pick: Round '+myPickRound+(overall?', Overall #'+overall:'')+'</span>';
+        projLabel = '<br><span style="font-size:10px;color:var(--amber);font-family:var(--mono);">Projected: Round '+myPickRound+(overall?', Overall #'+overall:'')+'</span>';
       }
-      h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+projLabel+'</td>';
+      h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+projLabel+availLabel+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
       h+='<td class="c-slp r">'+slp+'</td>';
