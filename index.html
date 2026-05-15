@@ -1865,19 +1865,19 @@ function calcDraftScore(player) {
     if(spreadPct < 0.05) {
       // Sehr enger Spread — Experten einig, sicherer Pick
       confidenceBonus = 5;
-      factors.push({text:'🟢 Sehr sicher (±'+Math.round(spread/2)+'pts)',type:'pos'});
+      factors.push({text:'🟢 Sehr sicher (±'+Math.round(spread)+'pts)',type:'pos'});
     } else if(spreadPct < 0.12) {
       // Normaler Spread
       confidenceBonus = 2;
-      factors.push({text:'🟡 Solide (±'+Math.round(spread/2)+'pts)',type:'neu'});
+      factors.push({text:'🟡 Solide (±'+Math.round(spread)+'pts)',type:'neu'});
     } else if(spreadPct < 0.22) {
       // Grosser Spread — etwas unsicher
       confidenceBonus = -3;
-      factors.push({text:'🟠 Unsicher (±'+Math.round(spread/2)+'pts)',type:'neg'});
+      factors.push({text:'🟠 Unsicher (±'+Math.round(spread)+'pts)',type:'neg'});
     } else {
       // Sehr grosser Spread — hohes Risiko
       confidenceBonus = -7;
-      factors.push({text:'🔴 Hohes Risiko (±'+Math.round(spread/2)+'pts)',type:'neg'});
+      factors.push({text:'🔴 Hohes Risiko (±'+Math.round(spread)+'pts)',type:'neg'});
     }
   }
 
