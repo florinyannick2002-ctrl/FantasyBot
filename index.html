@@ -716,34 +716,16 @@ function renderPlayers(){
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
       var projLabel = '';
-      // Availability prediction: will player be there at my next pick?
+      // Availability: only show warning when urgent
       var availLabel = '';
-      if(myDraftSlot && window._picksUntilMe !== undefined && p.sleeperRank != null) {
+      if(myDraftSlot && window._picksUntilMe !== undefined && p.sleeperRank != null && window._picksUntilMe > 0) {
         var totalPicked = draftedIds.size;
         var myNextPickOverall = totalPicked + 1 + window._picksUntilMe;
-        var myPickAfterOverall = myNextPickOverall + totalTeams; // approximate next-next pick
         var slpRank = p.sleeperRank;
-        var safetyMargin = Math.max(3, Math.round(totalTeams * 0.3));
-        
-        if(window._picksUntilMe === 0) {
-          // I'm on the clock - show if safe or risky to wait
-          if(slpRank <= myNextPickOverall + totalTeams - 2) {
-            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;margin-left:6px;">⚡ Jetzt holen!</span>';
-          } else {
-            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--green);margin-left:6px;">✓ Sicher</span>';
-          }
-        } else if(slpRank <= myNextPickOverall - safetyMargin) {
-          // Very likely gone before my pick
-          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--red);margin-left:6px;">⚠ Wahrscheinlich weg</span>';
-        } else if(slpRank <= myNextPickOverall + 2) {
-          // Borderline - 50/50
+        if(slpRank < myNextPickOverall) {
+          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--red);font-weight:600;margin-left:6px;">⚠ Letzte Möglichkeit</span>';
+        } else if(slpRank <= myNextPickOverall + 3) {
           availLabel = '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;margin-left:6px;">⏳ Riskant</span>';
-        } else if(slpRank <= myPickAfterOverall) {
-          // Should be there but gone by pick after
-          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--green);margin-left:6px;">✓ Noch da</span>';
-        } else {
-          // Comfortably available
-          availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-left:6px;">✓ Sicher verfügbar</span>';
         }
       }
       
