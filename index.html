@@ -182,6 +182,9 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
       </div>
     </div>
     <div id="rec-area"></div>
+    <div id="avail-legend" style="display:none;font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;padding:4px 0;">
+      🔴 Letzte Möglichkeit &nbsp;·&nbsp; 🟡 Riskant
+    </div>
     <div class="controls" id="controls-row" style="display:none;">
       <button class="pos-btn active" data-pos="ALL">ALL</button>
       <button class="pos-btn" data-pos="QB">QB</button>
@@ -716,7 +719,7 @@ function renderPlayers(){
       var noteIconHtml = fpNote ? ' <span class="fp-note-icon" data-pid="'+pid+'">📋</span>' : '';
       if(fpNote) window._fpNotes = window._fpNotes||{}; if(fpNote) window._fpNotes[pid]=fpNote;
       var projLabel = '';
-      // Availability: show warning when urgent
+      // Availability: symbol only
       var availLabel = '';
       if(myDraftSlot && p.sleeperRank != null) {
         var picksLeft = window._picksUntilMe !== undefined ? window._picksUntilMe : 0;
@@ -724,17 +727,16 @@ function renderPlayers(){
         var myNextPickOverall = totalPicked + 1 + picksLeft;
         var slpRank = p.sleeperRank;
         if(picksLeft === 0) {
-          // On the clock - warn if others will want this player next round
-          var myNextAfterThis = myNextPickOverall + totalTeams;
-          if(slpRank <= myNextAfterThis - 2) {
-            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--red);font-weight:600;margin-left:6px;">⚠ Letzte Möglichkeit</span>';
+          if(slpRank <= myNextPickOverall + totalTeams - 2) {
+            availLabel = '<span title="Letzte Möglichkeit — nach dieser Runde weg" style="font-size:13px;margin-left:6px;cursor:help;">🔴</span>';
+          } else if(slpRank <= myNextPickOverall + totalTeams + 2) {
+            availLabel = '<span title="Riskant — könnte beim nächsten Pick weg sein" style="font-size:13px;margin-left:6px;cursor:help;">🟡</span>';
           }
         } else {
-          // Not on clock - warn if player might be gone
           if(slpRank < myNextPickOverall) {
-            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:var(--red);font-weight:600;margin-left:6px;">⚠ Letzte Möglichkeit</span>';
+            availLabel = '<span title="Letzte Möglichkeit — wahrscheinlich weg bevor du dran bist" style="font-size:13px;margin-left:6px;cursor:help;">🔴</span>';
           } else if(slpRank <= myNextPickOverall + 3) {
-            availLabel = '<span style="font-size:10px;font-family:var(--mono);color:#f5a623;margin-left:6px;">⏳ Riskant</span>';
+            availLabel = '<span title="Riskant — könnte noch da sein, könnte weg sein" style="font-size:13px;margin-left:6px;cursor:help;">🟡</span>';
           }
         }
       }
@@ -759,6 +761,8 @@ function renderPlayers(){
   var scrollBtn = document.getElementById('scroll-to-pick-btn');
   if(scrollBtn) scrollBtn.style.display = hasHighlight ? 'block' : 'none';
   renderRecommendations();
+  var legend = document.getElementById('avail-legend');
+  if(legend) legend.style.display = myDraftSlot ? 'block' : 'none';
   grid.querySelectorAll('.draft-btn').forEach(function(b){
     b.addEventListener('click',function(){draftedIds.add(this.dataset.pid);renderPlayers();});
   });
