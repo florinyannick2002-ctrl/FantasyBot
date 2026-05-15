@@ -1331,7 +1331,12 @@ function renderPlayers(){
         var floor=p.projLow?'<span style="font-size:9px;color:var(--red);margin-left:3px;">▼'+p.projLow+'</span>':'';
         projPtsHtml='<span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-left:8px;">'+p.projFpts+'pts'+upside+floor+'</span>';
       }
-      h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+projLabel+availLabel+projPtsHtml+'</td>';
+      var ageHtml='';
+      if(p.age){
+        var ageColor = p.age >= 30 ? 'var(--red)' : p.age <= 24 ? 'var(--green)' : 'var(--text2)';
+        ageHtml='<span style="font-size:10px;color:'+ageColor+';margin-left:5px;font-family:var(--mono);">'+p.age+'j</span>';
+      }
+      h+='<td class="c-name">'+p.name+ageHtml+lhtml+nhtml+noteIconHtml+projLabel+availLabel+projPtsHtml+'</td>';
       h+='<td class="c-team">'+(p.team||'')+'</td>';
       h+='<td class="c-bye">'+(p.bye||'—')+'</td>';
       h+='<td class="c-slp r">'+slp+'</td>';
@@ -2128,6 +2133,16 @@ function calcDraftScore(player) {
     else if(sosScore === 1) { phase2 -= 4; factors.push({text:'SOS: Härtester Schedule 🔴',type:'neg'}); }
   }
 
+  // 2F. Age Bonus/Malus (±6 pts)
+  if(player.age) {
+    if(player.age <= 22)      { phase2 += 5; factors.push({text:'Sehr jung ('+player.age+'j) 🟢',type:'pos'}); }
+    else if(player.age <= 24) { phase2 += 3; factors.push({text:'Jung ('+player.age+'j) 🟢',type:'pos'}); }
+    else if(player.age <= 27) { /* Peak — kein Bonus/Malus */ }
+    else if(player.age <= 29) { phase2 -= 2; factors.push({text:'Älter ('+player.age+'j) 🟡',type:'neg'}); }
+    else if(player.age <= 31) { phase2 -= 4; factors.push({text:'30+ ('+player.age+'j) 🔴',type:'neg'}); }
+    else                      { phase2 -= 6; factors.push({text:'Veteran ('+player.age+'j) 🔴',type:'neg'}); }
+  }
+
   // Time-sensitive factors
   // ─────────────────────────────────────────────────────────
   
@@ -2374,13 +2389,15 @@ async function loadSleeperPlayers(sport){
     if(!p.active&&p.position!=='DEF')return;
     var nm=p.full_name||(p.first_name+' '+p.last_name)||id;
     var sr=(p.search_rank&&p.search_rank<9999)?p.search_rank:null;
-    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr};
+    var age=null;
+    if(p.birth_date){var b=new Date(p.birth_date),now=new Date();age=now.getFullYear()-b.getFullYear()-(now<new Date(now.getFullYear(),b.getMonth(),b.getDate())?1:0);}
+    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr,age:age};
   });
   // Enrich customRankings with sleeper IDs + search_rank
   if(customRankings.length){
     customRankings.forEach(function(cr){
       var match=sleeperMap[normSleeperName(cr.name)];
-      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;}
+      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;if(match.age)cr.age=match.age;}
     });
   }
   // Now fetch Sleeper projections which have the real draft rankings
