@@ -1340,9 +1340,8 @@ function renderPlayers(){
       var sosVal = '';
       if(p.team && SOS[p.team] && p.pos && SOS[p.team][p.pos] !== undefined) {
         var sv = SOS[p.team][p.pos];
-        var sosColor = sv >= 4 ? 'var(--green)' : sv <= 2 ? 'var(--red)' : 'var(--text2)';
-        var sosEmoji = sv === 5 ? '★★★★★' : sv === 4 ? '★★★★☆' : sv === 3 ? '★★★☆☆' : sv === 2 ? '★★☆☆☆' : '★☆☆☆☆';
-        sosVal = '<span style="color:'+sosColor+';font-size:10px;" title="Strength of Schedule: '+sv+'/5">'+sv+'</span>';
+        var sosStars = '★'.repeat(sv) + '☆'.repeat(5-sv);
+        sosVal = '<span style="color:gold;font-size:11px;letter-spacing:1px;" title="Strength of Schedule: '+sv+'/5">'+sosStars+'</span>';
       }
       h+='<td class="c-sos r">'+sosVal+'</td>';
       h+='<td class="c-act"><button class="draft-btn" data-pid="'+pid+'">+ Draft</button></td>';
