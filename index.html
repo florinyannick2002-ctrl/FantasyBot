@@ -1856,6 +1856,30 @@ function calcDraftScore(player) {
     else if(_marginal>10){marginalBonus=5;factors.push({text:'📊 +'+Math.round(_marginal)+'pts Vorteil',type:'pos'});}
     else if(_marginal<0){marginalBonus=-5;factors.push({text:'⬇ Kein Eile ('+Math.round(Math.abs(_marginal))+'pts)',type:'neg'});}
   }
+  
+  // ── Confidence Score aus High-Low Spread ──
+  var confidenceBonus = 0;
+  if(player.projFpts && player.projHigh != null && player.projLow != null) {
+    var spread = player.projHigh - player.projLow;
+    var spreadPct = spread / player.projFpts; // relative spread
+    if(spreadPct < 0.05) {
+      // Sehr enger Spread — Experten einig, sicherer Pick
+      confidenceBonus = 5;
+      factors.push({text:'🟢 Sehr sicher (±'+Math.round(spread/2)+'pts)',type:'pos'});
+    } else if(spreadPct < 0.12) {
+      // Normaler Spread
+      confidenceBonus = 2;
+      factors.push({text:'🟡 Solide (±'+Math.round(spread/2)+'pts)',type:'neu'});
+    } else if(spreadPct < 0.22) {
+      // Grosser Spread — etwas unsicher
+      confidenceBonus = -3;
+      factors.push({text:'🟠 Unsicher (±'+Math.round(spread/2)+'pts)',type:'neg'});
+    } else {
+      // Sehr grosser Spread — hohes Risiko
+      confidenceBonus = -7;
+      factors.push({text:'🔴 Hohes Risiko (±'+Math.round(spread/2)+'pts)',type:'neg'});
+    }
+  }
 
   
   var totalPicks = myPicks.length;
@@ -2086,7 +2110,8 @@ function calcDraftScore(player) {
   
   // Round to integer
   totalScore += marginalBonus;
-  return {score: Math.max(0, Math.min(100, Math.round(totalScore))), factors: factors.slice(0,5)};
+  totalScore += confidenceBonus;
+  return {score: Math.max(0, Math.min(100, Math.round(totalScore))), factors: factors.slice(0,6)};
 }
 
 function getTopRecommendations() {
