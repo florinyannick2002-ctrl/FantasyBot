@@ -387,7 +387,109 @@ var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
 var tierNames = {1:'Elite',2:'Sehr stark',3:'Stark',4:'Solide',5:'Tiefschiessen',6:'Spätpicks'};
 var LABELS = {1:{text:'🔥 Must Have',cls:'l1'},2:{text:'✅ Interessant',cls:'l2'},3:{text:'⚠️ Vorsicht',cls:'l3'},4:{text:'❌ Kein Interesse',cls:'l4'}};
 
-var SLEEPER_ADP = {};
+var SLEEPER_ADP = {
+  "Bijan Robinson":1,
+  "Jahmyr Gibbs":2,
+  "Ja'Marr Chase":3,
+  "Puka Nacua":4,
+  "Jaxon Smith-Njigba":5,
+  "Christian McCaffrey":6,
+  "Jonathan Taylor":7,
+  "James Cook":8,
+  "CeeDee Lamb":9,
+  "Amon-Ra St. Brown":10,
+  "Justin Jefferson":11,
+  "Drake London":12,
+  "Kenneth Walker III":13,
+  "Ashton Jeanty":14,
+  "De'Von Achane":15,
+  "Trey McBride":16,
+  "Omarion Hampton":17,
+  "Malik Nabers":18,
+  "Saquon Barkley":19,
+  "Jeremiyah Love":20,
+  "Nico Collins":21,
+  "Chase Brown":22,
+  "George Pickens":23,
+  "Brock Bowers":24,
+  "Chris Olave":25,
+  "Josh Jacobs":26,
+  "Josh Allen":27,
+  "A.J. Brown":28,
+  "Bucky Irving":29,
+  "Rashee Rice":30,
+  "Derrick Henry":31,
+  "Tee Higgins":32,
+  "Tetairoa McMillan":33,
+  "Lamar Jackson":34,
+  "Kyren Williams":35,
+  "Garrett Wilson":36,
+  "Luther Burden III":37,
+  "Travis Etienne Jr.":38,
+  "Jaylen Waddle":39,
+  "Drake Maye":40,
+  "Davante Adams":41,
+  "Ladd McConkey":42,
+  "Colston Loveland":43,
+  "Jameson Williams":44,
+  "TreVeyon Henderson":45,
+  "DeVonta Smith":46,
+  "Emeka Egbuka":47,
+  "Terry McLaurin":48,
+  "Joe Burrow":49,
+  "Tyler Warren":50,
+  "RJ Harvey":51,
+  "DJ Moore":52,
+  "Cam Skattebo":53,
+  "Jayden Daniels":54,
+  "Mike Evans":55,
+  "Carnell Tate":56,
+  "D'Andre Swift":57,
+  "Jalen Hurts":58,
+  "Quinshon Judkins":59,
+  "Harold Fannin Jr.":60,
+  "Christian Watson":61,
+  "Jaylen Warren":62,
+  "Rome Odunze":63,
+  "Jordyn Tyson":64,
+  "Courtland Sutton":65,
+  "Kyle Pitts Sr.":66,
+  "DK Metcalf":67,
+  "Jaxson Dart":68,
+  "Rhamondre Stevenson":69,
+  "Justin Herbert":70,
+  "Michael Wilson":71,
+  "Makai Lemon":72,
+  "Jakobi Meyers":73,
+  "Brian Thomas Jr.":74,
+  "Caleb Williams":75,
+  "Kyle Monangai":76,
+  "Sam LaPorta":77,
+  "Dalton Kincaid":78,
+  "Trevor Lawrence":79,
+  "Tony Pollard":80,
+  "Rico Dowdle":81,
+  "Dak Prescott":82,
+  "Chuba Hubbard":83,
+  "Blake Corum":84,
+  "Ricky Pearsall":85,
+  "Patrick Mahomes":86,
+  "Alec Pierce":87,
+  "Chris Godwin":88,
+  "Brock Purdy":89,
+  "Parker Washington":90,
+  "J.K. Dobbins":91,
+  "Jake Ferguson":92,
+  "Jordan Addison":93,
+  "Matthew Stafford":94,
+  "Wan'Dale Robinson":95,
+  "Travis Kelce":96,
+  "Michael Pittman Jr.":97,
+  "Bo Nix":98,
+  "Aaron Jones Sr.":99,
+  "Kenneth Gainwell":100,
+  "Jadarian Price":101
+};
 
 function normName(n){return String(n).toLowerCase().replace(/[\'\.\-]/g,'').replace(/\s+/g,'').replace(/(jr|sr|ii|iii|iv)$/,'');}
 
@@ -406,14 +508,18 @@ function showTab(name){
 }
 
 function applyADP(){
-  // Match customRankings to sleeperMap using search_rank (integer rank, not ADP)
   customRankings.forEach(function(p){
     var key=normName(p.name);
-    var sm=sleeperMap[key];
-    if(sm){
-      p.sleeperId=sm.id;
-      if(sm.sleeperRank!=null) p.sleeperRank=sm.sleeperRank;
+    // Try SLEEPER_ADP dict first (real Sleeper ADP from BeatADP)
+    if(SLEEPER_ADP[key]!=null){ p.sleeperRank=SLEEPER_ADP[key]; }
+    else {
+      for(var n in SLEEPER_ADP){
+        if(normName(n)===key){ p.sleeperRank=SLEEPER_ADP[n]; break; }
+      }
     }
+    // Match sleeper ID via sleeperMap
+    var sm=sleeperMap[key];
+    if(sm){ p.sleeperId=sm.id; if(!p.team)p.team=sm.team; }
     // Override with ECR from draft endpoint if available
     if(p.sleeperId && window._sleeperRanks && window._sleeperRanks[p.sleeperId]!=null){
       p.sleeperRank=window._sleeperRanks[p.sleeperId];
