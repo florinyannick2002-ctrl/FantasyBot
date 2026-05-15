@@ -387,24 +387,7 @@ var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
 var tierNames = {1:'Elite',2:'Sehr stark',3:'Stark',4:'Solide',5:'Tiefschiessen',6:'Spätpicks'};
 var LABELS = {1:{text:'🔥 Must Have',cls:'l1'},2:{text:'✅ Interessant',cls:'l2'},3:{text:'⚠️ Vorsicht',cls:'l3'},4:{text:'❌ Kein Interesse',cls:'l4'}};
 
-var SLEEPER_ADP = {
-  "Bijan Robinson":1.4,"Ja'Marr Chase":3.4,"Jahmyr Gibbs":2.9,"Puka Nacua":4.9,
-  "Jaxon Smith-Njigba":5.4,"Christian McCaffrey":6.7,"Amon-Ra St. Brown":11.2,
-  "Jonathan Taylor":7.7,"CeeDee Lamb":10.6,"Justin Jefferson":12.4,
-  "Drake London":14.1,"De'Von Achane":16.2,"James Cook":9.7,
-  "Malik Nabers":19.2,"Ashton Jeanty":15.4,"Trey McBride":18.7,
-  "Nico Collins":21.1,"Rashee Rice":32.7,"George Pickens":23.1,
-  "Saquon Barkley":19.5,"Brock Bowers":26.4,"Chris Olave":26.4,
-  "Chase Brown":22.2,"Omarion Hampton":18.8,"A.J. Brown":30.8,
-  "Josh Allen":28.2,"Kenneth Walker III":14.6,"Jeremiyah Love":19.7,
-  "Josh Jacobs":27.6,"Garrett Wilson":40.9,"Derrick Henry":33.2,
-  "Lamar Jackson":35.1,"Joe Burrow":42.1,"Breece Hall":44.3,
-  "Davante Adams":46.2,"Terry McLaurin":47.1,"Travis Etienne":48.5,
-  "Emeka Egbuka":47.8,"Kyren Williams":50.2,"Javonte Williams":51.1,
-  "Mike Evans":52.4,"Bucky Irving":53.7,"Jameson Williams":54.2,
-  "Jayden Daniels":55.1,"Tyler Warren":56.3,"Jalen Hurts":57.2,
-  "Travis Kelce":110.3,"Patrick Mahomes":98.4
-};
+var SLEEPER_ADP = {};
 
 function normName(n){return String(n).toLowerCase().replace(/[\'\.\-]/g,'').replace(/\s+/g,'').replace(/(jr|sr|ii|iii|iv)$/,'');}
 
@@ -833,10 +816,8 @@ async function fetchProjectedPicks(){
     // data: {player_id: {adp, rank, projected_pick, search_rank, ...}}
     window._sleeperProjections = {};
     window._sleeperRanks = {};
-    // Debug: find Malik Nabers data
     Object.entries(data).forEach(function(e){
       var pid = e[0], info = e[1];
-      if(info.player_id==='10229'||pid==='10229') console.log('Nabers raw data:', JSON.stringify(info));
       if(info.rank != null) {
         window._sleeperRanks[pid] = info.rank;
       }
