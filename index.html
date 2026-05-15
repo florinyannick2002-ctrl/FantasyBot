@@ -832,10 +832,11 @@ async function fetchProjectedPicks(){
     var data = await r.json();
     // data: {player_id: {adp, rank, projected_pick, search_rank, ...}}
     window._sleeperProjections = {};
-    window._sleeperRanks = {}; // ECR rank from Sleeper
+    window._sleeperRanks = {};
+    // Debug: find Malik Nabers data
     Object.entries(data).forEach(function(e){
       var pid = e[0], info = e[1];
-      // Store ECR rank (expert consensus) - this is what Sleeper shows
+      if(info.player_id==='10229'||pid==='10229') console.log('Nabers raw data:', JSON.stringify(info));
       if(info.rank != null) {
         window._sleeperRanks[pid] = info.rank;
       }
