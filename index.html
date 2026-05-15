@@ -949,222 +949,263 @@ function renderMyTeam(){
 // ══════════════════════════════════════════════
 
 function calcDraftScore(player) {
-  // player: {name, pos, team, rank, tier, bye, sleeperRank, sleeperId}
-  // Returns: {score: 0-100, factors: [{text, type, points}]}
+  // ═══════════════════════════════════════════════════════════
+  // DRAFT ASSISTANT V2 — Multi-Phase Scoring (0-100 scale)
+  // ═══════════════════════════════════════════════════════════
+  // Philosophy: Strategy MODIFIES the order of objectively good
+  // picks, never elevates objectively weak players.
+  // ═══════════════════════════════════════════════════════════
   
-  var score = 0;
   var factors = [];
   var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
   var available = source.filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
+  if(!available.length) return {score:0, factors:[]};
   
-  // ── A. VALUE FACTORS (max 40 pts) ──────────────────
-  
-  // A1. Value over Replacement (VOR) — 15pts
-  // How much better than the next player at same position?
-  var posAvail = available.filter(function(p){ return p.pos===player.pos && p.name!==player.name; });
-  var vorScore = 0;
-  if(posAvail.length > 0) {
-    var nextBest = posAvail[0]; // next best at same position
-    var vorGap = (nextBest.rank - player.rank); // bigger gap = more value
-    if(vorGap >= 20) { vorScore=15; factors.push({text:'Elite VOR (+'+vorGap+')',type:'pos',pts:15}); }
-    else if(vorGap >= 10) { vorScore=10; factors.push({text:'Hoher VOR (+'+vorGap+')',type:'pos',pts:10}); }
-    else if(vorGap >= 5) { vorScore=6; factors.push({text:'Guter VOR (+'+vorGap+')',type:'pos',pts:6}); }
-    else if(vorGap >= 2) { vorScore=3; factors.push({text:'VOR (+'+vorGap+')',type:'pos',pts:3}); }
-    else { vorScore=1; }
-  }
-  score += vorScore;
-
-  // A2. ADP Value — 10pts
-  // Taking player later than ADP = value
-  if(player.sleeperRank != null) {
-    var adpDiff = player.sleeperRank - player.rank; // positive = ADP is later = value
-    if(adpDiff >= 15) { score+=10; factors.push({text:'Massive ADP Value (+'+Math.round(adpDiff)+')',type:'pos',pts:10}); }
-    else if(adpDiff >= 8) { score+=7; factors.push({text:'Grosser ADP Value (+'+Math.round(adpDiff)+')',type:'pos',pts:7}); }
-    else if(adpDiff >= 3) { score+=4; factors.push({text:'ADP Value (+'+Math.round(adpDiff)+')',type:'pos',pts:4}); }
-    else if(adpDiff <= -10) { score-=5; factors.push({text:'Zu früh! ADP ('+Math.round(adpDiff)+')',type:'neg',pts:-5}); }
-    else if(adpDiff <= -5) { score-=2; factors.push({text:'Leicht früh ('+Math.round(adpDiff)+')',type:'neg',pts:-2}); }
-  }
-
-  // A3. Tier Drop Urgency — 10pts
-  // Is this the last or second-to-last player in their tier?
-  var tierMates = available.filter(function(p){ return p.tier===player.tier && p.pos===player.pos && p.name!==player.name; });
-  var picksUntilMe = window._picksUntilMe || 0;
-  if(tierMates.length === 0) { 
-    score+=10; factors.push({text:'Letzter in Tier '+player.tier+'!',type:'pos',pts:10}); 
-  } else if(tierMates.length <= picksUntilMe) { 
-    score+=8; factors.push({text:'Tier '+player.tier+' läuft aus!',type:'pos',pts:8}); 
-  } else if(tierMates.length <= 2) { 
-    score+=4; factors.push({text:'Tier fast leer ('+tierMates.length+' übrig)',type:'pos',pts:4}); 
-  }
-
-  // A4. Overall Ranking Value — 5pts
-  // How good is their overall rank?
-  if(player.rank <= 12) { score+=5; factors.push({text:'Top 12 Overall',type:'pos',pts:5}); }
-  else if(player.rank <= 24) { score+=3; factors.push({text:'Top 24 Overall',type:'pos',pts:3}); }
-  else if(player.rank <= 50) { score+=1; }
-
-  // ── B. TEAM/ROSTER FACTORS (max 30 pts) ────────────
-
-  // B1. Positional Need — 12pts
-  var posCounts = {QB:0,RB:0,WR:0,TE:0,K:0,DEF:0};
-  myPicks.forEach(function(p){ if(posCounts[p.pos]!==undefined) posCounts[p.pos]++; });
   var totalPicks = myPicks.length;
   var currentRound = totalPicks + 1;
+  var picksUntilMe = window._picksUntilMe || 0;
+  var nextPickInPicks = picksUntilMe + (totalTeams || 10) - 1; // approx picks until my pick AFTER this one
   
-  var needScore = 0;
+  // Position counts from my roster
+  var posCounts = {QB:0,RB:0,WR:0,TE:0,K:0,DEF:0};
+  myPicks.forEach(function(p){ if(posCounts[p.pos]!==undefined) posCounts[p.pos]++; });
+  
+  // ─────────────────────────────────────────────────────────
+  // PHASE 1: BASE QUALITY (60 points max)
+  // How good is this player objectively?
+  // ─────────────────────────────────────────────────────────
+  
+  // 1A. Overall Rank Score (30 points)
+  // Top 1-5: 30pts, 6-12: 26pts, 13-24: 22pts, 25-50: 16pts, 51-100: 10pts, 100+: 5pts
+  var rank = player.rank || 999;
+  var rankScore = 0;
+  if(rank <= 5) rankScore = 30;
+  else if(rank <= 12) rankScore = 27;
+  else if(rank <= 24) rankScore = 23;
+  else if(rank <= 36) rankScore = 19;
+  else if(rank <= 50) rankScore = 15;
+  else if(rank <= 75) rankScore = 11;
+  else if(rank <= 100) rankScore = 7;
+  else if(rank <= 150) rankScore = 4;
+  else rankScore = 2;
+  
+  // Adjust for relative position in available list
+  // If player is #1 available, big bonus
+  var avgRank = available.slice(0,10).reduce(function(s,p){return s+p.rank;},0)/Math.min(10,available.length);
+  var posInAvail = available.findIndex(function(p){ return p.name===player.name; });
+  if(posInAvail === 0) { rankScore += 3; factors.push({text:'#1 Verfügbarer',type:'pos',pts:3}); }
+  else if(posInAvail < 3) { rankScore += 1; }
+  
+  // 1B. Tier Quality (15 points)
+  var tier = player.tier || 8;
+  var tierScore = 0;
+  if(tier <= 1) tierScore = 15;
+  else if(tier === 2) tierScore = 13;
+  else if(tier === 3) tierScore = 10;
+  else if(tier === 4) tierScore = 7;
+  else if(tier === 5) tierScore = 5;
+  else if(tier === 6) tierScore = 3;
+  else tierScore = 1;
+  
+  // 1C. Opportunity Cost / Will player be there next pick? (15 points)
+  // If sleeperRank shows he won't be there, drafting now is correct
+  // If sleeperRank shows he'll definitely be there, waiting is better
+  var oppScore = 0;
+  if(player.sleeperRank != null) {
+    var myNextPickNum = totalPicks + 1 + nextPickInPicks;
+    if(player.sleeperRank <= myNextPickNum - 5) {
+      // Will likely be gone — must pick now
+      oppScore = 15;
+      factors.push({text:'Wird weg sein! (ADP '+Math.round(player.sleeperRank)+')',type:'pos',pts:15});
+    } else if(player.sleeperRank <= myNextPickNum) {
+      // 50/50 — slight urgency
+      oppScore = 10;
+      factors.push({text:'Risiko verloren zu gehen',type:'pos',pts:10});
+    } else if(player.sleeperRank <= myNextPickNum + 10) {
+      // Probably still there
+      oppScore = 5;
+    } else {
+      // Definitely still there next round — wait!
+      oppScore = 2;
+      if(player.sleeperRank > myNextPickNum + 20) {
+        factors.push({text:'Wird noch da sein',type:'neu',pts:0});
+      }
+    }
+  } else {
+    oppScore = 8; // Unknown — neutral
+  }
+  
+  var phase1 = rankScore + tierScore + oppScore;
+  
+  // ─────────────────────────────────────────────────────────
+  // PHASE 2: CONTEXT BONUS (30 points max)
+  // How well does this player fit my situation?
+  // ─────────────────────────────────────────────────────────
+  
   var pos = player.pos;
+  var phase2 = 0;
   
-  // Check if we urgently need this position
-  if(pos==='QB') {
-    if(posCounts.QB === 0) {
-      if(strategy.qbTiming==='early' && currentRound<=4) { needScore=12; factors.push({text:'QB jetzt! (Dein Timing)',type:'pos',pts:12}); }
-      else if(strategy.qbTiming==='mid' && currentRound>=5 && currentRound<=8) { needScore=12; factors.push({text:'QB jetzt! (Dein Timing)',type:'pos',pts:12}); }
-      else if(strategy.qbTiming==='late' && currentRound>=9) { needScore=12; factors.push({text:'QB jetzt! (Dein Timing)',type:'pos',pts:12}); }
-      else if(currentRound>=12) { needScore=10; factors.push({text:'QB dringend!',type:'pos',pts:10}); }
-      else { needScore=2; }
-    } else if(posCounts.QB===1 && strategy.qbTiming==='two_qb') { needScore=8; factors.push({text:'2. QB (Deine Strategie)',type:'pos',pts:8}); }
-    else { needScore=0; factors.push({text:'QB bereits besetzt',type:'neg',pts:0}); }
+  // 2A. Positional Need (12 points)
+  // Calculate need based on roster slots vs what I have
+  var needScore = 0;
+  
+  if(pos === 'QB') {
+    if(strategy.rosterType === 'superflex' || strategy.rosterType === '2qb') {
+      if(posCounts.QB === 0) { needScore = 12; factors.push({text:'Superflex: QB!',type:'pos',pts:12}); }
+      else if(posCounts.QB === 1) { needScore = 8; }
+    } else {
+      if(posCounts.QB === 0) {
+        if(currentRound >= 12) { needScore = 10; factors.push({text:'QB dringend!',type:'pos',pts:10}); }
+        else if(strategy.qbTiming === 'early' && currentRound <= 4) { needScore = 10; }
+        else if(strategy.qbTiming === 'mid' && currentRound >= 5 && currentRound <= 8) { needScore = 10; }
+        else if(strategy.qbTiming === 'late' && currentRound >= 9) { needScore = 10; }
+        else if(rank <= 24) { needScore = 6; } // Elite QB worth it anytime
+        else { needScore = 1; }
+      } else {
+        needScore = 0; // already have one
+      }
+    }
   }
-  else if(pos==='RB') {
-    var rbNeed = Math.max(0, rosterSlots.rb + Math.ceil(rosterSlots.flex/2) - posCounts.RB);
-    if(rbNeed >= 2) { needScore=12; factors.push({text:'RB dringend needed ('+posCounts.RB+'/'+rosterSlots.rb+')',type:'pos',pts:12}); }
-    else if(rbNeed === 1) { needScore=7; factors.push({text:'RB gesucht',type:'pos',pts:7}); }
-    else { needScore=2; }
+  else if(pos === 'RB') {
+    var rbSlots = rosterSlots.rb + Math.ceil(rosterSlots.flex / 2);
+    var rbHave = posCounts.RB;
+    if(rbHave === 0 && currentRound <= 8) { needScore = 12; factors.push({text:'Noch kein RB!',type:'pos',pts:12}); }
+    else if(rbHave < rbSlots) { needScore = 10 - rbHave*2; }
+    else if(rbHave < rbSlots + 1) { needScore = 5; } // depth
+    else { needScore = 2; }
   }
-  else if(pos==='WR') {
-    var wrNeed = Math.max(0, rosterSlots.wr + Math.ceil(rosterSlots.flex/2) - posCounts.WR);
-    if(wrNeed >= 2) { needScore=12; factors.push({text:'WR dringend needed ('+posCounts.WR+'/'+rosterSlots.wr+')',type:'pos',pts:12}); }
-    else if(wrNeed === 1) { needScore=7; factors.push({text:'WR gesucht',type:'pos',pts:7}); }
-    else { needScore=2; }
+  else if(pos === 'WR') {
+    var wrSlots = rosterSlots.wr + Math.ceil(rosterSlots.flex / 2);
+    var wrHave = posCounts.WR;
+    if(wrHave === 0 && currentRound <= 8) { needScore = 12; factors.push({text:'Noch kein WR!',type:'pos',pts:12}); }
+    else if(wrHave < wrSlots) { needScore = 10 - wrHave*2; }
+    else if(wrHave < wrSlots + 1) { needScore = 5; }
+    else { needScore = 2; }
   }
-  else if(pos==='TE') {
+  else if(pos === 'TE') {
     if(posCounts.TE === 0) {
-      if(strategy.teTiming==='early' && currentRound<=3) { needScore=12; factors.push({text:'Elite TE jetzt! (Dein Timing)',type:'pos',pts:12}); }
-      else if(strategy.teTiming==='mid' && currentRound>=4 && currentRound<=7) { needScore=10; factors.push({text:'TE jetzt! (Dein Timing)',type:'pos',pts:10}); }
-      else if(currentRound>=10) { needScore=10; factors.push({text:'TE dringend!',type:'pos',pts:10}); }
-      else { needScore=3; }
-    } else { needScore=0; }
+      if(rank <= 30) { needScore = 10; factors.push({text:'Elite TE verfügbar',type:'pos',pts:10}); }
+      else if(currentRound >= 10) { needScore = 10; factors.push({text:'TE dringend!',type:'pos',pts:10}); }
+      else if(strategy.teTiming === 'early' && currentRound <= 3) { needScore = 11; }
+      else if(strategy.teTiming === 'mid' && currentRound >= 4 && currentRound <= 7) { needScore = 9; }
+      else { needScore = 4; }
+    } else {
+      needScore = 0;
+    }
   }
-  else if(pos==='K' || pos==='DEF') {
-    if(currentRound < 13) { needScore=0; factors.push({text:'K/DEF zu früh',type:'neg',pts:0}); }
-    else { needScore=8; }
+  else if(pos === 'K' || pos === 'DEF') {
+    if(currentRound < 13) { needScore = -5; factors.push({text:'K/DEF zu früh!',type:'neg',pts:-5}); }
+    else if((pos === 'K' && posCounts.K === 0) || (pos === 'DEF' && posCounts.DEF === 0)) { needScore = 8; }
+    else { needScore = 0; }
   }
-  score += needScore;
-
-  // B2. Strategy Match — 10pts
-  var stratScore = 0;
-  if(strategy.main === 'rb_heavy') {
-    if(pos==='RB' && currentRound<=4) { stratScore=10; factors.push({text:'RB-Heavy ✓',type:'pos',pts:10}); }
-    else if(pos==='WR' && currentRound<=3 && posCounts.RB>=1) { stratScore=5; }
-    else if(pos==='RB') { stratScore=6; }
+  phase2 += needScore;
+  
+  // 2B. Position-Specific Tier Drop (8 points)
+  // How many players at THIS POSITION are still in this tier?
+  var samePosAvail = available.filter(function(p){ return p.pos === pos && p.name !== player.name; });
+  var sameTierSamePos = samePosAvail.filter(function(p){ return p.tier === tier; });
+  
+  if(sameTierSamePos.length === 0) {
+    phase2 += 8;
+    factors.push({text:'Letzter '+pos+' in Tier '+tier+'!',type:'pos',pts:8});
+  } else if(sameTierSamePos.length === 1) {
+    phase2 += 5;
+    factors.push({text:'2. letzter '+pos+' in Tier '+tier,type:'pos',pts:5});
+  } else if(sameTierSamePos.length <= picksUntilMe + 1) {
+    phase2 += 6;
+    factors.push({text:pos+'-Tier '+tier+' läuft aus',type:'pos',pts:6});
+  } else if(sameTierSamePos.length <= 3) {
+    phase2 += 2;
   }
-  else if(strategy.main === 'wr_heavy') {
-    if(pos==='WR' && currentRound<=4) { stratScore=10; factors.push({text:'WR-Heavy ✓',type:'pos',pts:10}); }
-    else if(pos==='RB' && posCounts.WR>=2) { stratScore=6; }
+  
+  // 2C. Strategy Tiebreaker (6 points)
+  // Strategy gives BONUS but doesn't elevate weak players
+  var stratBonus = 0;
+  if(strategy.main === 'rb_heavy' && pos === 'RB' && currentRound <= 4 && posCounts.RB < 2) {
+    stratBonus = 6; factors.push({text:'RB Heavy Plan',type:'pos',pts:6});
   }
-  else if(strategy.main === 'zero_rb') {
-    if(pos==='WR' && currentRound<=4) { stratScore=10; factors.push({text:'Zero RB — WR First ✓',type:'pos',pts:10}); }
-    else if(pos==='TE' && currentRound<=4) { stratScore=8; factors.push({text:'Zero RB — TE viable ✓',type:'pos',pts:8}); }
-    else if(pos==='RB' && currentRound<=4) { stratScore=0; factors.push({text:'Zero RB — RB zu früh!',type:'neg',pts:0}); }
-    else if(pos==='RB' && currentRound>=5) { stratScore=8; factors.push({text:'Zero RB — RB jetzt OK',type:'pos',pts:8}); }
+  else if(strategy.main === 'wr_heavy' && pos === 'WR' && currentRound <= 4 && posCounts.WR < 2) {
+    stratBonus = 6; factors.push({text:'WR Heavy Plan',type:'pos',pts:6});
   }
-  else if(strategy.main === 'hero_rb') {
-    if(pos==='RB' && posCounts.RB===0 && player.rank<=15) { stratScore=10; factors.push({text:'Hero RB — Elite RB ✓',type:'pos',pts:10}); }
-    else if(pos==='WR' && posCounts.RB>=1) { stratScore=8; }
-    else if(pos==='RB' && posCounts.RB>=1) { stratScore=3; }
+  else if(strategy.main === 'zero_rb' && currentRound <= 4) {
+    if(pos === 'WR' || pos === 'TE') { stratBonus = 6; factors.push({text:'Zero RB Plan',type:'pos',pts:6}); }
+    else if(pos === 'RB') { stratBonus = -5; factors.push({text:'Zero RB: nicht jetzt',type:'neg',pts:-5}); }
   }
-  else if(strategy.main === 'te_premium') {
-    if(pos==='TE' && player.rank<=20) { stratScore=10; factors.push({text:'TE Premium ✓',type:'pos',pts:10}); }
-    else if(pos==='TE' && player.rank<=40) { stratScore=6; }
+  else if(strategy.main === 'hero_rb' && pos === 'RB' && posCounts.RB === 0 && rank <= 20) {
+    stratBonus = 6; factors.push({text:'Hero RB Pick',type:'pos',pts:6});
   }
-  else { // best_available
-    stratScore=5; // neutral
+  else if(strategy.main === 'hero_rb' && pos === 'RB' && posCounts.RB >= 1 && currentRound <= 6) {
+    stratBonus = -3; factors.push({text:'Hero RB: nur 1 RB',type:'neg',pts:-3});
   }
-  score += stratScore;
-
-  // B3. Bye Week Conflict — 8pts max penalty
+  else if(strategy.main === 'te_premium' && pos === 'TE' && rank <= 25 && posCounts.TE === 0) {
+    stratBonus = 6; factors.push({text:'TE Premium Plan',type:'pos',pts:6});
+  }
+  phase2 += stratBonus;
+  
+  // 2D. Bye Week Conflict (4 points penalty)
   if(strategy.byeAvoidance !== 'ignore' && player.bye) {
     var byeConflicts = myPicks.filter(function(p){
-      var cr = customRankings.find(function(r){ return r.name===p.name; });
-      return cr && cr.bye && cr.bye===player.bye;
+      var cr = customRankings.find(function(r){ return r.name === p.name; });
+      return cr && cr.bye === player.bye;
     }).length;
-    var maxAllowed = strategy.byeAvoidance==='strict' ? 1 : 2;
-    if(byeConflicts >= maxAllowed+1) { 
-      score-=8; factors.push({text:'Bye Wk '+player.bye+': '+byeConflicts+' Konflikte!',type:'neg',pts:-8}); 
-    } else if(byeConflicts >= maxAllowed) { 
-      score-=4; factors.push({text:'Bye Wk '+player.bye+': '+byeConflicts+' Spieler',type:'neg',pts:-4}); 
+    var threshold = strategy.byeAvoidance === 'strict' ? 1 : 2;
+    if(byeConflicts >= threshold + 1) {
+      phase2 -= 4;
+      factors.push({text:'Bye Wk '+player.bye+' Konflikt!',type:'neg',pts:-4});
     }
   }
-
-  // ── C. DRAFT SITUATION (max 20 pts) ────────────────
-
-  // C1. Positional Run Detection — 8pts
-  // Are other teams currently drafting this position a lot?
-  var last5picks = recentPicks.slice(-5);
-  var runPos = last5picks.filter(function(p){ return p.pos===player.pos && !p.isMine; }).length;
-  if(runPos >= 3) { 
-    score+=8; factors.push({text:'QB/'+player.pos+'-Run! ('+runPos+'/5 zuletzt)',type:'pos',pts:8}); 
-  } else if(runPos >= 2 && strategy.runReaction !== 'ignore') { 
-    score+=4; factors.push({text:'Pos-Run erkannt ('+runPos+'/5)',type:'neu',pts:4}); 
-  }
-
-  // C2. Snake Position Bonus — 6pts
-  // At the turn (end/start of round) = take 2 players effectively
-  if(window._picksUntilMe === 0) { 
-    score+=6; factors.push({text:'Du bist dran — jetzt zuschlagen!',type:'pos',pts:6}); 
-  } else if(window._picksUntilMe === 1) { 
-    score+=3; factors.push({text:'Fast dran — 1 Pick noch',type:'neu',pts:3}); 
-  }
-
-  // C3. Late Round Value — 6pts
-  // In late rounds, scarce positions matter more
-  if(currentRound >= 10) {
-    if(pos==='TE' && posCounts.TE===0) { score+=6; factors.push({text:'Letzter Chance TE',type:'pos',pts:6}); }
-    if(pos==='QB' && posCounts.QB===0) { score+=6; factors.push({text:'Letzter Chance QB',type:'pos',pts:6}); }
-  }
-
-  // ── D. PLAYER QUALITY (max 10 pts) ────────────────
-
-  // D1. Scoring format bonus for WR/TE in PPR
-  if(strategy.scoring==='ppr') {
-    if(pos==='WR') { score+=3; }
-    else if(pos==='TE') { score+=2; }
-  } else if(strategy.scoring==='standard') {
-    if(pos==='RB') { score+=3; }
-  }
-
-  // D2. Superflex/2QB adjustment
-  if(strategy.rosterType==='superflex' || strategy.rosterType==='2qb') {
-    if(pos==='QB') { 
-      score+=8; factors.push({text:'Superflex: QB sehr wertvoll!',type:'pos',pts:8}); 
-    }
-  }
-
-  // D3. FantasyPros Note bonus (if player has expert note)
-  var cr = customRankings.find(function(r){ return r.name===player.name; });
-  if(cr && cr.fpNote && cr.fpNote.length > 5) {
-    score+=2; // Has expert analysis = slight bonus
-  }
-
-  // Clamp score 0-100
-  score = Math.max(0, Math.min(100, score));
   
-  return {score: Math.round(score), factors: factors};
+  // ─────────────────────────────────────────────────────────
+  // PHASE 3: URGENCY BONUS (10 points max)
+  // Time-sensitive factors
+  // ─────────────────────────────────────────────────────────
+  
+  var phase3 = 0;
+  
+  // 3A. Position Run Detection (5 points)
+  var last8 = recentPicks.slice(-8);
+  var posInRun = last8.filter(function(p){ return p.pos === pos; }).length;
+  if(posInRun >= 5) {
+    phase3 += 5;
+    factors.push({text:pos+'-Run! ('+posInRun+'/8)',type:'pos',pts:5});
+  } else if(posInRun >= 4 && strategy.runReaction !== 'ignore') {
+    phase3 += 3;
+    factors.push({text:pos+'-Run beginnt',type:'pos',pts:3});
+  }
+  
+  // 3B. On the Clock Bonus (5 points)
+  if(picksUntilMe === 0) {
+    phase3 += 3; // small constant boost to top picks when you're up
+  }
+  
+  // ─────────────────────────────────────────────────────────
+  // FINAL SCORE
+  // ─────────────────────────────────────────────────────────
+  
+  var totalScore = phase1 + phase2 + phase3;
+  
+  // Clamp to 0-100
+  totalScore = Math.max(0, Math.min(100, totalScore));
+  
+  // Round to integer
+  return {score: Math.round(totalScore), factors: factors.slice(0,5)};
 }
 
 function getTopRecommendations() {
   var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
   var available = source.filter(function(p){ 
     return !draftedIds.has(p.sleeperId||p.id||p.name); 
-  }).slice(0, 80); // Only consider top 80 available
-
+  }).slice(0, 100);
+  
   var scored = available.map(function(p){
     var result = calcDraftScore(p);
     return {player: p, score: result.score, factors: result.factors};
   }).sort(function(a,b){ return b.score - a.score; });
-
+  
   return scored.slice(0, 3);
 }
+
+
 
 function renderRecommendations() {
   var area = document.getElementById('rec-area');
