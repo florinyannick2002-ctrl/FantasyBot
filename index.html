@@ -288,6 +288,19 @@ button{font-family:var(--font);cursor:pointer;font-size:13px;border:none;border-
     <div id="pdf-status" style="font-size:13px;font-family:var(--mono);margin-bottom:1rem;min-height:20px;text-align:center;"></div>
     <textarea id="bulk-input" style="display:none;"></textarea>
     <div id="ranking-list"></div>
+
+    <!-- Projections Upload -->
+    <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;">
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:4px;">📊 FantasyPros Projektionen</h3>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">QB, RB, WR oder TE CSV von fantasypros.com/nfl/projections/rb.php hochladen. Mehrere Dateien nacheinander.</p>
+      <label for="proj-file-input" id="proj-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg3);display:block;transition:all .2s;" ondragover="event.preventDefault();this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border2)'" ondrop="event.preventDefault();this.style.borderColor='var(--border2)';if(event.dataTransfer.files[0])handleProjFile(event.dataTransfer.files[0])">
+        <div style="font-size:28px;margin-bottom:6px;">📈</div>
+        <div style="font-size:13px;font-weight:600;">Projektionen CSV hochladen</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:4px;">QB / RB / WR / TE — jeweils einzeln</div>
+      </label>
+      <input type="file" id="proj-file-input" accept=".csv" style="display:none" onchange="handleProjFile(this.files[0])"/>
+      <div id="proj-status" style="font-size:12px;font-family:var(--mono);margin-top:8px;min-height:18px;text-align:center;"></div>
+    </div>
   </div>
 
   <div class="panel" id="tab-strategie">
@@ -1278,8 +1291,8 @@ function renderPlayers(){
       }
       var projPtsHtml='';
       if(p.projFpts){
-        var upside=p.projHigh?'<span style="font-size:9px;color:var(--green);margin-left:3px;">▲'+p.projHigh+'</span>':'';
-        var floor=p.projLow?'<span style="font-size:9px;color:var(--red);margin-left:3px;">▼'+p.projLow+'</span>':'';
+        var upside=(p.projHigh && p.projHigh>p.projFpts)?'<span style="font-size:9px;color:var(--green);margin-left:3px;">▲'+p.projHigh+'</span>':'';
+        var floor=(p.projLow && p.projLow<p.projFpts)?'<span style="font-size:9px;color:var(--red);margin-left:3px;">▼'+p.projLow+'</span>':'';
         projPtsHtml='<span style="font-size:10px;color:var(--text2);font-family:var(--mono);margin-left:8px;">'+p.projFpts+'pts'+upside+floor+'</span>';
       }
       h+='<td class="c-name">'+p.name+lhtml+nhtml+noteIconHtml+projLabel+availLabel+projPtsHtml+'</td>';
@@ -1471,6 +1484,78 @@ function loadDemo(){
 }
 
 // PDF
+
+function handleProjFile(file){
+  if(!file) return;
+  var status = document.getElementById('proj-status');
+  status.style.color = 'var(--text2)';
+  status.textContent = '// Lese ' + file.name + '...';
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var text = e.target.result;
+    var added = 0;
+    var currentPlayer = null;
+    var lines = text.split(/\r?\n/);
+    for(var i=0; i<lines.length; i++){
+      var line = lines[i].trim();
+      if(!line) continue;
+      // Simple CSV parse
+      var cols = [];
+      var cur='', inQ=false;
+      for(var ci=0;ci<line.length;ci++){
+        var ch=line[ci];
+        if(ch==='"'){inQ=!inQ;}
+        else if(ch===','&&!inQ){cols.push(cur.trim());cur='';}
+        else{cur+=ch;}
+      }
+      cols.push(cur.trim());
+      if(!cols[0]||cols[0]==='Player'||cols[0]===' ') continue;
+      var fpts = parseFloat(cols[cols.length-1].replace(',',''));
+      if(isNaN(fpts)) continue;
+      if(cols[0]){ // new player
+        currentPlayer = cols[0];
+        if(!window._fpProjData) window._fpProjData={};
+        window._fpProjData[currentPlayer]={fpts:fpts,high:null,low:null};
+        added++;
+      } else if(currentPlayer && cols[1]){
+        var tag = cols[1].trim();
+        if(tag==='high') window._fpProjData[currentPlayer].high=fpts;
+        else if(tag==='low') window._fpProjData[currentPlayer].low=fpts;
+      }
+    }
+    // Apply to customRankings
+    var matched=0;
+    customRankings.forEach(function(p){
+      var key=normName(p.name);
+      // Direct match
+      if(window._fpProjData[p.name]){
+        var d=window._fpProjData[p.name];
+        p.projFpts=d.fpts;
+        p.projHigh=(d.high&&d.high>d.fpts)?d.high:null;
+        p.projLow=(d.low&&d.low<d.fpts)?d.low:null;
+        matched++;
+      } else {
+        // Fuzzy match
+        for(var pn in window._fpProjData){
+          if(normName(pn)===key){
+            var d=window._fpProjData[pn];
+            p.projFpts=d.fpts;
+            p.projHigh=(d.high&&d.high>d.fpts)?d.high:null;
+            p.projLow=(d.low&&d.low<d.fpts)?d.low:null;
+            matched++;
+            break;
+          }
+        }
+      }
+    });
+    status.style.color='var(--green)';
+    status.textContent='✓ '+added+' Spieler geladen, '+matched+' gematcht — '+file.name;
+    renderPlayers();
+    renderRecommendations();
+  };
+  reader.readAsText(file,'UTF-8');
+}
+
 function handlePdfFile(file){
   if(!file)return;
   var status=document.getElementById('pdf-status');
@@ -2049,7 +2134,7 @@ function renderRecommendations() {
     h += '<span style="font-size:11px;color:var(--text3);">'+p.team+'</span>';
     h += '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);">Rank #'+p.rank+'</span>';
     if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>';
-    if(p.projFpts) h += '<span style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-left:6px;">'+p.projFpts+'pts'+(p.projHigh?'<span style="color:var(--green);"> ▲'+p.projHigh+'</span>':'')+(p.projLow?'<span style="color:var(--red);"> ▼'+p.projLow+'</span>':'')+'</span>';
+    if(p.projFpts) h += '<span style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-left:6px;">'+p.projFpts+'pts'+(p.projHigh&&p.projHigh>p.projFpts?'<span style="color:var(--green);"> ▲'+p.projHigh+'</span>':'')+(p.projLow&&p.projLow<p.projFpts?'<span style="color:var(--red);"> ▼'+p.projLow+'</span>':'')+'</span>';
     h += '</div>';
     h += '<div class="rec-factors">';
     rec.factors.slice(0,5).forEach(function(f){
