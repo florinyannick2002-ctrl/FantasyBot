@@ -2292,9 +2292,8 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    var nextRound = Math.floor((totalPicked + 1 + picksLeft) / totalTeams) + 1;
-    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser als nächster '+pos+' (ab Runde '+nextRound+')',type:'pos'});
-    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts über Replacement-'+pos+' in Runde '+nextRound,type:'pos'});
+    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser als nächster '+pos+' (wenn du jetzt passt)',type:'pos'});
+    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts über dem nächsten verfügbaren '+pos,type:'pos'});
     else if(vor >= 5) factors.push({text:'+'+Math.round(vor)+'pts Mehrwert',type:'pos'});
   } else {
     // Fallback: Rank-basiert
@@ -2639,7 +2638,7 @@ function calcDraftScore(player) {
   }
 
   // Score Breakdown als neutraler Faktor (mit Icon)
-  factors.push({text:'Breakdown: Wert '+valueScore+'/40 · Bedarf '+needScore+'/25 · Kontext '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
+  factors.push({text:'Breakdown: Spielerwert '+valueScore+'/40 · Positionsbedarf '+needScore+'/25 · Kontext (SOS/Alter/Bye) '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
 
   // Faktoren nach Wichtigkeit sortieren
   var typeOrder = {pos:0, neg:1, neu:2};
