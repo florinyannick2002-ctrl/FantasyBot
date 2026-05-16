@@ -2346,48 +2346,106 @@ function calcDraftScore(player) {
     if(have === 0 && totalPicked > totalTeams * 12) needScore += 6;
   }
   
-  // 2B. Strategy Alignment (-5 bis +8 pts)
+  // 2B. Strategy Alignment — vollständig
   var stratBonus = 0;
-  
-  if(strategy.main === 'rb_heavy' && pos === 'RB' && round <= 4 && have < 3) {
-    stratBonus = 8; factors.push({text:'RB Heavy Plan ✓',type:'pos'});
+  var isSuperflex = strategy.rosterType === 'superflex' || strategy.rosterType === '2qb';
+  var isPPR = strategy.scoring === 'ppr';
+  var isStandard = strategy.scoring === 'standard';
+
+  // ── HAUPT-STRATEGIE ──
+  if(strategy.main === 'rb_heavy') {
+    if(pos === 'RB' && round <= 4 && have < 3) {
+      stratBonus = 8; factors.push({text:'RB Heavy: früh RBs sichern ✓',type:'pos'});
+    } else if(pos === 'RB' && round <= 6 && have < 4) {
+      stratBonus = 4;
+    } else if(pos === 'WR' && round <= 3 && have < 1) {
+      stratBonus = -3; factors.push({text:'RB Heavy: WR in R'+round+' zu früh',type:'neg'});
+    }
   }
-  else if(strategy.main === 'wr_heavy' && pos === 'WR' && round <= 5 && have < 3) {
-    stratBonus = 8; factors.push({text:'WR Heavy Plan ✓',type:'pos'});
+  else if(strategy.main === 'wr_heavy') {
+    if(pos === 'WR' && round <= 5 && have < 3) {
+      stratBonus = 8; factors.push({text:'WR Heavy Plan ✓',type:'pos'});
+    } else if(pos === 'RB' && round <= 3 && have < 1) {
+      stratBonus = -3; factors.push({text:'WR Heavy: RB in R'+round+' zu früh',type:'neg'});
+    }
   }
-  else if(strategy.main === 'zero_rb' && pos === 'RB' && round <= 4) {
-    stratBonus = -5; factors.push({text:'Zero RB: zu früh',type:'neg'});
+  else if(strategy.main === 'zero_rb') {
+    if(pos === 'RB' && round <= 5) {
+      stratBonus = -7; factors.push({text:'Zero RB: RBs erst ab R5+',type:'neg'});
+    } else if(pos === 'RB' && round === 6) {
+      stratBonus = -2;
+    } else if(pos === 'WR' && round <= 5 && have < 4) {
+      stratBonus = 7; factors.push({text:'Zero RB → WR Early ✓',type:'pos'});
+    } else if(pos === 'TE' && round <= 4 && have === 0) {
+      stratBonus = 4; factors.push({text:'Zero RB → TE Early ✓',type:'pos'});
+    }
   }
-  else if(strategy.main === 'zero_rb' && pos === 'WR' && round <= 4) {
-    stratBonus = 6; factors.push({text:'Zero RB → WR',type:'pos'});
+  else if(strategy.main === 'hero_rb') {
+    if(pos === 'RB' && have === 0 && round <= 2) {
+      stratBonus = 10; factors.push({text:'Hero RB: Elite-RB in R'+round+' ✓',type:'pos'});
+    } else if(pos === 'RB' && have === 1 && round <= 8) {
+      stratBonus = -6; factors.push({text:'Hero RB: nur 1 RB, jetzt WRs',type:'neg'});
+    } else if(pos === 'WR' && have >= 0 && round >= 2 && have < 4) {
+      stratBonus = 5; factors.push({text:'Hero RB: WR-Fokus ab R2 ✓',type:'pos'});
+    }
   }
-  else if(strategy.main === 'hero_rb' && pos === 'RB' && have === 0 && round <= 2) {
-    stratBonus = 8; factors.push({text:'Hero RB Pick ✓',type:'pos'});
+  else if(strategy.main === 'te_premium') {
+    if(pos === 'TE' && rank <= 12 && have === 0) {
+      stratBonus = 10; factors.push({text:'TE Premium: Elite-TE sichern ✓',type:'pos'});
+    } else if(pos === 'TE' && rank <= 25 && have === 0) {
+      stratBonus = 6; factors.push({text:'TE Premium Plan ✓',type:'pos'});
+    }
   }
-  else if(strategy.main === 'hero_rb' && pos === 'RB' && have >= 1 && round <= 4) {
-    stratBonus = -4; factors.push({text:'Hero RB: nur 1 RB',type:'neg'});
-  }
-  else if(strategy.main === 'te_premium' && pos === 'TE' && rank <= 25 && have === 0) {
-    stratBonus = 8; factors.push({text:'TE Premium ✓',type:'pos'});
-  }
-  
-  // QB Timing
+  // best_available: kein Strategie-Bonus (Algo entscheidet frei)
+
+  // ── QB TIMING ──
   if(pos === 'QB') {
-    if(strategy.qbTiming === 'early' && round <= 4 && have === 0) stratBonus += 4;
-    else if(strategy.qbTiming === 'late' && round <= 8 && have === 0) { stratBonus -= 4; factors.push({text:'QB zu früh (Late Strat)',type:'neg'}); }
-    else if(strategy.qbTiming === 'mid' && round >= 5 && round <= 8 && have === 0) stratBonus += 3;
-    else if(strategy.qbTiming === 'two_qb' && have < 2) stratBonus += 5;
+    if(strategy.qbTiming === 'early') {
+      if(round <= 4 && have === 0) { stratBonus += 6; factors.push({text:'QB Timing: Elite QB in R'+round+' ✓',type:'pos'}); }
+      else if(round > 4 && have === 0) { stratBonus -= 3; }
+    } else if(strategy.qbTiming === 'mid') {
+      if(round >= 5 && round <= 8 && have === 0) { stratBonus += 5; factors.push({text:'QB Timing: Mitte ✓ (R'+round+')',type:'pos'}); }
+      else if(round < 5 && have === 0) { stratBonus -= 4; factors.push({text:'QB zu früh für Mid-Timing',type:'neg'}); }
+    } else if(strategy.qbTiming === 'late') {
+      if(round >= 9 && have === 0) { stratBonus += 5; factors.push({text:'QB Streaming: guter Zeitpunkt ✓',type:'pos'}); }
+      else if(round <= 8 && have === 0) { stratBonus -= 5; factors.push({text:'QB: Warte auf R9+ (Late Timing)',type:'neg'}); }
+    } else if(strategy.qbTiming === 'two_qb') {
+      if(have < 2) { stratBonus += 6; factors.push({text:'2-QB Strategie: QB sichern ✓',type:'pos'}); }
+    }
   }
-  
-  // TE Timing
+
+  // ── TE TIMING ──
   if(pos === 'TE') {
-    if(strategy.teTiming === 'early' && round <= 3 && have === 0) stratBonus += 4;
-    else if(strategy.teTiming === 'late' && round <= 7 && have === 0) { stratBonus -= 3; factors.push({text:'TE zu früh (Late Strat)',type:'neg'}); }
-    else if(strategy.teTiming === 'mid' && round >= 4 && round <= 7 && have === 0) stratBonus += 3;
+    if(strategy.teTiming === 'early') {
+      if(round <= 3 && have === 0) { stratBonus += 6; factors.push({text:'TE Timing: Elite TE in R'+round+' ✓',type:'pos'}); }
+      else if(round > 3 && have === 0) stratBonus -= 2;
+    } else if(strategy.teTiming === 'mid') {
+      if(round >= 4 && round <= 7 && have === 0) { stratBonus += 4; factors.push({text:'TE Timing: Mitte ✓ (R'+round+')',type:'pos'}); }
+      else if(round < 4 && have === 0) { stratBonus -= 4; factors.push({text:'TE: Warte auf R4-7 (Mid Timing)',type:'neg'}); }
+    } else if(strategy.teTiming === 'late') {
+      if(round >= 8 && have === 0) { stratBonus += 4; factors.push({text:'TE Streaming: guter Zeitpunkt ✓',type:'pos'}); }
+      else if(round < 8 && have === 0) { stratBonus -= 3; factors.push({text:'TE: Warte auf R8+ (Late Timing)',type:'neg'}); }
+    }
   }
-  
+
+  // ── SCORING FORMAT ──
+  if(isPPR) {
+    // PPR: WRs und pass-catching RBs wertvoller
+    if(pos === 'WR') { stratBonus += 2; }
+    if(pos === 'RB' && player.team && ['MIA','KC','SF','PHI'].indexOf(player.team) >= 0) { stratBonus += 1; } // pass-catching RB teams
+  } else if(isStandard) {
+    // Standard: RBs und TDs mehr wert
+    if(pos === 'RB') { stratBonus += 2; }
+    if(pos === 'WR') { stratBonus -= 1; }
+  }
+
+  // ── ROSTER TYP ──
+  if(isSuperflex && pos === 'QB') {
+    stratBonus += 8; factors.push({text:'Superflex: QB extrem wertvoll!',type:'pos'});
+  }
+
   needScore += stratBonus;
-  
+
   // 2C. Position Scarcity (0-5 pts)
   var samePos = available.filter(function(p){ return p.pos === pos && p.tier <= tier; });
   if(samePos.length <= 2 && tier <= 4) {
@@ -2395,12 +2453,12 @@ function calcDraftScore(player) {
   } else if(samePos.length <= 4 && tier <= 3) {
     needScore += 3;
   }
-  
+
   // ═══════════════════════════════════════════════════════════
   // 3. CONTEXT (20 Punkte) — Externe Faktoren
   // ═══════════════════════════════════════════════════════════
   var contextScore = 10; // Start bei 50% Context Default
-  
+
   // 3A. Strength of Schedule (-4 bis +4)
   if(player.team && SOS[player.team] && SOS[player.team][pos] !== undefined) {
     var sv = SOS[player.team][pos];
@@ -2450,13 +2508,29 @@ function calcDraftScore(player) {
   // ═══════════════════════════════════════════════════════════
   var timingScore = 0;
   
-  // 4A. Position Run Detection (0-7 pts)
+  // 4A. Position Run Detection
   var last8 = recentPicks.slice(-8);
   var posInRun = last8.filter(function(p){ return p.pos === pos; }).length;
-  if(posInRun >= 5) {
-    timingScore += 7; factors.push({text:pos+'-Run! ('+posInRun+'/8) 🚨',type:'pos'});
-  } else if(posInRun >= 4 && strategy.runReaction !== 'ignore') {
-    timingScore += 4; factors.push({text:pos+'-Run beginnt',type:'pos'});
+  var oppInRun = last8.filter(function(p){ return p.pos !== pos && (p.pos==='RB'||p.pos==='WR'||p.pos==='TE'); }).length;
+
+  if(strategy.runReaction === 'ignore') {
+    // Positional runs ignorieren — kein Timing-Bonus/Malus
+  } else if(strategy.runReaction === 'aggressive') {
+    // Aggressiv: GEGENTEIL von was alle nehmen (counter-draft)
+    if(posInRun >= 4) {
+      // Alle nehmen diese Position → ich nehme sie AUCH aktiv
+      timingScore += 7; factors.push({text:pos+'-Run! Counter-Draft aktiv 🚨',type:'pos'});
+    } else if(oppInRun >= 4) {
+      // Alle nehmen andere Pos → ich sollte diese Position sichern
+      timingScore += 5; factors.push({text:'Andere Pos übernommen — '+pos+' verfügbar!',type:'pos'});
+    }
+  } else {
+    // Reaktiv (default): mitziehen wenn Run erkannt
+    if(posInRun >= 5) {
+      timingScore += 7; factors.push({text:pos+'-Run! ('+posInRun+'/8) 🚨',type:'pos'});
+    } else if(posInRun >= 4) {
+      timingScore += 4; factors.push({text:pos+'-Run beginnt ('+posInRun+'/8)',type:'pos'});
+    }
   }
   
   // 4B. ADP Value (0-5 pts) — fällt der Spieler im Draft?
