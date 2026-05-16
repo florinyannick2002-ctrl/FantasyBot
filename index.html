@@ -178,6 +178,10 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .fm-icon-pos{background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3);}
 .fm-icon-neg{background:rgba(255,51,68,.15);border:1px solid rgba(255,51,68,.3);}
 .fm-icon-neu{background:rgba(255,255,255,.04);border:1px solid var(--border2);}
+.fm-text-row{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.fm-text-badge{font-size:10px;padding:3px 8px;border-radius:3px;font-family:var(--mono);font-weight:700;letter-spacing:.02em;}
+.fm-text-pos{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.25);}
+.fm-text-neg{background:rgba(255,51,68,.1);color:var(--red);border:1px solid rgba(255,51,68,.25);}
 .pcard-avail-row{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;}
 .avail-tag{font-size:9px;padding:3px 8px;border-radius:2px;font-family:var(--mono);font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
 .avail-red{background:rgba(255,51,68,.15);color:var(--red);border:1px solid rgba(255,51,68,.4);animation:tagPulse 1.5s infinite;}
@@ -1469,15 +1473,15 @@ function applyADP(){
 
 function factorIcon(text) {
   var t = text.toLowerCase();
+  if(t.includes('wert unter')||t.includes('score-cap')||t.includes('pos. noch')||t.includes('pts fehlen')) return '📊';
   if(t.includes('pts vs') || t.includes('vor')) return '📈';
-  if(t.includes('tier 1')||t.includes('elite')) return '⭐';
-  if(t.includes('letzter tier')||t.includes('letzte tier')) return '⚡';
+  if(t.includes('tier 1')||t.includes('letzter tier')||t.includes('letzte tier')) return '⚡';
+  if(t.includes('elite tier')) return '⭐';
   if(t.includes('noch kein')) return '🎯';
   if(t.includes('heavy plan')||t.includes('plan ✓')||t.includes('zero rb')||t.includes('te premium')||t.includes('hero rb')) return '📋';
-  if(t.includes('scarcity')||t.includes('letzter')) return '⚡';
   if(t.includes('sos')&&(t.includes('easy')||t.includes('top')||t.includes('guter'))) return '☀️';
   if(t.includes('sos')&&(t.includes('schwer')||t.includes('hart'))) return '🌧️';
-  if(t.includes('jung')||t.includes('sehr jung')) return '🌱';
+  if(t.includes('sehr jung')||t.includes('jung (')) return '🌱';
   if(t.includes('30+')||t.includes('veteran')||t.includes('älter')) return '📉';
   if(t.includes('bye')) return '📆';
   if(t.includes('handcuff')) return '🛡️';
@@ -1488,8 +1492,6 @@ function factorIcon(text) {
   if(t.includes('upside')) return '🚀';
   if(t.includes('clock')||t.includes('dran')) return '⏰';
   if(t.includes('warten')) return '⌛';
-  if(t.includes('wert unter')||t.includes('score-cap')||t.includes('pos. noch')) return '📊';
-  if(t.includes('confidence')||t.includes('spread')) return '📉';
   return '●';
 }
 
@@ -1497,23 +1499,36 @@ function renderFactorIcons(factors) {
   var pos = factors.filter(function(f){return f.type==='pos';});
   var neg = factors.filter(function(f){return f.type==='neg';});
   var neu = factors.filter(function(f){return f.type==='neu';});
-  var h = '<div class="fm-icons-row">';
-  if(pos.length) {
-    h += '<div class="fm-section fm-pros">';
-    pos.forEach(function(f){ h += '<span class="fm-icon fm-icon-pos" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
-    h += '</div>';
-  }
-  if(neg.length) {
-    h += '<div class="fm-section fm-cons">';
-    neg.forEach(function(f){ h += '<span class="fm-icon fm-icon-neg" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
-    h += '</div>';
-  }
-  if(neu.length) {
-    h += '<div class="fm-section fm-neu">';
-    neu.forEach(function(f){ h += '<span class="fm-icon fm-icon-neu" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
-    h += '</div>';
-  }
+
+  // Top 1 pos + top 1 neg als Text
+  var h = '<div class="fm-text-row">';
+  if(pos[0]) h += '<span class="fm-text-badge fm-text-pos">'+factorIcon(pos[0].text)+' '+pos[0].text+'</span>';
+  if(neg[0]) h += '<span class="fm-text-badge fm-text-neg">'+factorIcon(neg[0].text)+' '+neg[0].text+'</span>';
+  if(!neg[0] && pos[1]) h += '<span class="fm-text-badge fm-text-pos">'+factorIcon(pos[1].text)+' '+pos[1].text+'</span>';
   h += '</div>';
+
+  // Rest als Icons
+  var restPos = pos.slice(1);
+  var restNeg = neg.slice(1);
+  if(restPos.length||restNeg.length||neu.length){
+    h += '<div class="fm-icons-row">';
+    if(restPos.length){
+      h += '<div class="fm-section fm-pros">';
+      restPos.forEach(function(f){ h += '<span class="fm-icon fm-icon-pos" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
+      h += '</div>';
+    }
+    if(restNeg.length){
+      h += '<div class="fm-section fm-cons">';
+      restNeg.forEach(function(f){ h += '<span class="fm-icon fm-icon-neg" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
+      h += '</div>';
+    }
+    if(neu.length){
+      h += '<div class="fm-section fm-neu">';
+      neu.forEach(function(f){ h += '<span class="fm-icon fm-icon-neu" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
+      h += '</div>';
+    }
+    h += '</div>';
+  }
   return h;
 }
 
