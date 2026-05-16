@@ -2320,7 +2320,25 @@ function calcDraftScore(player) {
     if(have === 0 && needed >= 1) { needScore += 12; factors.push({text:'Noch kein '+pos+'!',type:'pos'}); }
     else if(have >= needed) needScore += 0;
   } else if(pos === 'RB' || pos === 'WR') {
-    if(have === 0) { needScore += 12; factors.push({text:'Noch kein '+pos+'!',type:'pos'}); }
+    var round = Math.floor(totalPicked / totalTeams) + 1;
+    // Strategie-bewusster Bedarf
+    var isEarlyRound = round <= 4;
+    var rbHeavyWR = strategy.main === 'rb_heavy' && pos === 'WR' && isEarlyRound;
+    var zeroRbRB = strategy.main === 'zero_rb' && pos === 'RB' && isEarlyRound;
+    
+    if(have === 0) {
+      if(rbHeavyWR) {
+        // RB Heavy: WR early ist nicht dringend — kein Bonus, kein "Noch kein WR!"
+        needScore += 4;
+        factors.push({text:'WR kommt später (RB Heavy Plan)',type:'neu'});
+      } else if(zeroRbRB) {
+        needScore += 4;
+        factors.push({text:'RB kommt später (Zero RB Plan)',type:'neu'});
+      } else {
+        needScore += 12;
+        factors.push({text:'Noch kein '+pos+'!',type:'pos'});
+      }
+    }
     else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'Brauche '+pos+'2',type:'pos'}); }
     else if(have === 2) needScore += 4;
     else if(have >= 3) needScore -= 2;
@@ -2329,7 +2347,6 @@ function calcDraftScore(player) {
   }
   
   // 2B. Strategy Alignment (-5 bis +8 pts)
-  var round = Math.floor(totalPicked / totalTeams) + 1;
   var stratBonus = 0;
   
   if(strategy.main === 'rb_heavy' && pos === 'RB' && round <= 4 && have < 3) {
@@ -2517,7 +2534,7 @@ function calcDraftScore(player) {
     } else if(timingScore < 8) {
       factors.push({text:'Kein Druck — du kannst noch eine Runde warten',type:'neg'});
     } else {
-      factors.push({text:'Solider Pick, aber nicht der stärkste dieser Runde',type:'neg'});
+      factors.push({text:'Andere Spieler haben höheren Empfehlungs-Score',type:'neg'});
     }
   }
 
