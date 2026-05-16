@@ -2896,53 +2896,48 @@ function showPlayerModal(playerName) {
   var hasSlpProj = !!p.sleeperProjPts;
   var hasLast = !!p.lastSeasonPts;
   if(hasFpProj || hasSlpProj || hasLast) {
-
-    // Bis zu 3 Daten-Boxen: FP Proj | Sleeper Proj | 2024 Letzte Saison
-    // Dynamische Spaltenanzahl
     var cols = [hasFpProj, hasSlpProj, hasLast].filter(Boolean).length;
-    if(cols > 0) {
-      h += '<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:6px;margin-bottom:10px;">';
+    h += '<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:6px;margin-bottom:10px;">';
 
-      // Box 1: FP Projektion 2025
-      if(hasFpProj) {
-        h += '<div style="background:var(--bg3);border:1px solid rgba(255,170,0,.3);padding:7px 10px;border-radius:3px;">';
-        h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">FP PROJ 2025</div>';
-        h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
-        h += '<span style="font-family:var(--display);font-size:20px;color:var(--amber);line-height:1;">'+Math.round(p.projFpts)+'</span>';
-        h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
-        if(p.projHigh) h += '<span style="font-size:10px;color:var(--green);font-family:var(--mono);font-weight:700;">▲'+p.projHigh+'</span>';
-        if(p.projLow)  h += '<span style="font-size:10px;color:var(--red);font-family:var(--mono);font-weight:700;">▼'+p.projLow+'</span>';
-        h += '</div></div>';
-      }
+    // Box 1: FP Projektion 2025
+    if(hasFpProj) {
+      h += '<div style="background:var(--bg3);border:1px solid rgba(255,170,0,.3);padding:7px 10px;border-radius:3px;">';
+      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">FP PROJ 2025</div>';
+      h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
+      h += '<span style="font-family:var(--display);font-size:20px;color:var(--amber);line-height:1;">'+Math.round(p.projFpts)+'</span>';
+      h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
+      if(p.projHigh) h += '<span style="font-size:10px;color:var(--green);font-family:var(--mono);font-weight:700;">▲'+p.projHigh+'</span>';
+      if(p.projLow)  h += '<span style="font-size:10px;color:var(--red);font-family:var(--mono);font-weight:700;">▼'+p.projLow+'</span>';
+      h += '</div></div>';
+    }
 
-      // Box 2: Sleeper Projektion 2025
-      if(hasSlpProj) {
-        var slpVsFp = hasFpProj ? Math.round(p.sleeperProjPts) - Math.round(p.projFpts) : null;
-        var slpDiffStr = slpVsFp != null ? (slpVsFp > 0 ? '+'+slpVsFp : ''+slpVsFp)+'pts vs FP' : '';
-        var slpDiffCol = slpVsFp > 0 ? 'var(--green)' : slpVsFp < 0 ? 'var(--red)' : 'var(--text3)';
-        h += '<div style="background:var(--bg3);border:1px solid rgba(0,184,255,.25);padding:7px 10px;border-radius:3px;">';
-        h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">SLP PROJ 2025</div>';
-        h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
-        h += '<span style="font-family:var(--display);font-size:20px;color:var(--blue);line-height:1;">'+p.sleeperProjPts+'</span>';
-        h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
-        if(slpDiffStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+slpDiffCol+';">'+slpDiffStr+'</span>';
-        h += '</div></div>';
-      }
+    // Box 2: Sleeper Projektion 2025
+    if(hasSlpProj) {
+      var slpVsFp = hasFpProj ? Math.round(p.sleeperProjPts) - Math.round(p.projFpts) : null;
+      var slpDiffStr = slpVsFp != null ? (slpVsFp > 0 ? '+'+slpVsFp : ''+slpVsFp)+'pts vs FP' : '';
+      var slpDiffCol = slpVsFp > 0 ? 'var(--green)' : slpVsFp < 0 ? 'var(--red)' : 'var(--text3)';
+      h += '<div style="background:var(--bg3);border:1px solid rgba(0,184,255,.25);padding:7px 10px;border-radius:3px;">';
+      h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">SLP PROJ 2025</div>';
+      h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
+      h += '<span style="font-family:var(--display);font-size:20px;color:var(--blue);line-height:1;">'+p.sleeperProjPts+'</span>';
+      h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
+      if(slpDiffStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+slpDiffCol+';">'+slpDiffStr+'</span>';
+      h += '</div></div>';
+    }
 
-      // Box 3: 2024 Letzte Saison
-      if(hasLast) {
-        var trend = hasFpProj ? Math.round(p.projFpts) - p.lastSeasonPts : (hasSlpProj ? Math.round(p.sleeperProjPts) - p.lastSeasonPts : null);
-        var trendCol = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--red)' : 'var(--text3)';
-        var trendStr = trend != null ? (trend > 0 ? '▲+'+trend : '▼'+trend)+'pts' : '';
-        h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:7px 10px;border-radius:3px;">';
-        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2024 SAISON</div>';
-        h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
-        h += '<span style="font-family:var(--display);font-size:20px;color:var(--text2);line-height:1;">'+p.lastSeasonPts+'</span>';
-        h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
-        if(trendStr) h += '<span style="font-size:10px;font-family:var(--mono);font-weight:700;color:'+trendCol+';">'+trendStr+'</span>';
-        h += '</div></div>';
-      }
-      h += '</div>';
+    // Box 3: 2024 Letzte Saison
+    if(hasLast) {
+      var refProj = hasFpProj ? Math.round(p.projFpts) : (hasSlpProj ? Math.round(p.sleeperProjPts) : null);
+      var trend = refProj != null ? refProj - p.lastSeasonPts : null;
+      var trendCol = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--red)' : 'var(--text3)';
+      var trendStr = trend != null ? (trend > 0 ? '▲+'+trend : '▼'+trend)+'pts' : '';
+      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:7px 10px;border-radius:3px;">';
+      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2024 SAISON</div>';
+      h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
+      h += '<span style="font-family:var(--display);font-size:20px;color:var(--text2);line-height:1;">'+p.lastSeasonPts+'</span>';
+      h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
+      if(trendStr) h += '<span style="font-size:10px;font-family:var(--mono);font-weight:700;color:'+trendCol+';">'+trendStr+'</span>';
+      h += '</div></div>';
     }
     h += '</div>';
   }
