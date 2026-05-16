@@ -1748,7 +1748,7 @@ function renderPlayers(){
       if(projPtsHtml) h+=projPtsHtml;
       if(projLabel) h+=projLabel;
       // Letzte Saison Punkte
-      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="2024 Letzte Saison">&#39;25: <span style="color:var(--text2);">'+p.lastSeasonPts+'</span></span>';
+      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="2025 Letzte Saison">&#39;25: <span style="color:var(--text2);">'+p.lastSeasonPts+'</span></span>';
       // Sleeper Proj (nur wenn kein FP_PROJ vorhanden)
       if(p.sleeperProjPts && !p.projFpts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="Sleeper Proj 2026">PROJ: <span style="color:var(--amber);">'+p.sleeperProjPts+'</span></span>';
       h+='<span class="pcard-meta">'+( p.team||'')+'</span>';
@@ -2902,7 +2902,7 @@ function showPlayerModal(playerName) {
     // Box 1: FP Projektion 2025
     if(hasFpProj) {
       h += '<div style="background:var(--bg3);border:1px solid rgba(255,170,0,.3);padding:7px 10px;border-radius:3px;">';
-      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">FP PROJ 2025</div>';
+      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">FP PROJ 2026</div>';
       h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
       h += '<span style="font-family:var(--display);font-size:20px;color:var(--amber);line-height:1;">'+Math.round(p.projFpts)+'</span>';
       h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
@@ -2917,7 +2917,7 @@ function showPlayerModal(playerName) {
       var slpDiffStr = slpVsFp != null ? (slpVsFp > 0 ? '+'+slpVsFp : ''+slpVsFp)+'pts vs FP' : '';
       var slpDiffCol = slpVsFp > 0 ? 'var(--green)' : slpVsFp < 0 ? 'var(--red)' : 'var(--text3)';
       h += '<div style="background:var(--bg3);border:1px solid rgba(0,184,255,.25);padding:7px 10px;border-radius:3px;">';
-      h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">SLP PROJ 2025</div>';
+      h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">SLP PROJ 2026</div>';
       h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
       h += '<span style="font-family:var(--display);font-size:20px;color:var(--blue);line-height:1;">'+p.sleeperProjPts+'</span>';
       h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
@@ -2930,9 +2930,9 @@ function showPlayerModal(playerName) {
       var refProj = hasFpProj ? Math.round(p.projFpts) : (hasSlpProj ? Math.round(p.sleeperProjPts) : null);
       var trend = refProj != null ? refProj - p.lastSeasonPts : null;
       var trendCol = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--red)' : 'var(--text3)';
-      var trendStr = trend != null ? (trend > 0 ? '▲+'+trend : '▼'+trend)+'pts' : '';
+      var trendStr = trend != null ? (trend > 0 ? '▲+'+Math.round(trend) : '▼'+Math.round(trend))+'pts' : '';
       h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:7px 10px;border-radius:3px;">';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2024 SAISON</div>';
+      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2025 SAISON</div>';
       h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
       h += '<span style="font-family:var(--display);font-size:20px;color:var(--text2);line-height:1;">'+p.lastSeasonPts+'</span>';
       h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
@@ -3291,14 +3291,22 @@ async function loadSleeperPlayers(sport){
         var pid=item.player_id;
         var rank=idx+1;
         // Sleeper weekly proj × 18 Wochen = Saisonprojektion (entspricht dem was Sleeper anzeigt)
-        // Nur ADP-Rang setzen — sleeperProjPts kommt via fetchSleeperSeasonData (akkurat, alle Wochen)
+        // ADP-Rang + Sleeper Proj direkt aus API (season total, kein Multiplier nötig)
+        var rawProj = (item.stats && (item.stats['pts_ppr'] || item.stats['pts_half_ppr'] || item.stats['pts_std'])) || 0;
+        var slpProj = rawProj > 50 ? Math.round(rawProj * 10) / 10 : null; // >50 = plausible Saisonsumme
         if(sleeperMap){
           Object.values(sleeperMap).forEach(function(sm){
-            if(sm.id===String(pid)) sm.sleeperRank=rank;
+            if(sm.id===String(pid)){
+              sm.sleeperRank=rank;
+              if(slpProj) sm.sleeperProjPts=slpProj;
+            }
           });
         }
         customRankings.forEach(function(cr){
-          if(cr.sleeperId===String(pid)) cr.sleeperRank=rank;
+          if(cr.sleeperId===String(pid)){
+            cr.sleeperRank=rank;
+            if(slpProj) cr.sleeperProjPts=slpProj;
+          }
         });
       });
       renderPlayers();
