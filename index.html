@@ -2925,18 +2925,13 @@ function showPlayerModal(playerName) {
       h += '</div></div>';
     }
 
-    // Box 3: 2025 Letzte Saison
+    // Box 3: 2025 Letzte Saison — nur raw Wert, kein Trend
     if(hasLast) {
-      var refProj = hasFpProj ? Math.round(p.projFpts) : (hasSlpProj ? Math.round(p.sleeperProjPts) : null);
-      var trend = refProj != null ? refProj - p.lastSeasonPts : null;
-      var trendCol = trend > 0 ? 'var(--green)' : trend < 0 ? 'var(--red)' : 'var(--text3)';
-      var trendStr = trend != null ? (trend > 0 ? '▲+'+Math.round(trend) : '▼'+Math.round(trend))+'pts' : '';
       h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:7px 10px;border-radius:3px;">';
       h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2025 SAISON</div>';
       h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
       h += '<span style="font-family:var(--display);font-size:20px;color:var(--text2);line-height:1;">'+p.lastSeasonPts+'</span>';
       h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
-      if(trendStr) h += '<span style="font-size:10px;font-family:var(--mono);font-weight:700;color:'+trendCol+';">'+trendStr+'</span>';
       h += '</div></div>';
     }
     h += '</div>';
