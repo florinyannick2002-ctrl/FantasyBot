@@ -8,7 +8,7 @@
 <style>
 :root{
   --bg:#050608;--bg2:#08090e;--bg3:#0e1018;--bg4:#141720;
-  --text:#f0f1f5;--text2:#7a7f95;--text3:#3a3e52;
+  --text:#f0f1f5;--text2:#a8adc4;--text3:#5e6480;
   --amber:#ffaa00;--amber-dim:#ff8800;--amber-bg:#1a0f00;--amber-glow:rgba(255,170,0,.35);
   --blue:#00b8ff;--blue-bg:#001220;--blue-dim:#002240;
   --green:#00ff88;--green-bg:#001f0d;
@@ -1491,26 +1491,48 @@ function applyADP(){
 function factorIcon(text) {
   var t = text.toLowerCase();
   if(t.includes('breakdown:')) return '📊';
-  if(t.includes('wert unter')||t.includes('score-cap')||t.includes('pos. noch')||t.includes('pts fehlen')) return '📊';
-  if(t.includes('pts vs') || t.includes('vor')) return '📈';
-  if(t.includes('tier 1')||t.includes('letzter tier')||t.includes('letzte tier')) return '⚡';
-  if(t.includes('elite tier')) return '⭐';
+  if(t.includes('besser als nächster')||t.includes('über dem nächsten')) return '💰';
+  if(t.includes('bester verfügbarer')) return '👑';
+  if(t.includes('rang #')) return '📊';
+  if(t.includes('letzter tier')||t.includes('letzte tier')) return '🚨';
+  if(t.includes('noch kein rb')) return '🏃';
+  if(t.includes('noch kein wr')) return '🎯';
+  if(t.includes('noch kein te')) return '🎪';
+  if(t.includes('noch kein qb')) return '🏹';
   if(t.includes('noch kein')) return '🎯';
-  if(t.includes('heavy plan')||t.includes('plan ✓')||t.includes('zero rb')||t.includes('te premium')||t.includes('hero rb')) return '📋';
-  if(t.includes('sos')&&(t.includes('easy')||t.includes('top')||t.includes('guter'))) return '☀️';
-  if(t.includes('sos')&&(t.includes('schwer')||t.includes('hart'))) return '🌧️';
+  if(t.includes('brauche rb')) return '🏃';
+  if(t.includes('brauche wr')) return '🎯';
+  if(t.includes('rb heavy')) return '🏋️';
+  if(t.includes('wr heavy')) return '📡';
+  if(t.includes('zero rb')) return '🚫';
+  if(t.includes('hero rb')) return '⚡';
+  if(t.includes('te premium')) return '💎';
+  if(t.includes('superflex')||t.includes('2-qb')) return '🔄';
+  if(t.includes('qb timing')||t.includes('qb streaming')) return '🎲';
+  if(t.includes('te timing')||t.includes('te streaming')) return '⏳';
+  if(t.includes('warten (rb')||t.includes('warten (wr')||t.includes('kommt später')) return '⏸️';
+  if(t.includes('gleichwertige')&&t.includes('weg')) return '⏱️';
+  if(t.includes('-run!')) return '🌊';
+  if(t.includes('-run beginnt')) return '〰️';
+  if(t.includes('andere pos')||t.includes('anderer pos')) return '↩️';
+  if(t.includes('sos')&&(t.includes('top')||t.includes('easy'))) return '☀️';
+  if(t.includes('sos')&&(t.includes('schwer')||t.includes('sehr schwer'))) return '⛈️';
   if(t.includes('sehr jung')||t.includes('jung (')) return '🌱';
-  if(t.includes('30+')||t.includes('veteran')||t.includes('älter')) return '📉';
-  if(t.includes('bye')) return '📆';
-  if(t.includes('handcuff')) return '🛡️';
-  if(t.includes('run')) return '🏃';
-  if(t.includes('adp')||t.includes('steal')) return '💰';
-  if(t.includes('sicher')||t.includes('solide')) return '🔒';
-  if(t.includes('risiko')||t.includes('unsicher')||t.includes('hohes')) return '⚠️';
+  if(t.includes('30+')||t.includes('veteran')) return '🧓';
+  if(t.includes('älter (')) return '📉';
+  if(t.includes('bye')) return '🗓️';
+  if(t.includes('handcuff')) return '🔗';
+  if(t.includes('sicher (±')||t.includes('solide (±')) return '✅';
+  if(t.includes('unsicher')||t.includes('hohes risiko')) return '🔥';
+  if(t.includes('risiko')||t.includes('wenig upside')) return '⚠️';
   if(t.includes('upside')) return '🚀';
-  if(t.includes('clock')||t.includes('dran')) return '⏰';
-  if(t.includes('warten')) return '⌛';
-  return '●';
+  if(t.includes('dran')) return '⏰';
+  if(t.includes('kannst warten')||t.includes('noch eine runde')) return '💤';
+  if(t.includes('keine projektionsdaten')) return '📭';
+  if(t.includes('nicht dringend')) return '😌';
+  if(t.includes('andere spieler')) return '🔍';
+  if(t.includes('tier')&&t.includes('stufe')) return '📉';
+  return '•';
 }
 
 function renderFactorIcons(factors) {
@@ -2749,86 +2771,130 @@ function showPlayerModal(playerName) {
   var rec = calcDraftScore(p);
   var bd = rec.breakdown || {};
   var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
-  var posF = factors.filter(function(f){return f.type==='pos';});
-  var negF = factors.filter(function(f){return f.type==='neg';});
+  var posF = factors.filter(function(f){return f.type==='pos';}).slice(0,3);
+  var negF = factors.filter(function(f){return f.type==='neg';}).slice(0,3);
   var neuF = factors.filter(function(f){return f.type==='neu';});
   var pc = posColors[p.pos]||'b-k';
 
   var imgHtml = p.sleeperId
-    ? '<img style="width:80px;height:80px;border-radius:4px;object-fit:cover;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
-    : '<div style="width:80px;height:80px;border-radius:4px;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:32px;">🏈</div>';
-
-  var cats = [
-    {label:'SPIELERWERT', key:'v', max:40, color:'var(--blue)', desc:'VOR (Proj.Punkte vs. Ersatz) + Tier-Qualität + Opportunity Cost'},
-    {label:'POSITIONSBEDARF', key:'n', max:25, color:'var(--green)', desc:'Roster-Bedarf + Strategie-Alignment + Positions-Scarcity'},
-    {label:'KONTEXT', key:'c', max:20, color:'var(--purple)', desc:'SOS + Alter + Bye Week Konflikt + Handcuff'},
-    {label:'TIMING', key:'t', max:15, color:'var(--amber)', desc:'Position-Run + Scarcity vor nächstem Pick + On Clock'}
-  ];
+    ? '<img style="width:90px;height:90px;border-radius:4px;object-fit:cover;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);flex-shrink:0;" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
+    : '<div style="width:90px;height:90px;border-radius:4px;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">🏈</div>';
 
   var reason = generateDraftReason(p, rec);
 
-  var h = '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px;">';
+  // Bio data from Sleeper
+  var bioItems = [];
+  if(p.age) bioItems.push({lbl:'ALTER', val:p.age+'j'});
+  if(p.height) bioItems.push({lbl:'GRÖSSE', val:p.height+'"'});
+  if(p.weight) bioItems.push({lbl:'GEWICHT', val:p.weight+' lbs'});
+  if(p.exp!=null) bioItems.push({lbl:'EXP', val:p.exp+'J'});
+  if(p.college) bioItems.push({lbl:'COLLEGE', val:p.college});
+  if(p.number) bioItems.push({lbl:'#', val:p.number});
+
+  // Header
+  var h = '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:16px;">';
   h += imgHtml;
-  h += '<div style="flex:1;">';
-  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span class="badge '+pc+'">'+p.pos+'</span><span style="font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:-.3px;">'+p.name+'</span></div>';
-  h += '<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:10px;">'+p.team+' · Rank #'+p.rank+(p.sleeperRank?' · Slp '+p.sleeperRank:'')+(p.age?' · '+p.age+'j':'')+'</div>';
-  h += '<div style="background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;">'+reason+'</div>';
+  h += '<div style="flex:1;min-width:0;">';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
+  h += '<span class="badge '+pc+'">'+p.pos+'</span>';
+  h += '<span style="font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:-.3px;">'+p.name+'</span>';
   h += '</div>';
-  h += '<div style="text-align:center;min-width:70px;"><div style="font-family:var(--display);font-size:48px;color:var(--amber);line-height:1;">'+rec.score+'</div><div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:.1em;">SCORE</div></div>';
+  h += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:10px;">';
+  h += '<span style="font-size:11px;color:var(--text2);font-family:var(--mono);">'+p.team+'</span>';
+  h += '<span style="font-size:11px;color:var(--text2);font-family:var(--mono);">Rank #'+p.rank+'</span>';
+  if(p.sleeperRank) h += '<span style="font-size:11px;color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>';
+  if(p.projFpts) h += '<span style="font-size:11px;color:var(--text2);font-family:var(--mono);">'+p.projFpts+'pts ▲'+p.projHigh+' ▼'+p.projLow+'</span>';
+  h += '</div>';
+  // Bio pills
+  if(bioItems.length) {
+    h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
+    bioItems.forEach(function(b){
+      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">';
+      h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">'+b.lbl+' </span>';
+      h += '<span style="font-size:11px;color:var(--text);font-family:var(--mono);font-weight:700;">'+b.val+'</span>';
+      h += '</div>';
+    });
+    h += '</div>';
+  }
+  h += '</div>';
+  h += '<div style="text-align:center;min-width:70px;flex-shrink:0;">';
+  var scoreColor = rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--text3)';
+  h += '<div style="font-family:var(--display);font-size:52px;color:'+scoreColor+';line-height:1;text-shadow:0 0 20px '+scoreColor+';">'+rec.score+'</div>';
+  h += '<div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.12em;margin-top:2px;">SCORE</div>';
+  h += '</div>';
   h += '</div>';
 
+  // Draft Verdict
+  h += '<div style="background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:16px;">'+reason+'</div>';
+
   // Score Bars
-  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">';
+  var cats = [
+    {label:'SPIELERWERT', key:'v', max:40, color:'var(--blue)', desc:'VOR + Tier-Qualität + Opportunity Cost'},
+    {label:'POSITIONSBEDARF', key:'n', max:25, color:'var(--green)', desc:'Roster-Need + Strategie + Scarcity'},
+    {label:'KONTEXT', key:'c', max:20, color:'var(--purple)', desc:'SOS + Alter + Bye + Handcuff'},
+    {label:'TIMING', key:'t', max:15, color:'var(--amber)', desc:'Position-Run + Scarcity + On Clock'}
+  ];
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:18px;">';
   cats.forEach(function(cat){
     var val = bd[cat.key] || 0;
     var pct = Math.round(val/cat.max*100);
-    h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:12px;border-radius:4px;">';
-    h += '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">';
-    h += '<span style="font-size:9px;font-family:var(--mono);font-weight:800;color:'+cat.color+';letter-spacing:.12em;">'+cat.label+'</span>';
-    h += '<span style="font-size:12px;font-family:var(--mono);font-weight:800;color:'+cat.color+';">'+val+'/'+cat.max+'</span>';
+    var clr = pct>=75?'var(--green)':pct>=50?cat.color:pct>=25?'var(--amber)':'var(--red)';
+    h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:10px 12px;border-radius:3px;">';
+    h += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
+    h += '<span style="font-size:9px;font-family:var(--mono);font-weight:800;color:'+cat.color+';letter-spacing:.1em;">'+cat.label+'</span>';
+    h += '<span style="font-size:13px;font-family:var(--mono);font-weight:800;color:'+clr+';">'+val+'<span style="font-size:9px;opacity:.5;">/'+cat.max+'</span></span>';
     h += '</div>';
-    h += '<div style="background:var(--border2);height:4px;border-radius:2px;">';
-    h += '<div style="background:'+cat.color+';width:'+pct+'%;height:4px;border-radius:2px;box-shadow:0 0 8px '+cat.color+';"></div>';
+    h += '<div style="background:var(--border2);height:4px;border-radius:2px;margin-bottom:5px;">';
+    h += '<div style="background:'+clr+';width:'+pct+'%;height:4px;border-radius:2px;box-shadow:0 0 6px '+clr+';"></div>';
     h += '</div>';
-    h += '<div style="font-size:10px;color:var(--text3);margin-top:5px;">'+cat.desc+'</div>';
+    h += '<div style="font-size:9px;color:var(--text3);">'+cat.desc+'</div>';
     h += '</div>';
   });
   h += '</div>';
 
-  // Pros
+  // Pros & Cons side by side
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+
+  // PROS
+  h += '<div>';
+  h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--green);letter-spacing:.15em;margin-bottom:8px;">✓ TOP PROS</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:5px;">';
   if(posF.length) {
-    h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--green);letter-spacing:.15em;margin-bottom:8px;">✓ PROS</div>';
-    h += '<div style="display:flex;flex-direction:column;gap:5px;">';
     posF.forEach(function(f){
       h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">';
-      h += '<span style="font-size:16px;">'+factorIcon(f.text)+'</span>';
-      h += '<span style="font-size:11px;color:var(--green);">'+f.text+'</span>';
+      h += '<span style="font-size:18px;flex-shrink:0;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--green);line-height:1.4;">'+f.text+'</span>';
       h += '</div>';
     });
-    h += '</div></div>';
+  } else {
+    h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;">Keine positiven Faktoren</div>';
   }
+  h += '</div></div>';
 
-  // Cons
+  // CONS
+  h += '<div>';
+  h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--red);letter-spacing:.15em;margin-bottom:8px;">✗ TOP CONS</div>';
+  h += '<div style="display:flex;flex-direction:column;gap:5px;">';
   if(negF.length) {
-    h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--red);letter-spacing:.15em;margin-bottom:8px;">✗ CONS</div>';
-    h += '<div style="display:flex;flex-direction:column;gap:5px;">';
     negF.forEach(function(f){
       h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,51,68,.06);border:1px solid rgba(255,51,68,.15);border-radius:3px;">';
-      h += '<span style="font-size:16px;">'+factorIcon(f.text)+'</span>';
-      h += '<span style="font-size:11px;color:var(--red);">'+f.text+'</span>';
+      h += '<span style="font-size:18px;flex-shrink:0;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--red);line-height:1.4;">'+f.text+'</span>';
       h += '</div>';
     });
-    h += '</div></div>';
+  } else {
+    h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;">Keine negativen Faktoren</div>';
   }
+  h += '</div></div>';
+  h += '</div>';
 
+  // Neutral factors small
   if(neuF.length) {
-    h += '<div><div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.15em;margin-bottom:8px;">○ NEUTRAL</div>';
-    h += '<div style="display:flex;flex-direction:column;gap:5px;">';
+    h += '<div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border2);">';
+    h += '<div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.1em;margin-bottom:6px;">NEUTRAL</div>';
+    h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
     neuF.forEach(function(f){
-      h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;">';
-      h += '<span style="font-size:16px;">'+factorIcon(f.text)+'</span>';
-      h += '<span style="font-size:11px;color:var(--text2);">'+f.text+'</span>';
-      h += '</div>';
+      h += '<span style="font-size:10px;font-family:var(--mono);color:var(--text3);background:var(--bg3);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">'+factorIcon(f.text)+' '+f.text+'</span>';
     });
     h += '</div></div>';
   }
@@ -2875,23 +2941,24 @@ function renderRecommendations() {
     h += '<div class="rec-score" style="color:'+scoreColor+';"><div class="rec-score-medal">'+medals[i]+'</div><div class="rec-score-num">'+rec.score+'</div><div class="rec-score-pct">%</div></div>';
     h += imgHtml;
     h += '<div style="flex:1;min-width:0;">';
-    h += '<div class="rec-player-name">'+p.name+'</div>';
-    h += '<div class="rec-meta">';
+    // Name + badges on same line
+    h += '<div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;flex-wrap:wrap;">';
     h += '<span class="badge '+pc+'">'+p.pos+'</span>';
-    h += '<span class="rec-meta-item">'+p.team+'</span>';
-    h += '<span class="rec-meta-item">RK '+p.rank+'</span>';
-    if(p.sleeperRank) h += '<span class="rec-meta-item" style="color:var(--blue);">SLP '+p.sleeperRank+'</span>';
-    if(p.projFpts) h += '<span class="rec-meta-item proj">'+p.projFpts+'PTS</span>';
+    h += '<span class="rec-player-name" style="font-size:'+(i===0?'20px':'16px')+';">'+p.name+'</span>';
+    h += '<span style="font-size:11px;color:var(--text2);font-family:var(--mono);">'+p.team+'</span>';
+    h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">Rank #'+p.rank+'</span>';
+    if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>';
+    if(p.projFpts) h += '<span style="font-size:10px;color:var(--text2);font-family:var(--mono);">'+p.projFpts+'pts</span>';
     h += '</div>';
-    // Draft reason text
-    h += '<div style="font-size:11px;color:var(--text2);margin:7px 0 6px;line-height:1.5;border-left:2px solid '+scoreColor+';padding-left:8px;">'+reason+'</div>';
-    // Top 3 icons
-    h += '<div style="display:flex;gap:4px;align-items:center;">';
-    var topIcons = posF.slice(0,2).concat(negF.slice(0,1));
-    topIcons.forEach(function(f){
-      h += '<span class="fm-icon '+(f.type==='pos'?'fm-icon-pos':f.type==='neg'?'fm-icon-neg':'fm-icon-neu')+'" title="'+f.text+'">'+factorIcon(f.text)+'</span>';
+    // Draft reason
+    h += '<div style="font-size:11px;color:var(--text);margin:5px 0;line-height:1.5;border-left:2px solid '+scoreColor+';padding-left:8px;">'+reason+'</div>';
+    // Top icons: 3 pros + 1 neg
+    h += '<div style="display:flex;gap:4px;align-items:center;margin-top:4px;">';
+    posF.slice(0,3).forEach(function(f){
+      h += '<span class="fm-icon fm-icon-pos" title="'+f.text+'">'+factorIcon(f.text)+'</span>';
     });
-    h += '<span style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-left:4px;">→ klick für Details</span>';
+    if(negF[0]) h += '<span class="fm-icon fm-icon-neg" title="'+negF[0].text+'">'+factorIcon(negF[0].text)+'</span>';
+    h += '<span style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-left:6px;letter-spacing:.04em;">DETAILS →</span>';
     h += '</div>';
     h += '</div></div>';
   });
@@ -3050,13 +3117,13 @@ async function loadSleeperPlayers(sport){
     var sr=(p.search_rank&&p.search_rank<9999)?p.search_rank:null;
     var age=null;
     if(p.birth_date){var b=new Date(p.birth_date),now=new Date();age=now.getFullYear()-b.getFullYear()-(now<new Date(now.getFullYear(),b.getMonth(),b.getDate())?1:0);}
-    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr,age:age};
+    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr,age:age,height:p.height||null,weight:p.weight||null,exp:p.years_exp!=null?p.years_exp:null,college:p.college||null,number:p.number||null};
   });
   // Enrich customRankings with sleeper IDs + search_rank
   if(customRankings.length){
     customRankings.forEach(function(cr){
       var match=sleeperMap[normSleeperName(cr.name)];
-      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;if(match.age)cr.age=match.age;}
+      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;if(match.age)cr.age=match.age;if(match.height)cr.height=match.height;if(match.weight)cr.weight=match.weight;if(match.exp!=null)cr.exp=match.exp;if(match.college)cr.college=match.college;if(match.number)cr.number=match.number;}
     });
   }
   // Now fetch Sleeper projections which have the real draft rankings
