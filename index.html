@@ -161,6 +161,23 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .pcard-stat-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;}
 .pcard-stat-val{font-size:12px;font-family:var(--mono);font-weight:700;}
 .avail-badge{font-size:12px;}
+/* FM SCOUT REPORT ICONS */
+.fm-icons-row{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-top:6px;}
+.fm-section{display:flex;gap:3px;padding:4px 6px;border-radius:4px;flex-wrap:wrap;}
+.fm-pros{background:rgba(0,255,136,.08);border:1px solid rgba(0,255,136,.2);}
+.fm-cons{background:rgba(255,51,68,.08);border:1px solid rgba(255,51,68,.2);}
+.fm-neu{background:rgba(255,255,255,.03);border:1px solid var(--border2);}
+.fm-icon{
+  width:26px;height:26px;border-radius:50%;
+  display:inline-flex;align-items:center;justify-content:center;
+  font-size:13px;cursor:help;
+  transition:transform .1s,filter .1s;
+  position:relative;
+}
+.fm-icon:hover{transform:scale(1.3);filter:brightness(1.3);z-index:10;}
+.fm-icon-pos{background:rgba(0,255,136,.15);border:1px solid rgba(0,255,136,.3);}
+.fm-icon-neg{background:rgba(255,51,68,.15);border:1px solid rgba(255,51,68,.3);}
+.fm-icon-neu{background:rgba(255,255,255,.04);border:1px solid var(--border2);}
 .pcard-avail-row{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;}
 .avail-tag{font-size:9px;padding:3px 8px;border-radius:2px;font-family:var(--mono);font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
 .avail-red{background:rgba(255,51,68,.15);color:var(--red);border:1px solid rgba(255,51,68,.4);animation:tagPulse 1.5s infinite;}
@@ -1450,7 +1467,57 @@ function applyADP(){
   });
 }
 
-function renderPlayers(){
+function factorIcon(text) {
+  var t = text.toLowerCase();
+  if(t.includes('pts vs') || t.includes('vor')) return '📈';
+  if(t.includes('tier 1')||t.includes('elite')) return '⭐';
+  if(t.includes('letzter tier')||t.includes('letzte tier')) return '⚡';
+  if(t.includes('noch kein')) return '🎯';
+  if(t.includes('heavy plan')||t.includes('plan ✓')||t.includes('zero rb')||t.includes('te premium')||t.includes('hero rb')) return '📋';
+  if(t.includes('scarcity')||t.includes('letzter')) return '⚡';
+  if(t.includes('sos')&&(t.includes('easy')||t.includes('top')||t.includes('guter'))) return '☀️';
+  if(t.includes('sos')&&(t.includes('schwer')||t.includes('hart'))) return '🌧️';
+  if(t.includes('jung')||t.includes('sehr jung')) return '🌱';
+  if(t.includes('30+')||t.includes('veteran')||t.includes('älter')) return '📉';
+  if(t.includes('bye')) return '📆';
+  if(t.includes('handcuff')) return '🛡️';
+  if(t.includes('run')) return '🏃';
+  if(t.includes('adp')||t.includes('steal')) return '💰';
+  if(t.includes('sicher')||t.includes('solide')) return '🔒';
+  if(t.includes('risiko')||t.includes('unsicher')||t.includes('hohes')) return '⚠️';
+  if(t.includes('upside')) return '🚀';
+  if(t.includes('clock')||t.includes('dran')) return '⏰';
+  if(t.includes('warten')) return '⌛';
+  if(t.includes('wert unter')||t.includes('score-cap')||t.includes('pos. noch')) return '📊';
+  if(t.includes('confidence')||t.includes('spread')) return '📉';
+  return '●';
+}
+
+function renderFactorIcons(factors) {
+  var pos = factors.filter(function(f){return f.type==='pos';});
+  var neg = factors.filter(function(f){return f.type==='neg';});
+  var neu = factors.filter(function(f){return f.type==='neu';});
+  var h = '<div class="fm-icons-row">';
+  if(pos.length) {
+    h += '<div class="fm-section fm-pros">';
+    pos.forEach(function(f){ h += '<span class="fm-icon fm-icon-pos" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
+    h += '</div>';
+  }
+  if(neg.length) {
+    h += '<div class="fm-section fm-cons">';
+    neg.forEach(function(f){ h += '<span class="fm-icon fm-icon-neg" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
+    h += '</div>';
+  }
+  if(neu.length) {
+    h += '<div class="fm-section fm-neu">';
+    neu.forEach(function(f){ h += '<span class="fm-icon fm-icon-neu" title="'+f.text+'">'+factorIcon(f.text)+'</span>'; });
+    h += '</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+
   var search=(document.getElementById('search-input').value||'').toLowerCase();
   var source=(useCustom && customRankings.length)?customRankings:allPlayers;
   var filtered=source.filter(function(p){
@@ -1616,12 +1683,10 @@ function renderPlayers(){
       h+='<div class="pcard-score-row">';
       h+='<div class="pcard-score-bar-wrap"><div class="pcard-score-bar" style="width:'+sc+'%;background:'+barColor+';box-shadow:0 0 8px '+barColor+';"></div></div>';
       h+='<span class="pcard-score-num" style="color:'+barColor+';">'+sc+'%</span>';
-      if(scoreResult.factors && scoreResult.factors.length){
-        scoreResult.factors.forEach(function(f){
-          h+='<span class="pcard-factor '+f.type+'">'+f.text+'</span>';
-        });
-      }
       h+='</div>';
+      if(scoreResult.factors && scoreResult.factors.length){
+        h+=renderFactorIcons(scoreResult.factors);
+      }
       h+='</div>';
       // RIGHT: Stats
       h+='<div class="pcard-right">';
@@ -2417,8 +2482,18 @@ function calcDraftScore(player) {
   
   var totalScore = valueScore + needScore + contextScore + timingScore + riskBonus;
   totalScore = Math.max(0, Math.min(100, Math.round(totalScore)));
-  
-  return {score: totalScore, factors: factors};
+
+  // Wenn keine negativen Faktoren → erkläre warum nicht 100%
+  var hasNeg = factors.some(function(f){return f.type==='neg';});
+  if(!hasNeg && totalScore < 85) {
+    var missing = 100 - totalScore;
+    if(valueScore < 30) factors.push({text:'Wert unter Elite-Level ('+valueScore+'/40)',type:'neg'});
+    else if(needScore < 18) factors.push({text:'Pos. noch nicht dringend ('+needScore+'/25)',type:'neg'});
+    else if(timingScore < 8) factors.push({text:'Kein Timing-Druck ('+timingScore+'/15)',type:'neg'});
+    else factors.push({text:'Score-Cap: +'+missing+'pts fehlen',type:'neg'});
+  }
+
+  return {score: totalScore, factors: factors, breakdown:{v:valueScore,n:needScore,c:contextScore,t:timingScore,r:riskBonus}};
 }
 
 function getTopRecommendations() {
@@ -2486,9 +2561,7 @@ function renderRecommendations() {
     h += '</div>';
     if(p.projFpts) h += '<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:5px;">'+p.projFpts+'pts'+(p.projHigh?'<span style="color:var(--green);"> ▲'+p.projHigh+'</span>':'')+(p.projLow?'<span style="color:var(--red);"> ▼'+p.projLow+'</span>':'')+'</div>';
     h += '<div class="rec-factors">';
-    rec.factors.forEach(function(f){
-      h += '<span class="rec-factor '+f.type+'">'+f.text+'</span>';
-    });
+    h += renderFactorIcons(rec.factors);
     h += '</div>';
     h += '</div></div>';
   });
