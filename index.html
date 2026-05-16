@@ -648,6 +648,8 @@ var allPlayers = [];
 var sleeperMap = {};
 var SLEEPER_STATS_2024 = {};  // player_id -> letzte Saison Punkte
 var SLEEPER_PROJ_2026 = {};   // player_id -> Sleeper Projektion 2026
+var SLEEPER_STATS_DETAIL = {}; // player_id -> {rush_att, rush_yd, rush_td, rec, rec_yd, rec_td, tar, pass_att, pass_yd, pass_td, pass_int}
+var SLEEPER_PROJ_DETAIL = {};  // player_id -> gleiche Felder für 2026
 var SOS = {
   'ARI':{QB:3,RB:3,WR:3,TE:4},
   'ATL':{QB:2,RB:3,WR:4,TE:2},
@@ -2850,6 +2852,42 @@ function showPlayerModal(playerName) {
 
   var reason = generateDraftReason(p, rec);
 
+  // Stats-Grid Helfer: Rang unter gleicher Position berechnen
+  function statRank(statKey, val, higherBetter) {
+    if(val==null||val===0) return null;
+    var source2 = (useCustom && customRankings.length) ? customRankings : allPlayers;
+    var vals = source2.filter(function(x){ return x.pos===p.pos && x.lastStats && x.lastStats[statKey]>0; })
+                      .map(function(x){ return x.lastStats[statKey]; });
+    if(!vals.length) return null;
+    vals.sort(function(a,b){ return higherBetter?b-a:a-b; });
+    var rank = vals.indexOf(val)+1;
+    return {rank:rank, total:vals.length};
+  }
+  function projRank(statKey, val, higherBetter) {
+    if(val==null||val===0) return null;
+    var source2 = (useCustom && customRankings.length) ? customRankings : allPlayers;
+    var vals = source2.filter(function(x){ return x.pos===p.pos && x.projStats && x.projStats[statKey]>0; })
+                      .map(function(x){ return x.projStats[statKey]; });
+    if(!vals.length) return null;
+    vals.sort(function(a,b){ return higherBetter?b-a:a-b; });
+    var rank = vals.indexOf(val)+1;
+    return {rank:rank, total:vals.length};
+  }
+  function rankColor(r) {
+    if(!r) return 'var(--text3)';
+    var pct = r.rank/r.total;
+    return pct<=0.33?'var(--green)':pct<=0.67?'var(--amber)':'var(--red)';
+  }
+  function statCell(label, val, rankObj) {
+    if(!val) return '';
+    var col = rankColor(rankObj);
+    var rankStr = rankObj ? '<span style="font-size:8px;opacity:.8;margin-left:3px;">#'+rankObj.rank+'</span>' : '';
+    return '<div style="display:flex;flex-direction:column;align-items:center;padding:5px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;border-top:2px solid '+col+';">'
+      +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.06em;margin-bottom:2px;">'+label+'</span>'
+      +'<span style="font-size:14px;font-family:var(--display);color:'+col+';line-height:1;">'+val+rankStr+'</span>'
+      +'</div>';
+  }
+
   // Positional rank (z.B. RB4 = 4. bester RB im Ranking)
   var posRankNum = 1;
   source.forEach(function(x){ if(x.pos===p.pos && (x.rank||999)<(p.rank||999)) posRankNum++; });
@@ -2970,6 +3008,49 @@ function showPlayerModal(playerName) {
 
   // Draft Verdict
   h += '<div style="background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:16px;">'+reason+'</div>';
+
+  // Stats-Grid (2025 Saison + 2026 Projektion)
+  var hasLastStats = p.lastStats && Object.keys(p.lastStats).length > 0;
+  var hasProjStats = p.projStats && Object.keys(p.projStats).length > 0;
+  if(hasLastStats || hasProjStats) {
+    var pos2 = p.pos;
+    var statDefs = [];
+    if(pos2==='RB') statDefs = [
+      {k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
+      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'tar',lbl:'TAR',hi:true}
+    ];
+    else if(pos2==='WR'||pos2==='TE') statDefs = [
+      {k:'tar',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
+    ];
+    else if(pos2==='QB') statDefs = [
+      {k:'pass_att',lbl:'ATT',hi:true},{k:'pass_yd',lbl:'PASS YDS',hi:true},{k:'pass_td',lbl:'PASS TD',hi:true},{k:'pass_int',lbl:'INT',hi:false},
+      {k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true}
+    ];
+    if(statDefs.length) {
+      if(hasLastStats) {
+        h += '<div style="margin-bottom:10px;">';
+        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:5px;">2025 SAISON — STATS</div>';
+        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:4px;">';
+        statDefs.forEach(function(def){
+          var val = (p.lastStats[def.k]||0)||null;
+          var r = statRank(def.k, val, def.hi);
+          h += statCell(def.lbl, val, r);
+        });
+        h += '</div></div>';
+      }
+      if(hasProjStats) {
+        h += '<div style="margin-bottom:10px;">';
+        h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:5px;">SLP PROJ 2026 — STATS</div>';
+        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:4px;">';
+        statDefs.forEach(function(def){
+          var val = (p.projStats[def.k]||0)||null;
+          var r = projRank(def.k, val, def.hi);
+          h += statCell(def.lbl, val, r);
+        });
+        h += '</div></div>';
+      }
+    }
+  }
 
   // Score Bars
   var cats = [
@@ -3359,16 +3440,36 @@ async function fetchSleeperSeasonData() {
       });
     }
 
-    // Werte in globale Dicts übertragen
-    SLEEPER_STATS_2024 = {};
+    // Werte in globale Dicts übertragen (Punkte + Detail-Stats)
+    var statKeys = ['rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','tar','pass_att','pass_yd','pass_td','pass_int'];
+    SLEEPER_STATS_2024 = {}; SLEEPER_STATS_DETAIL = {};
     Object.entries(statsData).forEach(function(e){
-      var pts = useWeekly ? e[1] : ((e[1]&&e[1][scoringKey])||0);
-      if(pts>0) SLEEPER_STATS_2024[e[0]] = Math.round(pts*10)/10;
+      var pid=e[0], raw=e[1];
+      var pts = useWeekly ? (typeof raw==='number'?raw:0) : ((raw&&raw[scoringKey])||0);
+      if(pts>0) {
+        SLEEPER_STATS_2024[pid] = Math.round(pts*10)/10;
+        if(!useWeekly && raw) {
+          var d={}; statKeys.forEach(function(k){ if(raw[k]) d[k]=Math.round(raw[k]); }); SLEEPER_STATS_DETAIL[pid]=d;
+        }
+      }
     });
-    SLEEPER_PROJ_2026 = {};
+    // Für weekly sum: detail stats auch summieren (raw ist Objekt pro Woche)
+    if(useWeekly) {
+      // statsRes ist Array von week-Objekten — re-summiere detail keys
+      // Wir haben sie oben schon als Punkte-Summe, aber nicht als detail
+      // Daher nochmal über die original-Wochen-Daten (gespeichert in closure nicht zugänglich)
+      // → Skip für weekly fallback, nur Punkte verfügbar
+    }
+    SLEEPER_PROJ_2026 = {}; SLEEPER_PROJ_DETAIL = {};
     Object.entries(projData).forEach(function(e){
-      var pts = useWeekly ? e[1] : ((e[1]&&e[1][scoringKey])||0);
-      if(pts>0) SLEEPER_PROJ_2026[e[0]] = Math.round(pts*10)/10;
+      var pid=e[0], raw=e[1];
+      var pts = useWeekly ? (typeof raw==='number'?raw:0) : ((raw&&raw[scoringKey])||0);
+      if(pts>0) {
+        SLEEPER_PROJ_2026[pid] = Math.round(pts*10)/10;
+        if(!useWeekly && raw) {
+          var d={}; statKeys.forEach(function(k){ if(raw[k]) d[k]=Math.round(raw[k]); }); SLEEPER_PROJ_DETAIL[pid]=d;
+        }
+      }
     });
 
     // Spieler anreichern
@@ -3377,8 +3478,8 @@ async function fetchSleeperSeasonData() {
       if(!p.sleeperId) return;
       var last = SLEEPER_STATS_2024[p.sleeperId];
       var proj = SLEEPER_PROJ_2026[p.sleeperId];
-      if(last) p.lastSeasonPts = Math.round(last*10)/10;
-      if(proj) p.sleeperProjPts = Math.round(proj*10)/10;
+      if(last) { p.lastSeasonPts = Math.round(last*10)/10; p.lastStats = SLEEPER_STATS_DETAIL[p.sleeperId]||null; }
+      if(proj) { p.sleeperProjPts = Math.round(proj*10)/10; p.projStats = SLEEPER_PROJ_DETAIL[p.sleeperId]||null; }
     });
     if(statusEl){ statusEl.textContent='✓ Sleeper Stats geladen'; setTimeout(function(){ statusEl.style.display='none'; },3000); }
     renderPlayers();
