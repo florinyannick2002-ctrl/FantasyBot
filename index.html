@@ -127,16 +127,16 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   font-family:var(--mono);font-size:13px;font-weight:800;
   color:var(--text3);min-width:28px;text-align:right;
 }
-.pcard-imgwrap{width:36px;height:36px;flex-shrink:0;position:relative;}
+.pcard-imgwrap{width:48px;height:48px;flex-shrink:0;position:relative;}
 .pcard-img{
-  width:36px;height:36px;border-radius:3px;object-fit:cover;
+  width:48px;height:48px;border-radius:4px;object-fit:cover;
   border:1px solid var(--border2);display:block;
   filter:saturate(1.1) contrast(1.05);
 }
 .pcard-img-fallback{
-  width:36px;height:36px;border-radius:3px;background:#000;
+  width:48px;height:48px;border-radius:4px;background:#000;
   border:1px solid var(--border2);display:flex;align-items:center;
-  justify-content:center;font-size:11px;color:var(--text3);
+  justify-content:center;font-size:14px;color:var(--text3);
   font-family:var(--mono);font-weight:800;
 }
 .pcard-center{flex:1;min-width:0;}
@@ -1745,7 +1745,7 @@ function renderPlayers(){
       // Score bar + 1 pos + 1 neg factor
       var scoreResult = calcDraftScore(p);
       var sc = scoreResult.score;
-      var barColor = sc >= 75 ? 'var(--green)' : sc >= 55 ? 'var(--amber)' : sc >= 35 ? 'var(--blue)' : 'var(--text3)';
+      var barColor = sc >= 75 ? 'var(--green)' : sc >= 55 ? 'var(--amber)' : sc >= 35 ? 'var(--blue)' : 'var(--red)';
       h+='<div class="pcard-score-row">';
       h+='<div class="pcard-score-bar-wrap"><div class="pcard-score-bar" style="width:'+sc+'%;background:'+barColor+';box-shadow:0 0 8px '+barColor+';"></div></div>';
       h+='<span class="pcard-score-num" style="color:'+barColor+';">'+sc+'%</span>';
@@ -2785,7 +2785,7 @@ function showPlayerModal(playerName) {
   // Bio data from Sleeper
   var bioItems = [];
   if(p.age) bioItems.push({lbl:'ALTER', val:p.age+'j'});
-  if(p.height) bioItems.push({lbl:'GRÖSSE', val:p.height+'"'});
+  if(p.height) { var hIn=parseInt(p.height); bioItems.push({lbl:'GRÖSSE', val: !isNaN(hIn) ? Math.floor(hIn/12)+"'"+( hIn%12 )+'"' : p.height+'"'}); }
   if(p.weight) bioItems.push({lbl:'GEWICHT', val:p.weight+' lbs'});
   if(p.exp!=null) bioItems.push({lbl:'EXP', val:p.exp+'J'});
   if(p.college) bioItems.push({lbl:'COLLEGE', val:p.college});
