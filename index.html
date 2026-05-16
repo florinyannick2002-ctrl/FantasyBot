@@ -3293,7 +3293,8 @@ async function loadSleeperPlayers(sport){
         // Sleeper weekly proj × 18 Wochen = Saisonprojektion (entspricht dem was Sleeper anzeigt)
         // ADP-Rang + Sleeper Proj direkt aus API (season total, kein Multiplier nötig)
         var rawProj = (item.stats && (item.stats['pts_ppr'] || item.stats['pts_half_ppr'] || item.stats['pts_std'])) || 0;
-        var slpProj = rawProj > 50 ? Math.round(rawProj * 10) / 10 : null; // >50 = plausible Saisonsumme
+        // rawProj kann weekly (z.B. 13.9) oder season-total sein — × 17 gibt Saisonwert
+        var slpProj = rawProj > 0 ? Math.round(rawProj * 17 * 10) / 10 : null;
         if(sleeperMap){
           Object.values(sleeperMap).forEach(function(sm){
             if(sm.id===String(pid)){
@@ -3320,32 +3321,61 @@ async function fetchSleeperSeasonData() {
   var statusEl = document.getElementById('sleeper-stats-status');
   if(statusEl){ statusEl.style.display='block'; statusEl.textContent='⏳ Lade 2025 Stats & 2026 Proj...'; }
   try {
-    var weeks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18];
-    var [statsRes, projRes] = await Promise.all([
-      Promise.all(weeks.map(function(w){
-        return fetch('https://api.sleeper.app/v1/stats/nfl/regular/2025/'+w)
-          .then(function(r){ return r.ok?r.json():{}; }).catch(function(){ return {}; });
-      })),
-      Promise.all(weeks.map(function(w){
-        return fetch('https://api.sleeper.app/v1/projections/nfl/regular/2026/'+w)
-          .then(function(r){ return r.ok?r.json():{}; }).catch(function(){ return {}; });
-      }))
+    // Versuche zuerst Week 0 = Saison-Totals direkt (1 Call statt 18)
+    var [statsW0, projW0] = await Promise.all([
+      fetch('https://api.sleeper.app/v1/stats/nfl/regular/2025/0').then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
+      fetch('https://api.sleeper.app/v1/projections/nfl/regular/2026/0').then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
     ]);
-    // Summiere Punkte pro Spieler
-    SLEEPER_STATS_2024 = {};
-    statsRes.forEach(function(week){
-      Object.entries(week).forEach(function(e){
-        var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
-        if(pts>0) SLEEPER_STATS_2024[pid] = Math.round(((SLEEPER_STATS_2024[pid]||0)+pts)*10)/10;
+
+    // Prüfe ob Week 0 Daten enthält (mindestens 50 Spieler mit Punkten)
+    var statsW0Keys = Object.keys(statsW0).filter(function(k){return statsW0[k]&&statsW0[k][scoringKey]>0;});
+    var projW0Keys  = Object.keys(projW0).filter(function(k){return projW0[k]&&projW0[k][scoringKey]>0;});
+    var useWeekly = statsW0Keys.length < 50;
+
+    var statsData = statsW0, projData = projW0;
+
+    if(useWeekly) {
+      // Fallback: alle 18 Wochen summieren
+      if(statusEl) statusEl.textContent='⏳ Summiere 18 Wochen...';
+      var weeks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18];
+      var [statsRes, projRes] = await Promise.all([
+        Promise.all(weeks.map(function(w){
+          return fetch('https://api.sleeper.app/v1/stats/nfl/regular/2025/'+w)
+            .then(function(r){return r.ok?r.json():{};}).catch(function(){return {};});
+        })),
+        Promise.all(weeks.map(function(w){
+          return fetch('https://api.sleeper.app/v1/projections/nfl/regular/2026/'+w)
+            .then(function(r){return r.ok?r.json():{};}).catch(function(){return {};});
+        }))
+      ]);
+      // Summiere
+      statsData = {}; projData = {};
+      statsRes.forEach(function(week){
+        Object.entries(week).forEach(function(e){
+          var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
+          if(pts>0) statsData[pid] = Math.round(((statsData[pid]||0)+pts)*10)/10;
+        });
       });
+      projRes.forEach(function(week){
+        Object.entries(week).forEach(function(e){
+          var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
+          if(pts>0) projData[pid] = Math.round(((projData[pid]||0)+pts)*10)/10;
+        });
+      });
+    }
+
+    // Werte in globale Dicts übertragen
+    SLEEPER_STATS_2024 = {};
+    Object.entries(statsData).forEach(function(e){
+      var pts = useWeekly ? e[1] : ((e[1]&&e[1][scoringKey])||0);
+      if(pts>0) SLEEPER_STATS_2024[e[0]] = Math.round(pts*10)/10;
     });
     SLEEPER_PROJ_2026 = {};
-    projRes.forEach(function(week){
-      Object.entries(week).forEach(function(e){
-        var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
-        if(pts>0) SLEEPER_PROJ_2026[pid] = Math.round(((SLEEPER_PROJ_2026[pid]||0)+pts)*10)/10;
-      });
+    Object.entries(projData).forEach(function(e){
+      var pts = useWeekly ? e[1] : ((e[1]&&e[1][scoringKey])||0);
+      if(pts>0) SLEEPER_PROJ_2026[e[0]] = Math.round(pts*10)/10;
     });
+
     // Spieler anreichern
     var targets = customRankings.length ? customRankings : allPlayers;
     targets.forEach(function(p){
