@@ -2593,19 +2593,33 @@ function calcDraftScore(player) {
 
   // Wenn keine negativen Faktoren → erkläre warum nicht 100%
   var hasNeg = factors.some(function(f){return f.type==='neg';});
+  // Prüfe ob Spieler bereits als "letzte Chance" markiert ist (via Sleeper ADP)
+  var isUrgent = false;
+  if(myDraftSlot && player.sleeperRank != null) {
+    var pl2 = window._picksUntilMe !== undefined ? window._picksUntilMe : 0;
+    var tp2 = draftedIds.size;
+    var mnp2 = tp2 + 1 + pl2;
+    var slpR2 = player.sleeperRank;
+    if(pl2 === 0) isUrgent = slpR2 <= mnp2 + totalTeams - 2;
+    else isUrgent = slpR2 < mnp2 || slpR2 <= mnp2 + 3;
+  }
+
   if(!hasNeg && totalScore < 85) {
     var availRank = available.filter(function(p){return (p.rank||999) < rank;}).length + 1;
     var hasNeedFactor = factors.some(function(f){
       return f.type==='pos' && (f.text.toLowerCase().includes('noch kein') || f.text.toLowerCase().includes('brauche'));
     });
-    if(valueScore < 30 && availRank > 2) {
-      factors.push({text:'Rang #'+availRank+' verfügbar — bessere Picks noch vorhanden',type:'neg'});
+    if(isUrgent) {
+      // Sleeper sagt er ist bald weg → kein "kannst warten" Neg-Faktor
+      // Nichts hinzufügen, der LETZTE CHANCE Tag erklärt es bereits
+    } else if(valueScore < 30 && availRank > 2) {
+      factors.push({text:'Rang #'+availRank+' verfügbar — bessere Picks vorhanden',type:'neg'});
     } else if(!hasNeedFactor && needScore < 18) {
       if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'TE-Timing: ideale Zone noch nicht erreicht (R4-7)',type:'neg'});
       else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'TE-Timing: du planst TE erst spät zu draften',type:'neg'});
       else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'QB-Timing: du planst QB erst spät (R9+)',type:'neg'});
       else factors.push({text:'Diese Position ist momentan noch nicht dringend',type:'neg'});
-    } else if(timingScore < 8) {
+    } else if(timingScore < 8 && !isUrgent) {
       factors.push({text:'Kein Druck — du kannst noch eine Runde warten',type:'neg'});
     } else {
       factors.push({text:'Andere Spieler haben höheren Empfehlungs-Score',type:'neg'});
