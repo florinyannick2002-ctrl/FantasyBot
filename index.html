@@ -294,6 +294,15 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 </head>
 <body>
 <div id="tooltip-box" class="tooltip-box"></div>
+
+<!-- Player Detail Modal -->
+<div id="player-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.style.display='none';">
+  <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);">
+    <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:28px;height:28px;border-radius:2px;cursor:pointer;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">×</button>
+    <div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">📊 SPIELER ANALYSE</div>
+    <div id="modal-body"></div>
+  </div>
+</div>
 <div class="app">
 <aside class="sidebar">
   <div class="logo">
@@ -1693,7 +1702,7 @@ function renderPlayers(){
       }
 
       var isHighlight = myPickRound ? ' pcard-highlight' : '';
-      h+='<div class="pcard t'+tc+isHighlight+'">';
+      h+='<div class="pcard t'+tc+isHighlight+'" onclick="showPlayerModal(\''+p.name.replace(/'/g,"\\'")+'\')\" style="cursor:pointer;">';
       h+='<div class="pcard-rank">'+p.rank+'</div>';
       h+='<div class="pcard-imgwrap">'+imgHtml+'</div>';
       h+='<div class="pcard-center">';
@@ -2713,6 +2722,121 @@ function getTopRecommendations() {
 
 
 
+function generateDraftReason(p, rec) {
+  var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
+  var pos = factors.filter(function(f){return f.type==='pos';});
+  var neg = factors.filter(function(f){return f.type==='neg';});
+  var bd = rec.breakdown || {};
+
+  var parts = [];
+  if(pos[0]) parts.push(pos[0].text);
+  if(pos[1]) parts.push(pos[1].text);
+
+  var concern = neg[0] ? ' Beachte: ' + neg[0].text + '.' : '';
+
+  var verdict = rec.score >= 80 ? 'Klarer Draft-Pick jetzt!' :
+                rec.score >= 65 ? 'Guter Pick — stark empfohlen.' :
+                rec.score >= 50 ? 'Solider Pick mit Vorbehalten.' :
+                'Nur wenn keine bessere Option vorhanden.';
+
+  return verdict + ' ' + parts.join(', ') + '.' + concern;
+}
+
+function showPlayerModal(playerName) {
+  var source = (useCustom && customRankings.length) ? customRankings : allPlayers;
+  var p = source.find(function(x){return x.name === playerName;});
+  if(!p) return;
+  var rec = calcDraftScore(p);
+  var bd = rec.breakdown || {};
+  var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
+  var posF = factors.filter(function(f){return f.type==='pos';});
+  var negF = factors.filter(function(f){return f.type==='neg';});
+  var neuF = factors.filter(function(f){return f.type==='neu';});
+  var pc = posColors[p.pos]||'b-k';
+
+  var imgHtml = p.sleeperId
+    ? '<img style="width:80px;height:80px;border-radius:4px;object-fit:cover;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
+    : '<div style="width:80px;height:80px;border-radius:4px;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:32px;">🏈</div>';
+
+  var cats = [
+    {label:'SPIELERWERT', key:'v', max:40, color:'var(--blue)', desc:'VOR (Proj.Punkte vs. Ersatz) + Tier-Qualität + Opportunity Cost'},
+    {label:'POSITIONSBEDARF', key:'n', max:25, color:'var(--green)', desc:'Roster-Bedarf + Strategie-Alignment + Positions-Scarcity'},
+    {label:'KONTEXT', key:'c', max:20, color:'var(--purple)', desc:'SOS + Alter + Bye Week Konflikt + Handcuff'},
+    {label:'TIMING', key:'t', max:15, color:'var(--amber)', desc:'Position-Run + Scarcity vor nächstem Pick + On Clock'}
+  ];
+
+  var reason = generateDraftReason(p, rec);
+
+  var h = '<div style="display:flex;gap:16px;align-items:flex-start;margin-bottom:20px;">';
+  h += imgHtml;
+  h += '<div style="flex:1;">';
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span class="badge '+pc+'">'+p.pos+'</span><span style="font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:-.3px;">'+p.name+'</span></div>';
+  h += '<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:10px;">'+p.team+' · Rank #'+p.rank+(p.sleeperRank?' · Slp '+p.sleeperRank:'')+(p.age?' · '+p.age+'j':'')+'</div>';
+  h += '<div style="background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;">'+reason+'</div>';
+  h += '</div>';
+  h += '<div style="text-align:center;min-width:70px;"><div style="font-family:var(--display);font-size:48px;color:var(--amber);line-height:1;">'+rec.score+'</div><div style="font-size:10px;font-family:var(--mono);color:var(--text3);letter-spacing:.1em;">SCORE</div></div>';
+  h += '</div>';
+
+  // Score Bars
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px;">';
+  cats.forEach(function(cat){
+    var val = bd[cat.key] || 0;
+    var pct = Math.round(val/cat.max*100);
+    h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:12px;border-radius:4px;">';
+    h += '<div style="display:flex;justify-content:space-between;margin-bottom:6px;">';
+    h += '<span style="font-size:9px;font-family:var(--mono);font-weight:800;color:'+cat.color+';letter-spacing:.12em;">'+cat.label+'</span>';
+    h += '<span style="font-size:12px;font-family:var(--mono);font-weight:800;color:'+cat.color+';">'+val+'/'+cat.max+'</span>';
+    h += '</div>';
+    h += '<div style="background:var(--border2);height:4px;border-radius:2px;">';
+    h += '<div style="background:'+cat.color+';width:'+pct+'%;height:4px;border-radius:2px;box-shadow:0 0 8px '+cat.color+';"></div>';
+    h += '</div>';
+    h += '<div style="font-size:10px;color:var(--text3);margin-top:5px;">'+cat.desc+'</div>';
+    h += '</div>';
+  });
+  h += '</div>';
+
+  // Pros
+  if(posF.length) {
+    h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--green);letter-spacing:.15em;margin-bottom:8px;">✓ PROS</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:5px;">';
+    posF.forEach(function(f){
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">';
+      h += '<span style="font-size:16px;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--green);">'+f.text+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  }
+
+  // Cons
+  if(negF.length) {
+    h += '<div style="margin-bottom:12px;"><div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--red);letter-spacing:.15em;margin-bottom:8px;">✗ CONS</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:5px;">';
+    negF.forEach(function(f){
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,51,68,.06);border:1px solid rgba(255,51,68,.15);border-radius:3px;">';
+      h += '<span style="font-size:16px;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--red);">'+f.text+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  }
+
+  if(neuF.length) {
+    h += '<div><div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.15em;margin-bottom:8px;">○ NEUTRAL</div>';
+    h += '<div style="display:flex;flex-direction:column;gap:5px;">';
+    neuF.forEach(function(f){
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;">';
+      h += '<span style="font-size:16px;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--text2);">'+f.text+'</span>';
+      h += '</div>';
+    });
+    h += '</div></div>';
+  }
+
+  document.getElementById('modal-body').innerHTML = h;
+  document.getElementById('player-modal').style.display = 'flex';
+}
+
 function renderRecommendations() {
   var area = document.getElementById('rec-area');
   if(!area) return;
@@ -2724,45 +2848,50 @@ function renderRecommendations() {
   if(!recs.length) { area.innerHTML=''; return; }
 
   var medals = ['🥇','🥈','🥉'];
-  var scoreColors = ['#f5a623','#4a9eff','#8b91a8'];
+  var scoreColors = ['var(--amber)','var(--blue)','var(--text2)'];
 
   var h = '<div class="rec-box-main">';
-  h += '<div class="rec-header">💡 Draft Empfehlungen';
-  if(window._picksUntilMe===0) h += ' &nbsp;<span style="color:var(--amber);animation:pulse 1.5s infinite;">— DU BIST DRAN!</span>';
-  else if(window._picksUntilMe!==undefined) h += ' &nbsp;<span style="color:var(--text3);font-weight:400;">'+window._picksUntilMe+' Picks bis zu dir</span>';
+  h += '<div class="rec-header"><span class="status-dot"></span>RECOMMENDATIONS · LIVE';
+  if(window._picksUntilMe===0) h += ' &nbsp;<span class="alert-banner">⚠ DU BIST DRAN</span>';
+  else if(window._picksUntilMe!==undefined) h += ' &nbsp;<span style="color:var(--text3);font-weight:600;">// '+window._picksUntilMe+' PICKS BIS ZU DIR</span>';
   h += '</div>';
 
   recs.forEach(function(rec, i) {
     var p = rec.player;
     var pc = posColors[p.pos]||'b-k';
     var scoreColor = scoreColors[i];
-    
-    // Player image
-    var imgHtml = '';
-    if(p.sleeperId) {
-      var initials = (p.name||'?').split(' ').map(function(w){return w[0];}).join('').substring(0,2);
-      imgHtml = '<img class="rec-player-img" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\';" /><div class="rec-player-img-fallback" style="display:none;">'+initials+'</div>';
-    } else {
-      imgHtml = '<div class="rec-player-img-fallback">🏈</div>';
-    }
+    var bd = rec.breakdown || {};
 
-    h += '<div class="rec-card rec-'+(i+1)+'">';
-    // Score
-    h += '<div class="rec-score" style="color:'+scoreColor+';">'+medals[i]+'<div class="rec-score-num">'+rec.score+'</div><div class="rec-score-pct">%</div></div>';
-    // Image
+    var imgHtml = p.sleeperId
+      ? '<img class="rec-player-img" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\';" /><div class="rec-player-img-fallback" style="display:none;">'+(p.name||'?').substring(0,2)+'</div>'
+      : '<div class="rec-player-img-fallback">🏈</div>';
+
+    var reason = generateDraftReason(p, rec);
+    var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
+    var posF = factors.filter(function(f){return f.type==='pos';});
+    var negF = factors.filter(function(f){return f.type==='neg';});
+
+    h += '<div class="rec-card rec-'+(i+1)+'" onclick="showPlayerModal(\''+p.name.replace(/'/g,"\\'")+'\')" style="cursor:pointer;">';
+    h += '<div class="rec-score" style="color:'+scoreColor+';"><div class="rec-score-medal">'+medals[i]+'</div><div class="rec-score-num">'+rec.score+'</div><div class="rec-score-pct">%</div></div>';
     h += imgHtml;
-    // Info
     h += '<div style="flex:1;min-width:0;">';
-    h += '<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;flex-wrap:wrap;">';
+    h += '<div class="rec-player-name">'+p.name+'</div>';
+    h += '<div class="rec-meta">';
     h += '<span class="badge '+pc+'">'+p.pos+'</span>';
-    h += '<span style="font-size:15px;font-weight:700;letter-spacing:-.3px;">'+p.name+'</span>';
-    h += '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);">'+p.team+'</span>';
-    h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">Rank #'+p.rank+'</span>';
-    if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>';
+    h += '<span class="rec-meta-item">'+p.team+'</span>';
+    h += '<span class="rec-meta-item">RK '+p.rank+'</span>';
+    if(p.sleeperRank) h += '<span class="rec-meta-item" style="color:var(--blue);">SLP '+p.sleeperRank+'</span>';
+    if(p.projFpts) h += '<span class="rec-meta-item proj">'+p.projFpts+'PTS</span>';
     h += '</div>';
-    if(p.projFpts) h += '<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:5px;">'+p.projFpts+'pts'+(p.projHigh?'<span style="color:var(--green);"> ▲'+p.projHigh+'</span>':'')+(p.projLow?'<span style="color:var(--red);"> ▼'+p.projLow+'</span>':'')+'</div>';
-    h += '<div class="rec-factors">';
-    h += renderFactorIcons(rec.factors);
+    // Draft reason text
+    h += '<div style="font-size:11px;color:var(--text2);margin:7px 0 6px;line-height:1.5;border-left:2px solid '+scoreColor+';padding-left:8px;">'+reason+'</div>';
+    // Top 3 icons
+    h += '<div style="display:flex;gap:4px;align-items:center;">';
+    var topIcons = posF.slice(0,2).concat(negF.slice(0,1));
+    topIcons.forEach(function(f){
+      h += '<span class="fm-icon '+(f.type==='pos'?'fm-icon-pos':f.type==='neg'?'fm-icon-neg':'fm-icon-neu')+'" title="'+f.text+'">'+factorIcon(f.text)+'</span>';
+    });
+    h += '<span style="font-size:10px;font-family:var(--mono);color:var(--text3);margin-left:4px;">→ klick für Details</span>';
     h += '</div>';
     h += '</div></div>';
   });
