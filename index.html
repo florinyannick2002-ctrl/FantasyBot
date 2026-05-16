@@ -182,6 +182,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .fm-text-badge{font-size:10px;padding:3px 8px;border-radius:3px;font-family:var(--mono);font-weight:700;letter-spacing:.02em;}
 .fm-text-pos{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.25);}
 .fm-text-neg{background:rgba(255,51,68,.1);color:var(--red);border:1px solid rgba(255,51,68,.25);}
+.fm-breakdown{font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:5px;letter-spacing:.04em;}
 .pcard-avail-row{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;}
 .avail-tag{font-size:9px;padding:3px 8px;border-radius:2px;font-family:var(--mono);font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
 .avail-red{background:rgba(255,51,68,.15);color:var(--red);border:1px solid rgba(255,51,68,.4);animation:tagPulse 1.5s infinite;}
@@ -1497,20 +1498,25 @@ function factorIcon(text) {
 }
 
 function renderFactorIcons(factors) {
-  var pos = factors.filter(function(f){return f.type==='pos';});
-  var neg = factors.filter(function(f){return f.type==='neg';});
-  var neu = factors.filter(function(f){return f.type==='neu';});
+  // Trenne Breakdown von anderen Faktoren
+  var breakdown = factors.find(function(f){return f.text.startsWith('Breakdown:');});
+  var rest = factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
 
-  // Top 1 pos + top 1 neg als Text
+  var pos = rest.filter(function(f){return f.type==='pos';});
+  var neg = rest.filter(function(f){return f.type==='neg';});
+  var neu = rest.filter(function(f){return f.type==='neu';});
+
+  // Merke welche als Text gezeigt werden
+  var shownAsText = [];
   var h = '<div class="fm-text-row">';
-  if(pos[0]) h += '<span class="fm-text-badge fm-text-pos">'+factorIcon(pos[0].text)+' '+pos[0].text+'</span>';
-  if(neg[0]) h += '<span class="fm-text-badge fm-text-neg">'+factorIcon(neg[0].text)+' '+neg[0].text+'</span>';
-  if(!neg[0] && pos[1]) h += '<span class="fm-text-badge fm-text-pos">'+factorIcon(pos[1].text)+' '+pos[1].text+'</span>';
+  if(pos[0]) { h += '<span class="fm-text-badge fm-text-pos">'+factorIcon(pos[0].text)+' '+pos[0].text+'</span>'; shownAsText.push(pos[0].text); }
+  if(neg[0]) { h += '<span class="fm-text-badge fm-text-neg">'+factorIcon(neg[0].text)+' '+neg[0].text+'</span>'; shownAsText.push(neg[0].text); }
+  else if(pos[1]) { h += '<span class="fm-text-badge fm-text-pos">'+factorIcon(pos[1].text)+' '+pos[1].text+'</span>'; shownAsText.push(pos[1].text); }
   h += '</div>';
 
-  // Rest als Icons
-  var restPos = pos.slice(1);
-  var restNeg = neg.slice(1);
+  // Rest als Icons — nur was NICHT schon als Text gezeigt wurde
+  var restPos = pos.filter(function(f){return shownAsText.indexOf(f.text)<0;});
+  var restNeg = neg.filter(function(f){return shownAsText.indexOf(f.text)<0;});
   if(restPos.length||restNeg.length||neu.length){
     h += '<div class="fm-icons-row">';
     if(restPos.length){
@@ -1529,6 +1535,11 @@ function renderFactorIcons(factors) {
       h += '</div>';
     }
     h += '</div>';
+  }
+
+  // Breakdown als eigene kleine Zeile
+  if(breakdown) {
+    h += '<div class="fm-breakdown">'+breakdown.text.replace('Breakdown: ','')+'</div>';
   }
   return h;
 }
@@ -2281,8 +2292,9 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser als nächster '+pos+' beim Pick',type:'pos'});
-    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts über Replacement-'+pos,type:'pos'});
+    var nextRound = Math.floor((totalPicked + 1 + picksLeft) / totalTeams) + 1;
+    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser als nächster '+pos+' (ab Runde '+nextRound+')',type:'pos'});
+    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts über Replacement-'+pos+' in Runde '+nextRound,type:'pos'});
     else if(vor >= 5) factors.push({text:'+'+Math.round(vor)+'pts Mehrwert',type:'pos'});
   } else {
     // Fallback: Rank-basiert
