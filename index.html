@@ -1518,6 +1518,7 @@ function renderFactorIcons(factors) {
 }
 
 
+function renderPlayers(){
   var search=(document.getElementById('search-input').value||'').toLowerCase();
   var source=(useCustom && customRankings.length)?customRankings:allPlayers;
   var filtered=source.filter(function(p){
