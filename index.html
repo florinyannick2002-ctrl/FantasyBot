@@ -2853,30 +2853,60 @@ function showPlayerModal(playerName) {
   var reason = generateDraftReason(p, rec);
 
   // Stats-Grid Helfer: Rang unter gleicher Position berechnen
+  // Mindest-Schwellen damit Backups aus dem Ranking rausfliegen
+  function minGpThreshold(pos3) {
+    if(pos3==='QB') return 4;   // mind. 4 Spiele als Starter
+    return 6;                    // RB/WR/TE mind. 6 Spiele
+  }
+  function minAttThreshold(pos3) {
+    if(pos3==='QB') return 80;  // mind. 80 Pass-Versuche
+    if(pos3==='RB') return 40;  // mind. 40 Rush-Versuche
+    return 0;
+  }
+  function isQualified(x, forStats) {
+    // Spieler mit zu wenig GP oder Versuchen rausnehmen
+    var stats = forStats ? x.lastStats : x.projStats;
+    if(!stats) return false;
+    var gp = stats['gp']||0;
+    if(gp < minGpThreshold(x.pos)) return false;
+    if(x.pos==='QB' && (stats['pass_att']||0) < minAttThreshold(x.pos)) return false;
+    if(x.pos==='RB' && (stats['rush_att']||0) < minAttThreshold(x.pos) && (stats['rec_tgt']||stats['tar']||0) < 20) return false;
+    return true;
+  }
   function statRank(statKey, val, higherBetter) {
-    if(val==null||val===0) return null;
+    if(val==null) return null;
     var source2 = (useCustom && customRankings.length) ? customRankings : allPlayers;
-    var vals = source2.filter(function(x){ return x.pos===p.pos && x.lastStats && x.lastStats[statKey]>0; })
+    var vals = source2.filter(function(x){ return x.pos===p.pos && isQualified(x, true) && x.lastStats[statKey]!=null; })
                       .map(function(x){ return x.lastStats[statKey]; });
     if(!vals.length) return null;
     vals.sort(function(a,b){ return higherBetter?b-a:a-b; });
     var rank = vals.indexOf(val)+1;
+    if(rank===0) rank = vals.length; // nicht gefunden = letzter
     return {rank:rank, total:vals.length};
   }
   function projRank(statKey, val, higherBetter) {
-    if(val==null||val===0) return null;
+    if(val==null) return null;
     var source2 = (useCustom && customRankings.length) ? customRankings : allPlayers;
-    var vals = source2.filter(function(x){ return x.pos===p.pos && x.projStats && x.projStats[statKey]>0; })
+    var vals = source2.filter(function(x){ return x.pos===p.pos && isQualified(x, false) && x.projStats[statKey]!=null; })
                       .map(function(x){ return x.projStats[statKey]; });
     if(!vals.length) return null;
     vals.sort(function(a,b){ return higherBetter?b-a:a-b; });
     var rank = vals.indexOf(val)+1;
+    if(rank===0) rank = vals.length;
     return {rank:rank, total:vals.length};
   }
-  function rankColor(r) {
+  function rankColor(r, pos3) {
     if(!r) return 'var(--text3)';
-    var pct = r.rank/r.total;
-    return pct<=0.33?'var(--green)':pct<=0.67?'var(--amber)':'var(--red)';
+    var rank = r.rank;
+    // Positionsspezifische Fantasy-relevante Schwellen
+    var g, y; // bis rank<=g = grün, <=y = gelb, sonst rot
+    var pos3u = (pos3||p.pos||'').toUpperCase();
+    if(pos3u==='QB')      { g=12; y=24; }
+    else if(pos3u==='RB') { g=24; y=48; }
+    else if(pos3u==='WR') { g=30; y=60; }
+    else if(pos3u==='TE') { g=12; y=24; }
+    else                  { g=Math.floor(r.total*0.33); y=Math.floor(r.total*0.66); }
+    return rank<=g?'var(--green)':rank<=y?'var(--amber)':'var(--red)';
   }
   function statCell(label, val, rankObj) {
     // val=null bedeutet keine Daten; val=0 wird angezeigt (z.B. 0 TDs ist gültig)
@@ -2884,7 +2914,7 @@ function showPlayerModal(playerName) {
       +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.06em;margin-bottom:2px;">'+label+'</span>'
       +'<span style="font-size:14px;font-family:var(--display);color:var(--text3);line-height:1;">—</span>'
       +'</div>';
-    var col = rankColor(rankObj);
+    var col = rankColor(rankObj, p ? p.pos : null);
     var rankStr = rankObj ? '<span style="font-size:8px;opacity:.75;margin-left:3px;">#'+rankObj.rank+'</span>' : '';
     return '<div style="display:flex;flex-direction:column;align-items:center;padding:5px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;border-top:2px solid '+col+';">'
       +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.06em;margin-bottom:2px;">'+label+'</span>'
@@ -2997,14 +3027,14 @@ function showPlayerModal(playerName) {
     var pos2 = p.pos;
     var statDefs = [];
     if(pos2==='RB') statDefs = [
-      {k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
-      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'rec_td',lbl:'REC TD',hi:true},{k:'tar',lbl:'TAR',hi:true}
+      {k:'gp',lbl:'GP',hi:true},{k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
+      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'rec_td',lbl:'REC TD',hi:true},{k:'rec_tgt',lbl:'TAR',hi:true}
     ];
     else if(pos2==='WR'||pos2==='TE') statDefs = [
-      {k:'tar',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
+      {k:'gp',lbl:'GP',hi:true},{k:'rec_tgt',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
     ];
     else if(pos2==='QB') statDefs = [
-      {k:'pass_att',lbl:'ATT',hi:true},{k:'pass_yd',lbl:'PASS YDS',hi:true},{k:'pass_td',lbl:'PASS TD',hi:true},{k:'pass_int',lbl:'INT',hi:false},
+      {k:'gp',lbl:'GP',hi:true},{k:'pass_att',lbl:'ATT',hi:true},{k:'pass_yd',lbl:'PASS YDS',hi:true},{k:'pass_td',lbl:'PASS TD',hi:true},{k:'pass_int',lbl:'INT',hi:false},
       {k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true}
     ];
     if(statDefs.length) {
@@ -3425,7 +3455,7 @@ async function fetchSleeperSeasonData() {
             .then(function(r){return r.ok?r.json():{};}).catch(function(){return {};});
         }))
       ]);
-      var statKeys2 = ['rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','tar','pass_att','pass_yd','pass_td','pass_int'];
+      var statKeys2 = ['gp','rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','rec_tgt','tar','pass_att','pass_yd','pass_td','pass_int'];
       statsData = {}; projData = {};
       SLEEPER_STATS_DETAIL = {};
       statsRes.forEach(function(week){
@@ -3453,7 +3483,7 @@ async function fetchSleeperSeasonData() {
     }
 
     // Werte in globale Dicts übertragen (Punkte + Detail-Stats)
-    var statKeys = ['rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','tar','pass_att','pass_yd','pass_td','pass_int'];
+    var statKeys = ['gp','rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','rec_tgt','tar','pass_att','pass_yd','pass_td','pass_int'];
     SLEEPER_STATS_2024 = {};
     if(!useWeekly) SLEEPER_STATS_DETAIL = {};
     Object.entries(statsData).forEach(function(e){
