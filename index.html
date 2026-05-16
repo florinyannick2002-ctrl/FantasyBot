@@ -2280,8 +2280,8 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts vs Alternative 🔥',type:'pos'});
-    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts VOR 📈',type:'pos'});
+    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser als nächster '+pos+' beim Pick',type:'pos'});
+    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts über Replacement-'+pos,type:'pos'});
     else if(vor >= 5) factors.push({text:'+'+Math.round(vor)+'pts Mehrwert',type:'pos'});
   } else {
     // Fallback: Rank-basiert
@@ -2503,11 +2503,28 @@ function calcDraftScore(player) {
   var hasNeg = factors.some(function(f){return f.type==='neg';});
   if(!hasNeg && totalScore < 85) {
     var missing = 100 - totalScore;
-    if(valueScore < 30) factors.push({text:'Wert unter Elite-Level ('+valueScore+'/40)',type:'neg'});
-    else if(needScore < 18) factors.push({text:'Pos. noch nicht dringend ('+needScore+'/25)',type:'neg'});
-    else if(timingScore < 8) factors.push({text:'Kein Timing-Druck ('+timingScore+'/15)',type:'neg'});
-    else factors.push({text:'Score-Cap: +'+missing+'pts fehlen',type:'neg'});
+    if(valueScore < 30) factors.push({text:'Kein Top-Pick dieser Runde ('+valueScore+'/40)',type:'neg'});
+    else if(needScore < 18) factors.push({text:'Position noch nicht dringend ('+needScore+'/25)',type:'neg'});
+    else if(timingScore < 8) factors.push({text:'Kein Zeitdruck — kannst warten ('+timingScore+'/15)',type:'neg'});
+    else factors.push({text:'Knapp unter Maximum ('+(100-totalScore)+'% Luft)',type:'neg'});
   }
+
+  // Faktoren nach Wichtigkeit sortieren
+  var typeOrder = {pos:0, neg:1, neu:2};
+  var importanceKeywords = [
+    'besser als nächster','über replacement','letzte chance','wahrscheinlich weg',
+    'noch kein','letzter tier','kein top-pick','position noch nicht','kein zeitdruck'
+  ];
+  factors.sort(function(a,b){
+    // Erst pos, dann neg, dann neu
+    if(typeOrder[a.type] !== typeOrder[b.type]) return typeOrder[a.type] - typeOrder[b.type];
+    // Innerhalb: wichtige Keywords zuerst
+    var aKey = importanceKeywords.findIndex(function(k){return a.text.toLowerCase().includes(k);});
+    var bKey = importanceKeywords.findIndex(function(k){return b.text.toLowerCase().includes(k);});
+    if(aKey === -1) aKey = 99;
+    if(bKey === -1) bKey = 99;
+    return aKey - bKey;
+  });
 
   return {score: totalScore, factors: factors, breakdown:{v:valueScore,n:needScore,c:contextScore,t:timingScore,r:riskBonus}};
 }
