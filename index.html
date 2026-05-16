@@ -2526,50 +2526,46 @@ function calcDraftScore(player) {
   var last8 = recentPicks.slice(-8);
   var posInRun = last8.filter(function(p){ return p.pos === pos; }).length;
   var oppInRun = last8.filter(function(p){ return p.pos !== pos && (p.pos==='RB'||p.pos==='WR'||p.pos==='TE'); }).length;
-  // Erwartete Rate pro Position (von 8 Picks)
   var expectedRate = {QB:0.10, RB:0.28, WR:0.32, TE:0.12, K:0.09, DEF:0.09};
-  var expectedCount = (expectedRate[pos]||0.15) * 8; // z.B. TE: 0.96, RB: 2.24
+  var expectedCount = (expectedRate[pos]||0.15) * 8;
   var runRatio = expectedCount > 0 ? posInRun / expectedCount : 0;
-  // Ein "Run" liegt vor wenn der Anteil >2x dem Erwarteten ist
-  // z.B. 3 TEs in 8 Picks = 3/0.96 = 3.1x → starker TE-Run
-  // z.B. 4 RBs in 8 Picks = 4/2.24 = 1.8x → moderater RB-Run
 
   if(strategy.runReaction === 'ignore') {
     // Positional runs ignorieren
   } else if(strategy.runReaction === 'aggressive') {
-    if(runRatio >= 2.5) {
-      timingScore += 7; factors.push({text:pos+'-Run ('+posInRun+'x, '+Math.round(runRatio*10)/10+'x Norm) 🚨',type:'pos'});
+    if(runRatio >= 1.5) {
+      timingScore += 7; factors.push({text:pos+'-Run ('+posInRun+' in letzten 8) 🚨',type:'pos'});
     } else if(oppInRun >= 4) {
       timingScore += 5; factors.push({text:'Andere Pos dominiert — '+pos+' verfügbar!',type:'pos'});
     }
   } else {
-    // Reaktiv
-    if(runRatio >= 2.5) {
-      timingScore += 7; factors.push({text:pos+'-Run! ('+posInRun+'x, '+Math.round(runRatio*10)/10+'x erwartet) 🚨',type:'pos'});
-    } else if(runRatio >= 1.8) {
-      timingScore += 4; factors.push({text:pos+'-Run beginnt ('+posInRun+'x in letzten 8)',type:'pos'});
+    if(runRatio >= 2.0) {
+      timingScore += 7; factors.push({text:pos+'-Run! ('+posInRun+' in letzten 8) 🚨',type:'pos'});
+    } else if(runRatio >= 1.5) {
+      timingScore += 4; factors.push({text:pos+'-Run beginnt ('+posInRun+' in letzten 8)',type:'pos'});
     }
   }
 
   // 4B. Scarcity Timing Pressure (0-5 pts)
-  // Wie viele gute Alternativer gleicher Position sind noch VOR meinem nächsten Pick weg?
-  var myNextPick = totalPicked + 1 + picksLeft;
+  // Wenn on clock → schau auf naechsten Snake-Pick, sonst auf myNextPick
+  var scarcityPick = picksLeft === 0
+    ? totalPicked + 1 + totalTeams * 2
+    : totalPicked + 1 + picksLeft;
+
   var goodAltsGone = available.filter(function(p){
     return p.pos === pos &&
            (p.tier||6) <= (tier||6) &&
            p.name !== player.name &&
            p.sleeperRank != null &&
-           p.sleeperRank < myNextPick;
+           p.sleeperRank < scarcityPick;
   }).length;
-  // goodAltsGone = Anzahl gleichwertiger Spieler die vor meinem Pick weg sind
-  if(goodAltsGone === 0) {
-    // Keine guten Alts verschwinden → kein Druck
-  } else if(goodAltsGone >= 3) {
-    timingScore += 5; factors.push({text:goodAltsGone+' gleichwertige '+pos+'s weg vor deinem Pick!',type:'pos'});
+
+  if(goodAltsGone >= 3) {
+    timingScore += 5; factors.push({text:goodAltsGone+' gleichwertige '+pos+'s weg vor nächstem Pick!',type:'pos'});
   } else if(goodAltsGone === 2) {
-    timingScore += 3; factors.push({text:'2 gleichwertige '+pos+'s weg vor deinem Pick',type:'pos'});
+    timingScore += 3; factors.push({text:'2 gleichwertige '+pos+'s vor nächstem Pick weg',type:'pos'});
   } else if(goodAltsGone === 1) {
-    timingScore += 2; factors.push({text:'1 gleichwertiger '+pos+' weg vor deinem Pick',type:'pos'});
+    timingScore += 2; factors.push({text:'1 gleichwertiger '+pos+' vor nächstem Pick weg',type:'pos'});
   }
 
   // 4C. On-the-clock Urgency (0-3 pts)
