@@ -2707,21 +2707,35 @@ function calcDraftScore(player) {
   // Score Breakdown als neutraler Faktor (mit Icon)
   factors.push({text:'Breakdown: Spielerwert '+valueScore+'/40 · Positionsbedarf '+needScore+'/25 · Kontext (SOS/Alter/Bye) '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
 
-  // Faktoren nach Wichtigkeit sortieren
+  // Faktoren nach Wichtigkeit sortieren — nach Impact-Score
   var typeOrder = {pos:0, neg:1, neu:2};
-  var importanceKeywords = [
-    'besser als nächster','über replacement','letzte chance','wahrscheinlich weg',
-    'noch kein','letzter tier','kein top-pick','position noch nicht','kein zeitdruck'
-  ];
+  // Impact-Gewicht: je höher, desto wichtiger (wird zum Sortieren invertiert)
+  function factorImpact(text) {
+    var t = text.toLowerCase();
+    // VOR / Punkte-Vorteil → höchste Priorität
+    if(t.includes('pts besser') || t.includes('besser als nächster'))    return 100;
+    if(t.includes('letzte chance') || t.includes('wahrscheinlich weg'))   return 95;
+    if(t.includes('noch kein') || t.includes('brauche'))                  return 90;
+    if(t.includes('gleichwertige') && t.includes('weg'))                  return 88;
+    if(t.includes('letzter tier') || t.includes('letzte'))                return 85;
+    if(t.includes('bester verfügbar'))                                     return 80;
+    if(t.includes('on clock') || t.includes('du bist dran'))              return 78;
+    if(t.includes('-run!') || t.includes('run!'))                         return 75;
+    if(t.includes('run beginnt'))                                          return 70;
+    if(t.includes('scarcity') || t.includes('scarcity-druck'))            return 68;
+    if(t.includes('upside') || t.includes('top upside'))                  return 65;
+    if(t.includes('sicher') || t.includes('risiko') || t.includes('unsicher')) return 60;
+    if(t.includes('strategie') || t.includes('heavy') || t.includes('zero rb')) return 55;
+    if(t.includes('handcuff'))                                             return 52;
+    if(t.includes('sos') || t.includes('schedule'))                       return 48;
+    if(t.includes('jung') || t.includes('alter') || t.includes('veteran')) return 45;
+    if(t.includes('bye'))                                                  return 40;
+    if(t.includes('timing'))                                               return 35;
+    return 20; // Alles andere
+  }
   factors.sort(function(a,b){
-    // Erst pos, dann neg, dann neu
     if(typeOrder[a.type] !== typeOrder[b.type]) return typeOrder[a.type] - typeOrder[b.type];
-    // Innerhalb: wichtige Keywords zuerst
-    var aKey = importanceKeywords.findIndex(function(k){return a.text.toLowerCase().includes(k);});
-    var bKey = importanceKeywords.findIndex(function(k){return b.text.toLowerCase().includes(k);});
-    if(aKey === -1) aKey = 99;
-    if(bKey === -1) bKey = 99;
-    return aKey - bKey;
+    return factorImpact(b.text) - factorImpact(a.text); // höherer Impact zuerst
   });
 
   return {score: totalScore, factors: factors, breakdown:{v:valueScore,n:needScore,c:contextScore,t:timingScore,r:riskBonus}};
@@ -2745,22 +2759,58 @@ function getTopRecommendations() {
 
 function generateDraftReason(p, rec) {
   var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
-  var pos = factors.filter(function(f){return f.type==='pos';});
-  var neg = factors.filter(function(f){return f.type==='neg';});
+  var pros = factors.filter(function(f){return f.type==='pos';});
+  var cons = factors.filter(function(f){return f.type==='neg';});
   var bd = rec.breakdown || {};
+  var score = rec.score;
+  var pos = p.pos||'';
+  var name = (p.name||'').split(' ').pop(); // Nachname
+  var pts = p.projFpts ? Math.round(p.projFpts) : null;
 
-  var parts = [];
-  if(pos[0]) parts.push(pos[0].text);
-  if(pos[1]) parts.push(pos[1].text);
+  // Beste Pro- und Contra-Argumente
+  var pro1 = pros[0] ? pros[0].text.replace(/[🎯💰👑🚨🏃🎪🏹🏋️📡🚫⚡💎🔄🌊〰️⏱️☀️⛈️🌱🧓🗓️🔗✅⚠️🔥🚀⏰💤📊📭🟢🟡🟠🔴]/gu,'').trim() : null;
+  var pro2 = pros[1] ? pros[1].text.replace(/[🎯💰👑🚨🏃🎪🏹🏋️📡🚫⚡💎🔄🌊〰️⏱️☀️⛈️🌱🧓🗓️🔗✅⚠️🔥🚀⏰💤📊📭🟢🟡🟠🔴]/gu,'').trim() : null;
+  var con1 = cons[0] ? cons[0].text.replace(/[🎯💰👑🚨🏃🎪🏹🏋️📡🚫⚡💎🔄🌊〰️⏱️☀️⛈️🌱🧓🗓️🔗✅⚠️🔥🚀⏰💤📊📭🟢🟡🟠🔴]/gu,'').trim() : null;
 
-  var concern = neg[0] ? ' Beachte: ' + neg[0].text + '.' : '';
+  var sentences = [];
 
-  var verdict = rec.score >= 80 ? 'Klarer Draft-Pick jetzt!' :
-                rec.score >= 65 ? 'Guter Pick — stark empfohlen.' :
-                rec.score >= 50 ? 'Solider Pick mit Vorbehalten.' :
-                'Nur wenn keine bessere Option vorhanden.';
+  if(score >= 82) {
+    // Hot take — klarer Griff
+    var openers = [
+      name+' steht auf meinem Board ganz oben — das ist kein Zufall.',
+      'Mach den Pick. '+name+' ist der beste Spieler an diesem Punkt.',
+      name+' jetzt — diese Chance kriegst du kein zweites Mal.',
+      'Hier gibt es nichts zu diskutieren: '+name+' ist dein Mann.'
+    ];
+    sentences.push(openers[Math.floor(score*7%openers.length)]);
+    if(pro1) sentences.push(pro1 + (pts ? ' — '+ pts+'pts Projektion macht ihn zum klaren Wert.' : '.'));
+    if(con1) sentences.push('Einziger Vorbehalt: '+con1.toLowerCase()+'.');
+  } else if(score >= 68) {
+    // Starke Empfehlung mit Begründung
+    var openers2 = [
+      'Ich mag '+name+' in dieser Runde.',
+      name+' ist ein starker Griff — die Zahlen sprechen für sich.',
+      'Wenn du jetzt '+name+' ziehst, machst du nichts falsch.'
+    ];
+    sentences.push(openers2[Math.floor(score*5%openers2.length)]);
+    if(pro1) sentences.push(pro1+'.');
+    if(pro2) sentences.push('Dazu kommt: '+pro2.toLowerCase()+'.');
+    if(con1) sentences.push('Behalte im Kopf: '+con1.toLowerCase()+'.');
+  } else if(score >= 52) {
+    // Vorsichtige Empfehlung
+    sentences.push(''+name+' ist okay hier, aber ich bin nicht begeistert.');
+    if(pro1) sentences.push('Das Positive: '+pro1.toLowerCase()+'.');
+    if(con1) sentences.push('Was mich zurückhält: '+con1.toLowerCase()+'.');
+    sentences.push('Wenn kein besserer '+(pos||'Spieler')+' verfügbar ist, geht der Pick in Ordnung.');
+  } else {
+    // Klares Abraten
+    sentences.push(''+name+' ist im Moment nicht mein Favorit auf diesem Board.');
+    if(con1) sentences.push(con1+'.');
+    if(pro1) sentences.push('Einziger Pluspunkt: '+pro1.toLowerCase()+'.');
+    sentences.push('Ich würde eine Runde warten und schauen was noch kommt.');
+  }
 
-  return verdict + ' ' + parts.join(', ') + '.' + concern;
+  return sentences.join(' ');
 }
 
 function showPlayerModal(playerName) {
@@ -2781,8 +2831,18 @@ function showPlayerModal(playerName) {
 
   var reason = generateDraftReason(p, rec);
 
+  // Positional rank (z.B. RB4 = 4. bester RB im Ranking)
+  var posRankNum = 1;
+  source.forEach(function(x){ if(x.pos===p.pos && (x.rank||999)<(p.rank||999)) posRankNum++; });
+  var posRankLabel = p.pos + posRankNum;
+  var posRankAvailNum = 1;
+  var avail2 = source.filter(function(x){return !draftedIds.has(x.sleeperId||x.id||x.name);});
+  avail2.forEach(function(x){ if(x.pos===p.pos && (x.rank||999)<(p.rank||999)) posRankAvailNum++; });
+  var posRankAvailLabel = p.pos + posRankAvailNum;
+
   // Bio data from Sleeper
   var bioItems = [];
+  if(p.pos && p.rank) bioItems.push({lbl:'RANG', val:posRankLabel, sub:posRankAvailLabel+' VERF', highlight:posRankNum<=3});
   if(p.age) bioItems.push({lbl:'ALTER', val:p.age+'j'});
   if(p.height) { var hIn=parseInt(p.height); bioItems.push({lbl:'GRÖSSE', val: !isNaN(hIn) ? Math.floor(hIn/12)+"'"+( hIn%12 )+'"' : p.height+'"'}); }
   if(p.weight) bioItems.push({lbl:'GEWICHT', val:p.weight+' lbs'});
@@ -2808,9 +2868,12 @@ function showPlayerModal(playerName) {
   if(bioItems.length) {
     h += '<div style="display:flex;gap:6px;flex-wrap:wrap;">';
     bioItems.forEach(function(b){
-      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:3px 8px;border-radius:2px;">';
+      var borderCol = b.highlight ? 'rgba(255,170,0,.5)' : 'var(--border2)';
+      var bgCol = b.highlight ? 'rgba(255,170,0,.08)' : 'var(--bg3)';
+      h += '<div style="background:'+bgCol+';border:1px solid '+borderCol+';padding:3px 9px;border-radius:2px;">';
       h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">'+b.lbl+' </span>';
-      h += '<span style="font-size:11px;color:var(--text);font-family:var(--mono);font-weight:700;">'+b.val+'</span>';
+      h += '<span style="font-size:12px;color:'+(b.highlight?'var(--amber)':'var(--text)')+';font-family:var(--mono);font-weight:800;">'+b.val+'</span>';
+      if(b.sub) h += '<span style="font-size:8px;color:var(--green);font-family:var(--mono);font-weight:700;margin-left:5px;opacity:.8;">'+b.sub+'</span>';
       h += '</div>';
     });
     h += '</div>';
