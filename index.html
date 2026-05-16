@@ -647,7 +647,7 @@ var customRankings = [];
 var allPlayers = [];
 var sleeperMap = {};
 var SLEEPER_STATS_2024 = {};  // player_id -> letzte Saison Punkte
-var SLEEPER_PROJ_2025 = {};   // player_id -> Sleeper Projektion diese Saison
+var SLEEPER_PROJ_2026 = {};   // player_id -> Sleeper Projektion 2026
 var SOS = {
   'ARI':{QB:3,RB:3,WR:3,TE:4},
   'ATL':{QB:2,RB:3,WR:4,TE:2},
@@ -1748,9 +1748,9 @@ function renderPlayers(){
       if(projPtsHtml) h+=projPtsHtml;
       if(projLabel) h+=projLabel;
       // Letzte Saison Punkte
-      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="2024 Letzte Saison">&#39;24: <span style="color:var(--text2);">'+p.lastSeasonPts+'</span></span>';
+      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="2024 Letzte Saison">&#39;25: <span style="color:var(--text2);">'+p.lastSeasonPts+'</span></span>';
       // Sleeper Proj (nur wenn kein FP_PROJ vorhanden)
-      if(p.sleeperProjPts && !p.projFpts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="Sleeper Proj 2025">PROJ: <span style="color:var(--amber);">'+p.sleeperProjPts+'</span></span>';
+      if(p.sleeperProjPts && !p.projFpts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="Sleeper Proj 2026">PROJ: <span style="color:var(--amber);">'+p.sleeperProjPts+'</span></span>';
       h+='<span class="pcard-meta">'+( p.team||'')+'</span>';
       if(p.bye) h+='<span class="pcard-meta">BYE '+p.bye+'</span>';
       // Injury Badge
@@ -2925,7 +2925,7 @@ function showPlayerModal(playerName) {
       h += '</div></div>';
     }
 
-    // Box 3: 2024 Letzte Saison
+    // Box 3: 2025 Letzte Saison
     if(hasLast) {
       var refProj = hasFpProj ? Math.round(p.projFpts) : (hasSlpProj ? Math.round(p.sleeperProjPts) : null);
       var trend = refProj != null ? refProj - p.lastSeasonPts : null;
@@ -3236,7 +3236,7 @@ async function loadDraft(){
     document.getElementById('stats-row').style.display='grid';
     document.getElementById('controls-row').style.display='flex';
     fetchProjectedPicks();
-    fetchSleeperSeasonData(); // Letzte Saison Punkte + Sleeper Proj 2025
+    fetchSleeperSeasonData(); // 2025 Saison Punkte + Sleeper Proj 2026
     if(!useCustom){
       allPlayers=Object.values(sleeperMap)
         .filter(function(p){return p.sleeperRank;})
@@ -3291,23 +3291,14 @@ async function loadSleeperPlayers(sport){
         var pid=item.player_id;
         var rank=idx+1;
         // Sleeper weekly proj × 18 Wochen = Saisonprojektion (entspricht dem was Sleeper anzeigt)
-        var weeklyPts = (item.stats && (item.stats[skey] || item.stats['pts_ppr'])) || 0;
-        var seasonProj = weeklyPts > 0 ? Math.round(weeklyPts * 18 * 10) / 10 : null;
-        // Enrich sleeperMap
+        // Nur ADP-Rang setzen — sleeperProjPts kommt via fetchSleeperSeasonData (akkurat, alle Wochen)
         if(sleeperMap){
           Object.values(sleeperMap).forEach(function(sm){
-            if(sm.id===String(pid)){
-              sm.sleeperRank=rank;
-              if(seasonProj) sm.sleeperProjPts=seasonProj;
-            }
+            if(sm.id===String(pid)) sm.sleeperRank=rank;
           });
         }
-        // Enrich customRankings
         customRankings.forEach(function(cr){
-          if(cr.sleeperId===String(pid)){
-            cr.sleeperRank=rank;
-            if(seasonProj) cr.sleeperProjPts=seasonProj;
-          }
+          if(cr.sleeperId===String(pid)) cr.sleeperRank=rank;
         });
       });
       renderPlayers();
@@ -3319,16 +3310,16 @@ async function fetchSleeperSeasonData() {
   var scoringKey = strategy.scoring === 'standard' ? 'pts_std' :
                    strategy.scoring === 'half' ? 'pts_half_ppr' : 'pts_ppr';
   var statusEl = document.getElementById('sleeper-stats-status');
-  if(statusEl){ statusEl.style.display='block'; statusEl.textContent='⏳ Lade Sleeper Stats & Projektionen...'; }
+  if(statusEl){ statusEl.style.display='block'; statusEl.textContent='⏳ Lade 2025 Stats & 2026 Proj...'; }
   try {
     var weeks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18];
     var [statsRes, projRes] = await Promise.all([
       Promise.all(weeks.map(function(w){
-        return fetch('https://api.sleeper.app/v1/stats/nfl/regular/2024/'+w)
+        return fetch('https://api.sleeper.app/v1/stats/nfl/regular/2025/'+w)
           .then(function(r){ return r.ok?r.json():{}; }).catch(function(){ return {}; });
       })),
       Promise.all(weeks.map(function(w){
-        return fetch('https://api.sleeper.app/v1/projections/nfl/regular/2025/'+w)
+        return fetch('https://api.sleeper.app/v1/projections/nfl/regular/2026/'+w)
           .then(function(r){ return r.ok?r.json():{}; }).catch(function(){ return {}; });
       }))
     ]);
@@ -3340,11 +3331,11 @@ async function fetchSleeperSeasonData() {
         if(pts>0) SLEEPER_STATS_2024[pid] = Math.round(((SLEEPER_STATS_2024[pid]||0)+pts)*10)/10;
       });
     });
-    SLEEPER_PROJ_2025 = {};
+    SLEEPER_PROJ_2026 = {};
     projRes.forEach(function(week){
       Object.entries(week).forEach(function(e){
         var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
-        if(pts>0) SLEEPER_PROJ_2025[pid] = Math.round(((SLEEPER_PROJ_2025[pid]||0)+pts)*10)/10;
+        if(pts>0) SLEEPER_PROJ_2026[pid] = Math.round(((SLEEPER_PROJ_2026[pid]||0)+pts)*10)/10;
       });
     });
     // Spieler anreichern
@@ -3352,7 +3343,7 @@ async function fetchSleeperSeasonData() {
     targets.forEach(function(p){
       if(!p.sleeperId) return;
       var last = SLEEPER_STATS_2024[p.sleeperId];
-      var proj = SLEEPER_PROJ_2025[p.sleeperId];
+      var proj = SLEEPER_PROJ_2026[p.sleeperId];
       if(last) p.lastSeasonPts = Math.round(last*10)/10;
       if(proj) p.sleeperProjPts = Math.round(proj*10)/10;
     });
