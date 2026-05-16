@@ -274,7 +274,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .fp-note-icon{font-size:11px;color:var(--text3);cursor:help;margin-left:4px;}
 
 /* RECENT PICKS */
-.recent-picks{background:#000;border:1px solid var(--border2);border-left:2px solid var(--amber);padding:.85rem 1.25rem;margin-bottom:1.25rem;display:none;}
+.recent-picks{background:#000;border:1px solid var(--border2);border-left:2px solid var(--amber);padding:.5rem .75rem;margin-bottom:6px;display:none;}
 .recent-picks-inner{display:flex;align-items:center;gap:8px;}
 .recent-picks-list{display:flex;gap:5px;overflow-x:auto;flex:1;padding-bottom:8px;scroll-behavior:smooth;cursor:grab;}
 .recent-picks-list:active{cursor:grabbing;}
@@ -297,7 +297,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 
 <!-- Player Detail Modal -->
 <div id="player-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.style.display='none';">
-  <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:680px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);">
+  <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:860px;width:100%;max-height:90vh;overflow-y:auto;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);">
     <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:28px;height:28px;border-radius:2px;cursor:pointer;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">×</button>
     <div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">📊 SPIELER ANALYSE</div>
     <div id="modal-body"></div>
@@ -344,15 +344,6 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       <div class="stat"><div class="lbl">Gedraftet</div><div class="val" id="s-drafted" style="color:var(--red)">—</div></div>
       <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
-    <div class="recent-picks" id="recent-picks-bar">
-      <div style="font-size:9px;font-weight:800;color:var(--amber);font-family:var(--mono);text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px;">LETZTE PICKS</div>
-      <div class="recent-picks-inner">
-        <div id="next-pick-badge" class="next-pick-badge" style="display:none;"></div>
-        <button class="picks-scroll-btn" onclick="document.getElementById('recent-picks-list').scrollBy({left:-300,behavior:'smooth'})">‹</button>
-        <div class="recent-picks-list" id="recent-picks-list"></div>
-        <button class="picks-scroll-btn" onclick="document.getElementById('recent-picks-list').scrollBy({left:300,behavior:'smooth'})">›</button>
-      </div>
-    </div>
     <div id="rec-area"></div>
     <div id="avail-legend" style="display:none;font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;padding:4px 0;">
       🔴 Letzte Möglichkeit &nbsp;·&nbsp; 🟡 Riskant
@@ -367,6 +358,14 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       <button class="pos-btn" data-pos="DEF">DEF</button>
       <button id="scroll-to-pick-btn" style="margin-left:auto;background:var(--amber-bg);border:1px solid #f5a623;color:#f5a623;font-size:12px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-weight:600;display:none;">⬇ Mein Pick</button>
       <input type="text" id="search-input" placeholder="Suchen..." style="width:150px;"/>
+    </div>
+    <div class="recent-picks" id="recent-picks-bar">
+      <div class="recent-picks-inner">
+        <div id="next-pick-badge" class="next-pick-badge" style="display:none;"></div>
+        <button class="picks-scroll-btn" onclick="document.getElementById('recent-picks-list').scrollBy({left:-300,behavior:'smooth'})">‹</button>
+        <div class="recent-picks-list" id="recent-picks-list"></div>
+        <button class="picks-scroll-btn" onclick="document.getElementById('recent-picks-list').scrollBy({left:300,behavior:'smooth'})">›</button>
+      </div>
     </div>
     <div id="player-grid">
       <div class="empty-state">// Draft ID laden → Demo starten → oder Rankings importieren</div>
@@ -2771,14 +2770,14 @@ function showPlayerModal(playerName) {
   var rec = calcDraftScore(p);
   var bd = rec.breakdown || {};
   var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
-  var posF = factors.filter(function(f){return f.type==='pos';}).slice(0,3);
-  var negF = factors.filter(function(f){return f.type==='neg';}).slice(0,3);
+  var posF = factors.filter(function(f){return f.type==='pos';});
+  var negF = factors.filter(function(f){return f.type==='neg';});
   var neuF = factors.filter(function(f){return f.type==='neu';});
   var pc = posColors[p.pos]||'b-k';
 
   var imgHtml = p.sleeperId
-    ? '<img style="width:90px;height:90px;border-radius:4px;object-fit:cover;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);flex-shrink:0;" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
-    : '<div style="width:90px;height:90px;border-radius:4px;background:var(--bg3);border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:32px;flex-shrink:0;">🏈</div>';
+    ? '<img style="width:130px;height:160px;border-radius:4px;object-fit:cover;object-position:top center;border:2px solid var(--amber);box-shadow:0 0 20px var(--amber-glow);flex-shrink:0;" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
+    : '<div style="width:130px;height:160px;border-radius:4px;background:linear-gradient(180deg,var(--bg3),var(--bg4));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:48px;flex-shrink:0;">🏈</div>';
 
   var reason = generateDraftReason(p, rec);
 
@@ -2818,7 +2817,7 @@ function showPlayerModal(playerName) {
   }
   h += '</div>';
   h += '<div style="text-align:center;min-width:70px;flex-shrink:0;">';
-  var scoreColor = rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--text3)';
+  var scoreColor = rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--red)';
   h += '<div style="font-family:var(--display);font-size:52px;color:'+scoreColor+';line-height:1;text-shadow:0 0 20px '+scoreColor+';">'+rec.score+'</div>';
   h += '<div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.12em;margin-top:2px;">SCORE</div>';
   h += '</div>';
@@ -2852,38 +2851,38 @@ function showPlayerModal(playerName) {
   });
   h += '</div>';
 
-  // Pros & Cons side by side
-  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">';
+  // Pros & Cons side by side — ALL factors
+  h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">';
 
   // PROS
   h += '<div>';
-  h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--green);letter-spacing:.15em;margin-bottom:8px;">✓ TOP PROS</div>';
-  h += '<div style="display:flex;flex-direction:column;gap:5px;">';
+  h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--green);letter-spacing:.15em;margin-bottom:8px;">✓ PROS <span style=\'opacity:.5;font-size:8px;\'>('+posF.length+')</span></div>';
+  h += '<div style="display:flex;flex-direction:column;gap:4px;">';
   if(posF.length) {
     posF.forEach(function(f){
-      h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">';
-      h += '<span style="font-size:18px;flex-shrink:0;">'+factorIcon(f.text)+'</span>';
-      h += '<span style="font-size:11px;color:var(--green);line-height:1.4;">'+f.text+'</span>';
+      h += '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 9px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">';
+      h += '<span style="font-size:16px;flex-shrink:0;line-height:1.4;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--green);line-height:1.5;">'+f.text+'</span>';
       h += '</div>';
     });
   } else {
-    h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;">Keine positiven Faktoren</div>';
+    h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">Keine positiven Faktoren</div>';
   }
   h += '</div></div>';
 
   // CONS
   h += '<div>';
-  h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--red);letter-spacing:.15em;margin-bottom:8px;">✗ TOP CONS</div>';
-  h += '<div style="display:flex;flex-direction:column;gap:5px;">';
+  h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--red);letter-spacing:.15em;margin-bottom:8px;">✗ CONS <span style=\'opacity:.5;font-size:8px;\'>('+negF.length+')</span></div>';
+  h += '<div style="display:flex;flex-direction:column;gap:4px;">';
   if(negF.length) {
     negF.forEach(function(f){
-      h += '<div style="display:flex;align-items:center;gap:8px;padding:7px 10px;background:rgba(255,51,68,.06);border:1px solid rgba(255,51,68,.15);border-radius:3px;">';
-      h += '<span style="font-size:18px;flex-shrink:0;">'+factorIcon(f.text)+'</span>';
-      h += '<span style="font-size:11px;color:var(--red);line-height:1.4;">'+f.text+'</span>';
+      h += '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 9px;background:rgba(255,51,68,.06);border:1px solid rgba(255,51,68,.15);border-radius:3px;">';
+      h += '<span style="font-size:16px;flex-shrink:0;line-height:1.4;">'+factorIcon(f.text)+'</span>';
+      h += '<span style="font-size:11px;color:var(--red);line-height:1.5;">'+f.text+'</span>';
       h += '</div>';
     });
   } else {
-    h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;">Keine negativen Faktoren</div>';
+    h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">Keine negativen Faktoren</div>';
   }
   h += '</div></div>';
   h += '</div>';
