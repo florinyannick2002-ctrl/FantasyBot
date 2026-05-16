@@ -2554,10 +2554,24 @@ function calcDraftScore(player) {
   }
 
   // 4B. Scarcity Timing Pressure (0-5 pts)
-  // Wenn on clock → schau auf naechsten Snake-Pick, sonst auf myNextPick
-  var scarcityPick = picksLeft === 0
-    ? totalPicked + 1 + totalTeams * 2
-    : totalPicked + 1 + picksLeft;
+  // Berechne echten nächsten Snake-Pick
+  var scarcityPick;
+  if(picksLeft === 0 && myDraftSlot && totalTeams) {
+    // On clock → suche nächsten Pick nach diesem in der Snake
+    var currentPick = totalPicked + 1;
+    var currentRound = Math.ceil(currentPick / totalTeams);
+    var nextRound = currentRound + 1;
+    // Snake: ungerade Runde = Slot X, gerade Runde = (totalTeams+1-Slot)
+    var nextPickInRound;
+    if(draftType === 'linear') {
+      nextPickInRound = myDraftSlot;
+    } else {
+      nextPickInRound = nextRound % 2 === 1 ? myDraftSlot : (totalTeams + 1 - myDraftSlot);
+    }
+    scarcityPick = (nextRound - 1) * totalTeams + nextPickInRound;
+  } else {
+    scarcityPick = totalPicked + 1 + picksLeft;
+  }
 
   var goodAltsGone = available.filter(function(p){
     return p.pos === pos &&
