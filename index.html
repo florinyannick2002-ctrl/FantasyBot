@@ -274,12 +274,16 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .fp-note-icon{font-size:11px;color:var(--text3);cursor:help;margin-left:4px;}
 
 /* RECENT PICKS */
-.recent-picks{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.75rem 1.25rem;margin-bottom:1.25rem;display:none;}
+.recent-picks{background:#000;border:1px solid var(--border2);border-left:2px solid var(--amber);padding:.75rem 1.25rem;margin-bottom:1.25rem;display:none;}
 .recent-picks-inner{display:flex;align-items:center;gap:8px;}
-.recent-picks-list{display:flex;gap:6px;overflow-x:auto;flex:1;scrollbar-width:none;-ms-overflow-style:none;padding-bottom:2px;}
-.recent-picks-list::-webkit-scrollbar{display:none;}
-.recent-pick-chip{display:flex;align-items:center;gap:5px;padding:4px 10px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);font-size:11px;flex-shrink:0;font-weight:500;}
-.recent-pick-chip.mine{border-color:rgba(157,127,245,.4);background:var(--purple-bg);color:var(--purple);}
+.recent-picks-list{display:flex;gap:5px;overflow-x:auto;flex:1;padding-bottom:5px;scroll-behavior:smooth;}
+.recent-picks-list::-webkit-scrollbar{height:3px;}
+.recent-picks-list::-webkit-scrollbar-track{background:var(--border2);}
+.recent-picks-list::-webkit-scrollbar-thumb{background:var(--amber);border-radius:2px;}
+.recent-pick-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-size:11px;flex-shrink:0;font-weight:600;font-family:var(--mono);}
+.recent-pick-chip.mine{border-color:var(--amber);background:rgba(255,170,0,.08);color:var(--amber);box-shadow:0 0 8px var(--amber-glow);}
+.picks-scroll-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer;padding:4px 10px;font-size:13px;flex-shrink:0;transition:all .12s;border-radius:2px;}
+.picks-scroll-btn:hover{border-color:var(--amber);color:var(--amber);}
 .next-pick-badge{flex-shrink:0;padding:5px 14px;border-radius:var(--radius);font-size:12px;font-weight:800;font-family:var(--mono);border:1px solid;white-space:nowrap;}
 .my-next-pick-above td{background:#1e1500 !important;border-top:1px solid rgba(245,166,35,.3) !important;border-bottom:1px solid rgba(245,166,35,.3) !important;}
 .my-next-pick-above td:first-child{border-left:3px solid var(--amber) !important;border-radius:var(--radius) 0 0 var(--radius) !important;}
@@ -331,10 +335,12 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
     <div class="recent-picks" id="recent-picks-bar">
-      <div style="font-size:10px;font-weight:600;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;">🏈 Letzte Picks</div>
+      <div style="font-size:9px;font-weight:800;color:var(--amber);font-family:var(--mono);text-transform:uppercase;letter-spacing:.15em;margin-bottom:6px;">LETZTE PICKS</div>
       <div class="recent-picks-inner">
         <div id="next-pick-badge" class="next-pick-badge" style="display:none;"></div>
+        <button class="picks-scroll-btn" onclick="document.getElementById('recent-picks-list').scrollBy({left:-300,behavior:'smooth'})">‹</button>
         <div class="recent-picks-list" id="recent-picks-list"></div>
+        <button class="picks-scroll-btn" onclick="document.getElementById('recent-picks-list').scrollBy({left:300,behavior:'smooth'})">›</button>
       </div>
     </div>
     <div id="rec-area"></div>
