@@ -274,13 +274,14 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .fp-note-icon{font-size:11px;color:var(--text3);cursor:help;margin-left:4px;}
 
 /* RECENT PICKS */
-.recent-picks{background:#000;border:1px solid var(--border2);border-left:2px solid var(--amber);padding:.75rem 1.25rem;margin-bottom:1.25rem;display:none;}
+.recent-picks{background:#000;border:1px solid var(--border2);border-left:2px solid var(--amber);padding:.85rem 1.25rem;margin-bottom:1.25rem;display:none;}
 .recent-picks-inner{display:flex;align-items:center;gap:8px;}
-.recent-picks-list{display:flex;gap:5px;overflow-x:auto;flex:1;padding-bottom:5px;scroll-behavior:smooth;}
-.recent-picks-list::-webkit-scrollbar{height:3px;}
+.recent-picks-list{display:flex;gap:5px;overflow-x:auto;flex:1;padding-bottom:8px;scroll-behavior:smooth;cursor:grab;}
+.recent-picks-list:active{cursor:grabbing;}
+.recent-picks-list::-webkit-scrollbar{height:4px;}
 .recent-picks-list::-webkit-scrollbar-track{background:var(--border2);}
 .recent-picks-list::-webkit-scrollbar-thumb{background:var(--amber);border-radius:2px;}
-.recent-pick-chip{display:flex;align-items:center;gap:5px;padding:5px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-size:11px;flex-shrink:0;font-weight:600;font-family:var(--mono);}
+.recent-pick-chip{display:flex;align-items:center;gap:5px;padding:7px 12px;background:var(--bg3);border:1px solid var(--border2);border-radius:2px;font-size:11px;flex-shrink:0;font-weight:600;font-family:var(--mono);}
 .recent-pick-chip.mine{border-color:var(--amber);background:rgba(255,170,0,.08);color:var(--amber);box-shadow:0 0 8px var(--amber-glow);}
 .picks-scroll-btn{background:var(--bg3);border:1px solid var(--border2);color:var(--text2);cursor:pointer;padding:4px 10px;font-size:13px;flex-shrink:0;transition:all .12s;border-radius:2px;}
 .picks-scroll-btn:hover{border-color:var(--amber);color:var(--amber);}
@@ -3081,6 +3082,14 @@ document.addEventListener('DOMContentLoaded',function(){
   });
 
   // Search
+  // Mouse wheel horizontal scroll for recent picks
+  var picksList = document.getElementById('recent-picks-list');
+  if(picksList) {
+    picksList.addEventListener('wheel', function(e){
+      e.preventDefault();
+      picksList.scrollBy({left: e.deltaY * 2, behavior:'smooth'});
+    }, {passive:false});
+  }
   document.getElementById('search-input').addEventListener('input',renderPlayers);
   document.getElementById('scroll-to-pick-btn').addEventListener('click',function(){
     var el=document.querySelector('.pcard-highlight');
