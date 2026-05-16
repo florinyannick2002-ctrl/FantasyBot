@@ -2977,7 +2977,7 @@ function showPlayerModal(playerName) {
   // Bio pills (ohne Rang — kommt rechts prominent)
   var bioWithoutRank = bioItems.filter(function(b){return b.lbl!=='RANG';});
   if(bioWithoutRank.length) {
-    h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
+    h += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">';
     bioWithoutRank.forEach(function(b){
       h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:3px 9px;border-radius:2px;">';
       h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+b.lbl+' </span>';
@@ -2985,6 +2985,46 @@ function showPlayerModal(playerName) {
       h += '</div>';
     });
     h += '</div>';
+  }
+  // Stats-Grid direkt unter Bio-Pills
+  var hasLastStats = p.lastStats && Object.keys(p.lastStats).length > 0;
+  var hasProjStats = p.projStats && Object.keys(p.projStats).length > 0;
+  if(hasLastStats || hasProjStats) {
+    var pos2 = p.pos;
+    var statDefs = [];
+    if(pos2==='RB') statDefs = [
+      {k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
+      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'tar',lbl:'TAR',hi:true}
+    ];
+    else if(pos2==='WR'||pos2==='TE') statDefs = [
+      {k:'tar',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
+    ];
+    else if(pos2==='QB') statDefs = [
+      {k:'pass_att',lbl:'ATT',hi:true},{k:'pass_yd',lbl:'PASS YDS',hi:true},{k:'pass_td',lbl:'PASS TD',hi:true},{k:'pass_int',lbl:'INT',hi:false},
+      {k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true}
+    ];
+    if(statDefs.length) {
+      if(hasLastStats) {
+        h += '<div style="margin-bottom:6px;">';
+        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">2025 SAISON — STATS</div>';
+        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:3px;">';
+        statDefs.forEach(function(def){
+          var val=(p.lastStats[def.k]||0)||null;
+          h += statCell(def.lbl,val,statRank(def.k,val,def.hi));
+        });
+        h += '</div></div>';
+      }
+      if(hasProjStats) {
+        h += '<div style="margin-bottom:6px;">';
+        h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">SLP PROJ 2026 — STATS</div>';
+        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:3px;">';
+        statDefs.forEach(function(def){
+          var val=(p.projStats[def.k]||0)||null;
+          h += statCell(def.lbl,val,projRank(def.k,val,def.hi));
+        });
+        h += '</div></div>';
+      }
+    }
   }
   h += '</div>';
 
@@ -3008,49 +3048,6 @@ function showPlayerModal(playerName) {
 
   // Draft Verdict
   h += '<div style="background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:16px;">'+reason+'</div>';
-
-  // Stats-Grid (2025 Saison + 2026 Projektion)
-  var hasLastStats = p.lastStats && Object.keys(p.lastStats).length > 0;
-  var hasProjStats = p.projStats && Object.keys(p.projStats).length > 0;
-  if(hasLastStats || hasProjStats) {
-    var pos2 = p.pos;
-    var statDefs = [];
-    if(pos2==='RB') statDefs = [
-      {k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
-      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'tar',lbl:'TAR',hi:true}
-    ];
-    else if(pos2==='WR'||pos2==='TE') statDefs = [
-      {k:'tar',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
-    ];
-    else if(pos2==='QB') statDefs = [
-      {k:'pass_att',lbl:'ATT',hi:true},{k:'pass_yd',lbl:'PASS YDS',hi:true},{k:'pass_td',lbl:'PASS TD',hi:true},{k:'pass_int',lbl:'INT',hi:false},
-      {k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true}
-    ];
-    if(statDefs.length) {
-      if(hasLastStats) {
-        h += '<div style="margin-bottom:10px;">';
-        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:5px;">2025 SAISON — STATS</div>';
-        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:4px;">';
-        statDefs.forEach(function(def){
-          var val = (p.lastStats[def.k]||0)||null;
-          var r = statRank(def.k, val, def.hi);
-          h += statCell(def.lbl, val, r);
-        });
-        h += '</div></div>';
-      }
-      if(hasProjStats) {
-        h += '<div style="margin-bottom:10px;">';
-        h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:5px;">SLP PROJ 2026 — STATS</div>';
-        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:4px;">';
-        statDefs.forEach(function(def){
-          var val = (p.projStats[def.k]||0)||null;
-          var r = projRank(def.k, val, def.hi);
-          h += statCell(def.lbl, val, r);
-        });
-        h += '</div></div>';
-      }
-    }
-  }
 
   // Score Bars
   var cats = [
@@ -3424,50 +3421,58 @@ async function fetchSleeperSeasonData() {
             .then(function(r){return r.ok?r.json():{};}).catch(function(){return {};});
         }))
       ]);
-      // Summiere
+      var statKeys2 = ['rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','tar','pass_att','pass_yd','pass_td','pass_int'];
       statsData = {}; projData = {};
+      SLEEPER_STATS_DETAIL = {};
       statsRes.forEach(function(week){
         Object.entries(week).forEach(function(e){
-          var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
-          if(pts>0) statsData[pid] = Math.round(((statsData[pid]||0)+pts)*10)/10;
+          var pid=e[0], row=e[1];
+          if(!row) return;
+          var pts=(row[scoringKey])||0;
+          if(pts>0) { statsData[pid] = Math.round(((statsData[pid]||0)+pts)*10)/10; }
+          // Detail-Stats summieren
+          if(!SLEEPER_STATS_DETAIL[pid]) SLEEPER_STATS_DETAIL[pid]={};
+          statKeys2.forEach(function(k){ if(row[k]) SLEEPER_STATS_DETAIL[pid][k]=Math.round(((SLEEPER_STATS_DETAIL[pid][k]||0)+row[k])*10)/10; });
         });
       });
+      SLEEPER_PROJ_DETAIL = {};
       projRes.forEach(function(week){
         Object.entries(week).forEach(function(e){
-          var pid=e[0], pts=(e[1]&&e[1][scoringKey])||0;
-          if(pts>0) projData[pid] = Math.round(((projData[pid]||0)+pts)*10)/10;
+          var pid=e[0], row=e[1];
+          if(!row) return;
+          var pts=(row[scoringKey])||0;
+          if(pts>0) { projData[pid] = Math.round(((projData[pid]||0)+pts)*10)/10; }
+          if(!SLEEPER_PROJ_DETAIL[pid]) SLEEPER_PROJ_DETAIL[pid]={};
+          statKeys2.forEach(function(k){ if(row[k]) SLEEPER_PROJ_DETAIL[pid][k]=Math.round(((SLEEPER_PROJ_DETAIL[pid][k]||0)+row[k])*10)/10; });
         });
       });
     }
 
     // Werte in globale Dicts übertragen (Punkte + Detail-Stats)
     var statKeys = ['rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','tar','pass_att','pass_yd','pass_td','pass_int'];
-    SLEEPER_STATS_2024 = {}; SLEEPER_STATS_DETAIL = {};
+    SLEEPER_STATS_2024 = {};
+    if(!useWeekly) SLEEPER_STATS_DETAIL = {};
     Object.entries(statsData).forEach(function(e){
       var pid=e[0], raw=e[1];
       var pts = useWeekly ? (typeof raw==='number'?raw:0) : ((raw&&raw[scoringKey])||0);
       if(pts>0) {
         SLEEPER_STATS_2024[pid] = Math.round(pts*10)/10;
         if(!useWeekly && raw) {
-          var d={}; statKeys.forEach(function(k){ if(raw[k]) d[k]=Math.round(raw[k]); }); SLEEPER_STATS_DETAIL[pid]=d;
+          var d={}; statKeys.forEach(function(k){ if(raw[k]) d[k]=Math.round(raw[k]); });
+          if(Object.keys(d).length) SLEEPER_STATS_DETAIL[pid]=d;
         }
       }
     });
-    // Für weekly sum: detail stats auch summieren (raw ist Objekt pro Woche)
-    if(useWeekly) {
-      // statsRes ist Array von week-Objekten — re-summiere detail keys
-      // Wir haben sie oben schon als Punkte-Summe, aber nicht als detail
-      // Daher nochmal über die original-Wochen-Daten (gespeichert in closure nicht zugänglich)
-      // → Skip für weekly fallback, nur Punkte verfügbar
-    }
-    SLEEPER_PROJ_2026 = {}; SLEEPER_PROJ_DETAIL = {};
+    SLEEPER_PROJ_2026 = {};
+    if(!useWeekly) SLEEPER_PROJ_DETAIL = {};
     Object.entries(projData).forEach(function(e){
       var pid=e[0], raw=e[1];
       var pts = useWeekly ? (typeof raw==='number'?raw:0) : ((raw&&raw[scoringKey])||0);
       if(pts>0) {
         SLEEPER_PROJ_2026[pid] = Math.round(pts*10)/10;
         if(!useWeekly && raw) {
-          var d={}; statKeys.forEach(function(k){ if(raw[k]) d[k]=Math.round(raw[k]); }); SLEEPER_PROJ_DETAIL[pid]=d;
+          var d={}; statKeys.forEach(function(k){ if(raw[k]) d[k]=Math.round(raw[k]); });
+          if(Object.keys(d).length) SLEEPER_PROJ_DETAIL[pid]=d;
         }
       }
     });
