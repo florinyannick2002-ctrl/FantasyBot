@@ -161,6 +161,12 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 .pcard-stat-lbl{font-size:9px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;}
 .pcard-stat-val{font-size:12px;font-family:var(--mono);font-weight:700;}
 .avail-badge{font-size:12px;}
+.pcard-avail-row{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0;}
+.avail-tag{font-size:9px;padding:3px 8px;border-radius:2px;font-family:var(--mono);font-weight:800;letter-spacing:.08em;text-transform:uppercase;}
+.avail-red{background:rgba(255,51,68,.15);color:var(--red);border:1px solid rgba(255,51,68,.4);animation:tagPulse 1.5s infinite;}
+.avail-yellow{background:rgba(255,170,0,.1);color:var(--amber);border:1px solid rgba(255,170,0,.35);}
+.avail-steal{background:rgba(0,255,136,.1);color:var(--green);border:1px solid rgba(0,255,136,.35);}
+@keyframes tagPulse{0%,100%{opacity:1;}50%{opacity:.65;}}
 .pcard-score-row{display:flex;align-items:center;gap:8px;margin-top:6px;flex-wrap:wrap;}
 .pcard-score-bar-wrap{width:80px;height:3px;background:var(--border2);border-radius:2px;flex-shrink:0;}
 .pcard-score-bar{height:3px;border-radius:2px;transition:width .3s;}
@@ -1542,19 +1548,28 @@ function renderPlayers(){
       }
 
       // Availability
+      // Availability + ADP Steal
       var availLabel='';
+      var stealBadge='';
+      var picksLeft=window._picksUntilMe!==undefined?window._picksUntilMe:0;
+      var totalPicked=draftedIds.size;
+      var myNextPickOverall=totalPicked+1+picksLeft;
+
       if(myDraftSlot && p.sleeperRank!=null){
-        var picksLeft=window._picksUntilMe!==undefined?window._picksUntilMe:0;
-        var totalPicked=draftedIds.size;
-        var myNextPickOverall=totalPicked+1+picksLeft;
         var slpRank=p.sleeperRank;
         if(picksLeft===0){
-          if(slpRank<=myNextPickOverall+totalTeams-2) availLabel='<span class="avail-badge avail-red" title="Letzte Möglichkeit">🔴</span>';
-          else if(slpRank<=myNextPickOverall+totalTeams+2) availLabel='<span class="avail-badge avail-yellow" title="Riskant">🟡</span>';
+          if(slpRank<=myNextPickOverall+totalTeams-2) availLabel='<span class="avail-tag avail-red">⚠ LETZTE CHANCE</span>';
+          else if(slpRank<=myNextPickOverall+totalTeams+2) availLabel='<span class="avail-tag avail-yellow">⚡ RISKANT</span>';
         } else {
-          if(slpRank<myNextPickOverall) availLabel='<span class="avail-badge avail-red" title="Wahrscheinlich weg">🔴</span>';
-          else if(slpRank<=myNextPickOverall+3) availLabel='<span class="avail-badge avail-yellow" title="Riskant">🟡</span>';
+          if(slpRank<myNextPickOverall) availLabel='<span class="avail-tag avail-red">⚠ WAHRSCHEINLICH WEG</span>';
+          else if(slpRank<=myNextPickOverall+3) availLabel='<span class="avail-tag avail-yellow">⚡ RISKANT</span>';
         }
+        // ADP Steal: ich ranke ihn höher (würde laut mir weg sein) aber Sleeper sagt noch da
+        if(p.rank < myNextPickOverall && slpRank >= myNextPickOverall && !availLabel){
+          stealBadge='<span class="avail-tag avail-steal">🎯 ADP-STEAL</span>';
+        }
+      } else if(myDraftSlot && p.sleeperRank==null && p.rank < myNextPickOverall){
+        availLabel='<span class="avail-tag avail-red">⚠ LETZTE CHANCE</span>';
       }
 
       // SOS
@@ -1577,37 +1592,35 @@ function renderPlayers(){
 
       var isHighlight = myPickRound ? ' pcard-highlight' : '';
       h+='<div class="pcard t'+tc+isHighlight+'">';
-      // LEFT: Rank
       h+='<div class="pcard-rank">'+p.rank+'</div>';
-      // Image
       h+='<div class="pcard-imgwrap">'+imgHtml+'</div>';
-      // CENTER: Main info
       h+='<div class="pcard-center">';
       h+='<div class="pcard-top">';
       h+='<span class="badge '+pc+'">'+p.pos+'</span>';
       h+='<span class="pcard-name">'+p.name+'</span>';
       if(ageHtml) h+=ageHtml;
-      if(availLabel) h+=availLabel;
       h+=lhtml+nhtml+noteIconHtml;
       h+='</div>';
+      // Availability + Steal Tags
+      if(availLabel||stealBadge) h+='<div class="pcard-avail-row">'+availLabel+stealBadge+'</div>';
       h+='<div class="pcard-bottom">';
       if(projPtsHtml) h+=projPtsHtml;
       if(projLabel) h+=projLabel;
       h+='<span class="pcard-meta">'+( p.team||'')+'</span>';
       if(p.bye) h+='<span class="pcard-meta">BYE '+p.bye+'</span>';
       h+='</div>';
-      // Score bar + top factors
+      // Score bar + 1 pos + 1 neg factor
       var scoreResult = calcDraftScore(p);
       var sc = scoreResult.score;
       var barColor = sc >= 75 ? 'var(--green)' : sc >= 55 ? 'var(--amber)' : sc >= 35 ? 'var(--blue)' : 'var(--text3)';
       h+='<div class="pcard-score-row">';
       h+='<div class="pcard-score-bar-wrap"><div class="pcard-score-bar" style="width:'+sc+'%;background:'+barColor+';box-shadow:0 0 8px '+barColor+';"></div></div>';
       h+='<span class="pcard-score-num" style="color:'+barColor+';">'+sc+'%</span>';
-      // Top 2 factors
       if(scoreResult.factors && scoreResult.factors.length){
-        scoreResult.factors.slice(0,2).forEach(function(f){
-          h+='<span class="pcard-factor '+f.type+'">'+f.text+'</span>';
-        });
+        var posF = scoreResult.factors.find(function(f){return f.type==='pos';});
+        var negF = scoreResult.factors.find(function(f){return f.type==='neg';});
+        if(posF) h+='<span class="pcard-factor pos">'+posF.text+'</span>';
+        if(negF) h+='<span class="pcard-factor neg">'+negF.text+'</span>';
       }
       h+='</div>';
       h+='</div>';
