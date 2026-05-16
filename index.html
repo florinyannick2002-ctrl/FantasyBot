@@ -2303,11 +2303,14 @@ function calcDraftScore(player) {
     else if(rank <= 72) valueScore += 6;
   }
   
-  // 1B. Tier Premium (0-10 pts)
-  var tierBonus = tier === 1 ? 10 : tier === 2 ? 8 : tier === 3 ? 6 : tier === 4 ? 4 : tier === 5 ? 2 : 0;
+  // 1B. Tier Premium (0-10 pts) — relativ zum besten verfügbaren Tier dieser Position
+  var bestAvailTier = available.filter(function(p){ return p.pos === pos; })
+    .reduce(function(min, p){ return Math.min(min, p.tier||6); }, 6);
+  var tierDiff = (tier||6) - bestAvailTier; // 0 = bestes verfügbares
+  var tierBonus = tierDiff === 0 ? 10 : tierDiff === 1 ? 7 : tierDiff === 2 ? 4 : tierDiff === 3 ? 1 : 0;
   valueScore += tierBonus;
-  if(tier === 1) factors.push({text:'Elite Tier 1 ⭐',type:'pos'});
-  else if(tier === 2) factors.push({text:'Top Tier 2 ⭐',type:'pos'});
+  if(tierDiff === 0) factors.push({text:'Bester verfügbarer '+pos+' (Tier '+tier+')',type:'pos'});
+  else if(tierDiff === 1) factors.push({text:'Tier '+tier+' — eine Stufe unter dem Besten',type:'pos'});
   
   // 1C. Opportunity Cost (0-5 pts) — verschwindet er?
   if(player.sleeperRank && myDraftSlot) {
