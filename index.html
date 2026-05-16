@@ -2879,9 +2879,13 @@ function showPlayerModal(playerName) {
     return pct<=0.33?'var(--green)':pct<=0.67?'var(--amber)':'var(--red)';
   }
   function statCell(label, val, rankObj) {
-    if(!val) return '';
+    // val=null bedeutet keine Daten; val=0 wird angezeigt (z.B. 0 TDs ist gültig)
+    if(val === null || val === undefined) return '<div style="display:flex;flex-direction:column;align-items:center;padding:5px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;border-top:2px solid var(--border2);opacity:.4;">'
+      +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.06em;margin-bottom:2px;">'+label+'</span>'
+      +'<span style="font-size:14px;font-family:var(--display);color:var(--text3);line-height:1;">—</span>'
+      +'</div>';
     var col = rankColor(rankObj);
-    var rankStr = rankObj ? '<span style="font-size:8px;opacity:.8;margin-left:3px;">#'+rankObj.rank+'</span>' : '';
+    var rankStr = rankObj ? '<span style="font-size:8px;opacity:.75;margin-left:3px;">#'+rankObj.rank+'</span>' : '';
     return '<div style="display:flex;flex-direction:column;align-items:center;padding:5px 8px;background:var(--bg3);border:1px solid var(--border2);border-radius:3px;border-top:2px solid '+col+';">'
       +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.06em;margin-bottom:2px;">'+label+'</span>'
       +'<span style="font-size:14px;font-family:var(--display);color:'+col+';line-height:1;">'+val+rankStr+'</span>'
@@ -2994,7 +2998,7 @@ function showPlayerModal(playerName) {
     var statDefs = [];
     if(pos2==='RB') statDefs = [
       {k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
-      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'tar',lbl:'TAR',hi:true}
+      {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'rec_td',lbl:'REC TD',hi:true},{k:'tar',lbl:'TAR',hi:true}
     ];
     else if(pos2==='WR'||pos2==='TE') statDefs = [
       {k:'tar',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
@@ -3009,7 +3013,7 @@ function showPlayerModal(playerName) {
         h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">2025 SAISON — STATS</div>';
         h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:3px;">';
         statDefs.forEach(function(def){
-          var val=(p.lastStats[def.k]||0)||null;
+          var val=(p.lastStats&&p.lastStats[def.k]!=null)?p.lastStats[def.k]:null;
           h += statCell(def.lbl,val,statRank(def.k,val,def.hi));
         });
         h += '</div></div>';
@@ -3019,7 +3023,7 @@ function showPlayerModal(playerName) {
         h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">SLP PROJ 2026 — STATS</div>';
         h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:3px;">';
         statDefs.forEach(function(def){
-          var val=(p.projStats[def.k]||0)||null;
+          var val=(p.projStats&&p.projStats[def.k]!=null)?p.projStats[def.k]:null;
           h += statCell(def.lbl,val,projRank(def.k,val,def.hi));
         });
         h += '</div></div>';
