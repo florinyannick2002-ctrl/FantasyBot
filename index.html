@@ -1473,6 +1473,7 @@ function applyADP(){
 
 function factorIcon(text) {
   var t = text.toLowerCase();
+  if(t.includes('breakdown:')) return '📊';
   if(t.includes('wert unter')||t.includes('score-cap')||t.includes('pos. noch')||t.includes('pts fehlen')) return '📊';
   if(t.includes('pts vs') || t.includes('vor')) return '📈';
   if(t.includes('tier 1')||t.includes('letzter tier')||t.includes('letzte tier')) return '⚡';
@@ -2503,11 +2504,12 @@ function calcDraftScore(player) {
   var hasNeg = factors.some(function(f){return f.type==='neg';});
   if(!hasNeg && totalScore < 85) {
     var availRank = available.filter(function(p){return (p.rank||999) < rank;}).length + 1;
+    var hasNeedFactor = factors.some(function(f){
+      return f.type==='pos' && (f.text.toLowerCase().includes('noch kein') || f.text.toLowerCase().includes('brauche'));
+    });
     if(valueScore < 30 && availRank > 2) {
       factors.push({text:'Rang #'+availRank+' verfügbar — bessere Picks noch vorhanden',type:'neg'});
-    } else if(valueScore < 30 && !player.projFpts) {
-      factors.push({text:'Keine Projektionsdaten → FP CSV uploaden für bessere Bewertung',type:'neg'});
-    } else if(needScore < 18) {
+    } else if(!hasNeedFactor && needScore < 18) {
       if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'TE-Timing: ideale Zone noch nicht erreicht (R4-7)',type:'neg'});
       else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'TE-Timing: du planst TE erst spät zu draften',type:'neg'});
       else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'QB-Timing: du planst QB erst spät (R9+)',type:'neg'});
@@ -2519,8 +2521,8 @@ function calcDraftScore(player) {
     }
   }
 
-  // Score Breakdown als Icon-Tooltip
-  factors.push({text:'Wert '+valueScore+'/40 · Bedarf '+needScore+'/25 · Kontext '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
+  // Score Breakdown als neutraler Faktor (mit Icon)
+  factors.push({text:'Breakdown: Wert '+valueScore+'/40 · Bedarf '+needScore+'/25 · Kontext '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
 
   // Faktoren nach Wichtigkeit sortieren
   var typeOrder = {pos:0, neg:1, neu:2};
