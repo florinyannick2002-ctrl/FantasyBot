@@ -1564,9 +1564,9 @@ function renderPlayers(){
           if(slpRank<myNextPickOverall) availLabel='<span class="avail-tag avail-red">⚠ WAHRSCHEINLICH WEG</span>';
           else if(slpRank<=myNextPickOverall+3) availLabel='<span class="avail-tag avail-yellow">⚡ RISKANT</span>';
         }
-        // ADP Steal: ich ranke ihn höher (würde laut mir weg sein) aber Sleeper sagt noch da
+        // ADP-Wait: mein Rank sagt "weg" aber Sleeper sagt "noch da" → du kannst warten
         if(p.rank < myNextPickOverall && slpRank >= myNextPickOverall && !availLabel){
-          stealBadge='<span class="avail-tag avail-steal">🎯 ADP-STEAL</span>';
+          stealBadge='<span class="avail-tag avail-steal">📊 KANNST WARTEN</span>';
         }
       } else if(myDraftSlot && p.sleeperRank==null && p.rank < myNextPickOverall){
         availLabel='<span class="avail-tag avail-red">⚠ LETZTE CHANCE</span>';
@@ -1617,10 +1617,9 @@ function renderPlayers(){
       h+='<div class="pcard-score-bar-wrap"><div class="pcard-score-bar" style="width:'+sc+'%;background:'+barColor+';box-shadow:0 0 8px '+barColor+';"></div></div>';
       h+='<span class="pcard-score-num" style="color:'+barColor+';">'+sc+'%</span>';
       if(scoreResult.factors && scoreResult.factors.length){
-        var posF = scoreResult.factors.find(function(f){return f.type==='pos';});
-        var negF = scoreResult.factors.find(function(f){return f.type==='neg';});
-        if(posF) h+='<span class="pcard-factor pos">'+posF.text+'</span>';
-        if(negF) h+='<span class="pcard-factor neg">'+negF.text+'</span>';
+        scoreResult.factors.forEach(function(f){
+          h+='<span class="pcard-factor '+f.type+'">'+f.text+'</span>';
+        });
       }
       h+='</div>';
       h+='</div>';
@@ -2419,7 +2418,7 @@ function calcDraftScore(player) {
   var totalScore = valueScore + needScore + contextScore + timingScore + riskBonus;
   totalScore = Math.max(0, Math.min(100, Math.round(totalScore)));
   
-  return {score: totalScore, factors: factors.slice(0, 6)};
+  return {score: totalScore, factors: factors};
 }
 
 function getTopRecommendations() {
@@ -2487,7 +2486,7 @@ function renderRecommendations() {
     h += '</div>';
     if(p.projFpts) h += '<div style="font-size:11px;color:var(--text2);font-family:var(--mono);margin-bottom:5px;">'+p.projFpts+'pts'+(p.projHigh?'<span style="color:var(--green);"> ▲'+p.projHigh+'</span>':'')+(p.projLow?'<span style="color:var(--red);"> ▼'+p.projLow+'</span>':'')+'</div>';
     h += '<div class="rec-factors">';
-    rec.factors.slice(0,5).forEach(function(f){
+    rec.factors.forEach(function(f){
       h += '<span class="rec-factor '+f.type+'">'+f.text+'</span>';
     });
     h += '</div>';
