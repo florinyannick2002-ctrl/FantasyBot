@@ -2502,14 +2502,14 @@ function calcDraftScore(player) {
   // Wenn keine negativen Faktoren → erkläre warum nicht 100%
   var hasNeg = factors.some(function(f){return f.type==='neg';});
   if(!hasNeg && totalScore < 85) {
-    // Rang unter verfügbaren Spielern berechnen
     var availRank = available.filter(function(p){return (p.rank||999) < rank;}).length + 1;
-    if(valueScore < 30) {
-      factors.push({text:'Rang #'+availRank+' unter verfügbaren (bessere Picks vorhanden)',type:'neg'});
+    if(valueScore < 30 && availRank > 2) {
+      factors.push({text:'Rang #'+availRank+' verfügbar — bessere Picks noch vorhanden',type:'neg'});
+    } else if(valueScore < 30 && !player.projFpts) {
+      factors.push({text:'Keine Projektionsdaten → FP CSV uploaden für bessere Bewertung',type:'neg'});
     } else if(needScore < 18) {
-      // Zeige warum TE/QB Timing
-      if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'TE-Timing: du planst TE erst spät zu draften',type:'neg'});
-      else if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'TE-Timing: ideale Zone noch nicht erreicht (R4-7)',type:'neg'});
+      if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'TE-Timing: ideale Zone noch nicht erreicht (R4-7)',type:'neg'});
+      else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'TE-Timing: du planst TE erst spät zu draften',type:'neg'});
       else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'QB-Timing: du planst QB erst spät (R9+)',type:'neg'});
       else factors.push({text:'Diese Position ist momentan noch nicht dringend',type:'neg'});
     } else if(timingScore < 8) {
@@ -2518,6 +2518,9 @@ function calcDraftScore(player) {
       factors.push({text:'Solider Pick, aber nicht der stärkste dieser Runde',type:'neg'});
     }
   }
+
+  // Score Breakdown als Icon-Tooltip
+  factors.push({text:'Wert '+valueScore+'/40 · Bedarf '+needScore+'/25 · Kontext '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
 
   // Faktoren nach Wichtigkeit sortieren
   var typeOrder = {pos:0, neg:1, neu:2};
