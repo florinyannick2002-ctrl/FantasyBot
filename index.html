@@ -2329,8 +2329,8 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts Vorteil gegenüber dem nächsten '+pos+' auf dem Board',type:'pos'});
-    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts vor dem nächsten '+pos+' auf dem Board',type:'pos'});
+    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser projiziert als der beste '+pos+', den du bei deinem nächsten Pick noch kriegen würdest',type:'pos'});
+    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts mehr als der nächste verfügbare '+pos+' bei deinem Pick',type:'pos'});
     else if(vor >= 5) factors.push({text:'+'+Math.round(vor)+'pts Mehrwert',type:'pos'});
   } else {
     // Fallback: Rank-basiert
@@ -2346,8 +2346,8 @@ function calcDraftScore(player) {
   var tierDiff = (tier||6) - bestAvailTier; // 0 = bestes verfügbares
   var tierBonus = tierDiff === 0 ? 10 : tierDiff === 1 ? 7 : tierDiff === 2 ? 4 : tierDiff === 3 ? 1 : 0;
   valueScore += tierBonus;
-  if(tierDiff === 0) factors.push({text:'Bester verfügbarer '+pos+' (Tier '+tier+')',type:'pos'});
-  else if(tierDiff === 1) factors.push({text:'Tier '+tier+' — eine Stufe unter dem Besten',type:'pos'});
+  if(tierDiff === 0) factors.push({text:'Bester noch verfügbarer '+pos+' seiner Klasse auf dem Board (Tier '+tier+')',type:'pos'});
+  else if(tierDiff === 1) factors.push({text:'Eine Tier-Stufe unter dem besten verfügbaren '+pos+' — immer noch eine solide Wahl',type:'pos'});
   
   // 1C. Opportunity Cost (0-5 pts) — verschwindet er?
   if(player.sleeperRank && myDraftSlot) {
@@ -2368,7 +2368,7 @@ function calcDraftScore(player) {
   var have = posCounts[pos] || 0;
   
   if(pos === 'QB' || pos === 'TE') {
-    if(have === 0 && needed >= 1) { needScore += 12; factors.push({text:'Noch kein '+pos+'!',type:'pos'}); }
+    if(have === 0 && needed >= 1) { needScore += 12; factors.push({text:'Kein '+pos+' im Team — diese Position muss jetzt adressiert werden',type:'pos'}); }
     else if(have >= needed) needScore += 0;
   } else if(pos === 'RB' || pos === 'WR') {
     var round = Math.floor(totalPicked / totalTeams) + 1;
@@ -2381,16 +2381,16 @@ function calcDraftScore(player) {
       if(rbHeavyWR) {
         // RB Heavy: WR early ist nicht dringend — kein Bonus, kein "Noch kein WR!"
         needScore += 4;
-        factors.push({text:'WR kommt später (RB Heavy Plan)',type:'neu'});
+        factors.push({text:'Gemäss deinem RB-Heavy-Plan holst du WRs in späteren Runden',type:'neu'});
       } else if(zeroRbRB) {
         needScore += 4;
-        factors.push({text:'RB kommt später (Zero RB Plan)',type:'neu'});
+        factors.push({text:'Zero-RB-Strategie: RBs erst ab Runde 5+ — kein Grund zur Eile',type:'neu'});
       } else {
         needScore += 12;
         factors.push({text:'Noch kein '+pos+'!',type:'pos'});
       }
     }
-    else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'Brauche '+pos+'2',type:'pos'}); }
+    else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'Ein zweiter solider '+pos+' fehlt noch im Kader',type:'pos'}); }
     else if(have === 2) needScore += 4;
     else if(have >= 3) needScore -= 2;
   } else if(pos === 'K' || pos === 'DEF') {
@@ -2406,45 +2406,45 @@ function calcDraftScore(player) {
   // ── HAUPT-STRATEGIE ──
   if(strategy.main === 'rb_heavy') {
     if(pos === 'RB' && round <= 4 && have < 3) {
-      stratBonus = 8; factors.push({text:'RB Heavy: früh RBs sichern ✓',type:'pos'});
+      stratBonus = 8; factors.push({text:'Passt perfekt zu deiner RB-Heavy-Strategie — früh die besten RBs sichern',type:'pos'});
     } else if(pos === 'RB' && round <= 6 && have < 4) {
       stratBonus = 4;
     } else if(pos === 'WR' && round <= 3 && have < 1) {
-      stratBonus = -3; factors.push({text:'RB Heavy: WR in R'+round+' zu früh',type:'neg'});
+      stratBonus = -3; factors.push({text:'WR in Runde '+round+' widerspricht deinem RB-Heavy-Plan',type:'neg'});
     }
   }
   else if(strategy.main === 'wr_heavy') {
     if(pos === 'WR' && round <= 5 && have < 3) {
-      stratBonus = 8; factors.push({text:'WR Heavy Plan ✓',type:'pos'});
+      stratBonus = 8; factors.push({text:'Deckt sich mit deiner WR-Heavy-Strategie — genau der richtige Zug',type:'pos'});
     } else if(pos === 'RB' && round <= 3 && have < 1) {
-      stratBonus = -3; factors.push({text:'WR Heavy: RB in R'+round+' zu früh',type:'neg'});
+      stratBonus = -3; factors.push({text:'RB in Runde '+round+' passt nicht zu deiner WR-Heavy-Ausrichtung',type:'neg'});
     }
   }
   else if(strategy.main === 'zero_rb') {
     if(pos === 'RB' && round <= 5) {
-      stratBonus = -7; factors.push({text:'Zero RB: RBs erst ab R5+',type:'neg'});
+      stratBonus = -7; factors.push({text:'Zero-RB: du planst RBs erst ab Runde 5+ — zu früh für diesen Pick',type:'neg'});
     } else if(pos === 'RB' && round === 6) {
       stratBonus = -2;
     } else if(pos === 'WR' && round <= 5 && have < 4) {
-      stratBonus = 7; factors.push({text:'Zero RB → WR Early ✓',type:'pos'});
+      stratBonus = 7; factors.push({text:'Früher WR passt ideal zu deiner Zero-RB-Strategie',type:'pos'});
     } else if(pos === 'TE' && round <= 4 && have === 0) {
-      stratBonus = 4; factors.push({text:'Zero RB → TE Early ✓',type:'pos'});
+      stratBonus = 4; factors.push({text:'Früher TE-Griff ergänzt deine Zero-RB-Strategie gut',type:'pos'});
     }
   }
   else if(strategy.main === 'hero_rb') {
     if(pos === 'RB' && have === 0 && round <= 2) {
-      stratBonus = 10; factors.push({text:'Hero RB: Elite-RB in R'+round+' ✓',type:'pos'});
+      stratBonus = 10; factors.push({text:'Genau der Elite-RB, den deine Hero-RB-Strategie in Runde '+round+' braucht',type:'pos'});
     } else if(pos === 'RB' && have === 1 && round <= 8) {
-      stratBonus = -6; factors.push({text:'Hero RB: nur 1 RB, jetzt WRs',type:'neg'});
+      stratBonus = -6; factors.push({text:'Dein Elite-RB ist gesetzt — Zeit, den WR-Fokus zu setzen',type:'neg'});
     } else if(pos === 'WR' && have >= 0 && round >= 2 && have < 4) {
-      stratBonus = 5; factors.push({text:'Hero RB: WR-Fokus ab R2 ✓',type:'pos'});
+      stratBonus = 5; factors.push({text:'Hero-RB läuft — WR-Fokus ab Runde 2 ist genau der Plan',type:'pos'});
     }
   }
   else if(strategy.main === 'te_premium') {
     if(pos === 'TE' && rank <= 12 && have === 0) {
-      stratBonus = 10; factors.push({text:'TE Premium: Elite-TE sichern ✓',type:'pos'});
+      stratBonus = 10; factors.push({text:'Sichert dir den Elite-TE, auf den deine TE-Premium-Strategie ausgelegt ist',type:'pos'});
     } else if(pos === 'TE' && rank <= 25 && have === 0) {
-      stratBonus = 6; factors.push({text:'TE Premium Plan ✓',type:'pos'});
+      stratBonus = 6; factors.push({text:'Solider TE-Griff im Rahmen deiner TE-Premium-Strategie',type:'pos'});
     }
   }
   // best_available: kein Strategie-Bonus (Algo entscheidet frei)
@@ -2452,30 +2452,30 @@ function calcDraftScore(player) {
   // ── QB TIMING ──
   if(pos === 'QB') {
     if(strategy.qbTiming === 'early') {
-      if(round <= 4 && have === 0) { stratBonus += 6; factors.push({text:'QB Timing: Elite QB in R'+round+' ✓',type:'pos'}); }
+      if(round <= 4 && have === 0) { stratBonus += 6; factors.push({text:'Elite-QB in Runde '+round+' — passt exakt zu deiner Early-QB-Strategie',type:'pos'}); }
       else if(round > 4 && have === 0) { stratBonus -= 3; }
     } else if(strategy.qbTiming === 'mid') {
-      if(round >= 5 && round <= 8 && have === 0) { stratBonus += 5; factors.push({text:'QB Timing: Mitte ✓ (R'+round+')',type:'pos'}); }
-      else if(round < 5 && have === 0) { stratBonus -= 4; factors.push({text:'QB zu früh für Mid-Timing',type:'neg'}); }
+      if(round >= 5 && round <= 8 && have === 0) { stratBonus += 5; factors.push({text:'QB in Runde '+round+' — goldene Zone für deine Mid-QB-Strategie',type:'pos'}); }
+      else if(round < 5 && have === 0) { stratBonus -= 4; factors.push({text:'QB jetzt wäre zu früh für dein Mid-Timing-Konzept — warte auf Runde 5-8',type:'neg'}); }
     } else if(strategy.qbTiming === 'late') {
-      if(round >= 9 && have === 0) { stratBonus += 5; factors.push({text:'QB Streaming: guter Zeitpunkt ✓',type:'pos'}); }
-      else if(round <= 8 && have === 0) { stratBonus -= 5; factors.push({text:'QB: Warte auf R9+ (Late Timing)',type:'neg'}); }
+      if(round >= 9 && have === 0) { stratBonus += 5; factors.push({text:'QB spät holen ist dein Plan — Runde '+round+' ist genau der richtige Moment',type:'pos'}); }
+      else if(round <= 8 && have === 0) { stratBonus -= 5; factors.push({text:'Du planst QB erst in Runde 9+ — dieser Pick wäre zu früh für deine Strategie',type:'neg'}); }
     } else if(strategy.qbTiming === 'two_qb') {
-      if(have < 2) { stratBonus += 6; factors.push({text:'2-QB Strategie: QB sichern ✓',type:'pos'}); }
+      if(have < 2) { stratBonus += 6; factors.push({text:'Deine 2-QB-Liga erfordert frühe QB-Sicherung — dieser Zug macht Sinn',type:'pos'}); }
     }
   }
 
   // ── TE TIMING ──
   if(pos === 'TE') {
     if(strategy.teTiming === 'early') {
-      if(round <= 3 && have === 0) { stratBonus += 6; factors.push({text:'TE Timing: Elite TE in R'+round+' ✓',type:'pos'}); }
+      if(round <= 3 && have === 0) { stratBonus += 6; factors.push({text:'Elite-TE in Runde '+round+' — deine TE-Strategie wird hier konsequent umgesetzt',type:'pos'}); }
       else if(round > 3 && have === 0) stratBonus -= 2;
     } else if(strategy.teTiming === 'mid') {
-      if(round >= 4 && round <= 7 && have === 0) { stratBonus += 4; factors.push({text:'TE Timing: Mitte ✓ (R'+round+')',type:'pos'}); }
-      else if(round < 4 && have === 0) { stratBonus -= 4; factors.push({text:'TE: Warte auf R4-7 (Mid Timing)',type:'neg'}); }
+      if(round >= 4 && round <= 7 && have === 0) { stratBonus += 4; factors.push({text:'TE in Runde '+round+' — optimales Fenster für deine Mid-TE-Strategie',type:'pos'}); }
+      else if(round < 4 && have === 0) { stratBonus -= 4; factors.push({text:'TE jetzt wäre zu früh — dein Plan sieht R4-7 vor',type:'neg'}); }
     } else if(strategy.teTiming === 'late') {
-      if(round >= 8 && have === 0) { stratBonus += 4; factors.push({text:'TE Streaming: guter Zeitpunkt ✓',type:'pos'}); }
-      else if(round < 8 && have === 0) { stratBonus -= 3; factors.push({text:'TE: Warte auf R8+ (Late Timing)',type:'neg'}); }
+      if(round >= 8 && have === 0) { stratBonus += 4; factors.push({text:'Late-TE ist dein Konzept — Runde '+round+' passt perfekt dazu',type:'pos'}); }
+      else if(round < 8 && have === 0) { stratBonus -= 3; factors.push({text:'Du planst TE spät zu holen — dieser Pick käme zu früh',type:'neg'}); }
     }
   }
 
@@ -2492,7 +2492,7 @@ function calcDraftScore(player) {
 
   // ── ROSTER TYP ──
   if(isSuperflex && pos === 'QB') {
-    stratBonus += 8; factors.push({text:'Superflex: QB extrem wertvoll!',type:'pos'});
+    stratBonus += 8; factors.push({text:'Im Superflex-Format ist QB-Wert deutlich erhöht — starkes Pick-Argument',type:'pos'});
   }
 
   needScore += stratBonus;
@@ -2500,7 +2500,7 @@ function calcDraftScore(player) {
   // 2C. Position Scarcity (0-5 pts)
   var samePos = available.filter(function(p){ return p.pos === pos && p.tier <= tier; });
   if(samePos.length <= 2 && tier <= 4) {
-    needScore += 5; factors.push({text:'Letzter Tier '+tier+' '+pos+'!',type:'pos'});
+    needScore += 5; factors.push({text:'Letzter '+pos+' dieser Qualitätsstufe (Tier '+tier+') auf dem Board — danach wird es deutlich schlechter',type:'pos'});
   } else if(samePos.length <= 4 && tier <= 3) {
     needScore += 3;
   }
@@ -2513,20 +2513,20 @@ function calcDraftScore(player) {
   // 3A. Strength of Schedule (-4 bis +4)
   if(player.team && SOS[player.team] && SOS[player.team][pos] !== undefined) {
     var sv = SOS[player.team][pos];
-    if(sv === 5) { contextScore += 4; factors.push({text:'SOS: Top Schedule 🟢',type:'pos'}); }
-    else if(sv === 4) { contextScore += 2; factors.push({text:'SOS: Easy 🟢',type:'pos'}); }
-    else if(sv === 2) { contextScore -= 2; factors.push({text:'SOS: Schwer 🔴',type:'neg'}); }
-    else if(sv === 1) { contextScore -= 4; factors.push({text:'SOS: Sehr schwer 🔴',type:'neg'}); }
+    if(sv === 5) { contextScore += 4; factors.push({text:'Traumkalender — gegen die schwächsten Verteidigungen der Liga',type:'pos'}); }
+    else if(sv === 4) { contextScore += 2; factors.push({text:'Angenehmer Spielplan — durchgehend gute Matchups erwartet',type:'pos'}); }
+    else if(sv === 2) { contextScore -= 2; factors.push({text:'Schwieriger Spielplan — viele starke Verteidigungen auf dem Weg',type:'neg'}); }
+    else if(sv === 1) { contextScore -= 4; factors.push({text:'Härtester Schedule im Feld — die Matchups werden das ganze Jahr ein Problem sein',type:'neg'}); }
   }
   
   // 3B. Age (-5 bis +5)
   if(player.age) {
-    if(player.age <= 23) { contextScore += 4; factors.push({text:'Jung ('+player.age+'j) 🌱',type:'pos'}); }
+    if(player.age <= 23) { contextScore += 4; factors.push({text:'Mit '+player.age+' Jahren im besten Entwicklungsfenster — mehrjährige Hochphase zu erwarten',type:'pos'}); }
     else if(player.age <= 26) contextScore += 2; // Aufstieg
     else if(player.age <= 28) { /* Peak, neutral */ }
-    else if(player.age <= 30) { contextScore -= 2; factors.push({text:'Älter ('+player.age+'j) 🟡',type:'neg'}); }
-    else if(player.age <= 32) { contextScore -= 4; factors.push({text:'30+ ('+player.age+'j) 🔴',type:'neg'}); }
-    else { contextScore -= 5; factors.push({text:'Veteran ('+player.age+'j) 🔴',type:'neg'}); }
+    else if(player.age <= 30) { contextScore -= 2; factors.push({text:'Mit '+player.age+' Jahren beginnt das Fenster sich zu schliessen — auf Regressions-Anzeichen achten',type:'neg'}); }
+    else if(player.age <= 32) { contextScore -= 4; factors.push({text:'Mit '+player.age+' Jahren im Herbst seiner Karriere — erhöhtes Verletzungs- und Regressionsrisiko',type:'neg'}); }
+    else { contextScore -= 5; factors.push({text:'Mit '+player.age+' Jahren nahe am Ende — Leistungsabfall und Verletzungsanfälligkeit sind reale Risiken',type:'neg'}); }
   }
   
   // 3C. Bye Week Konflikt (-4 bis 0)
@@ -2537,7 +2537,7 @@ function calcDraftScore(player) {
     }).length;
     var threshold = strategy.byeAvoidance === 'strict' ? 1 : 2;
     if(byeConflicts >= threshold + 1) {
-      contextScore -= 4; factors.push({text:'Bye Wk '+player.bye+' Konflikt!',type:'neg'});
+      contextScore -= 4; factors.push({text:'Bye Week '+player.bye+' — du hast bereits zu viele Spieler in dieser Woche',type:'neg'});
     }
   }
   
@@ -2548,7 +2548,7 @@ function calcDraftScore(player) {
       return cr && cr.team === player.team && cr.pos === 'RB' && (cr.rank||999) <= 30;
     });
     if(hasStarterOnTeam && rank > 50) {
-      contextScore += 5; factors.push({text:'Handcuff zu deinem RB 🛡️',type:'pos'});
+      contextScore += 5; factors.push({text:'Direkter Backup für deinen Starter — fällt er aus, hast du sofort Ersatz im Kader',type:'pos'});
     }
   }
   
@@ -2571,15 +2571,15 @@ function calcDraftScore(player) {
     // Positional runs ignorieren
   } else if(strategy.runReaction === 'aggressive') {
     if(runRatio >= 1.5) {
-      timingScore += 7; factors.push({text:pos+'-Run ('+posInRun+' in letzten 8) 🚨',type:'pos'});
+      timingScore += 7; factors.push({text:'Achtung: '+pos+'-Run läuft — '+posInRun+' der letzten 8 Picks waren '+pos+'s, du könntest leer ausgehen',type:'pos'});
     } else if(oppInRun >= 4) {
-      timingScore += 5; factors.push({text:'Andere Pos dominiert — '+pos+' verfügbar!',type:'pos'});
+      timingScore += 5; factors.push({text:'Die anderen Teams holen gerade andere Positionen — '+pos+' liegt brach, jetzt zuschlagen',type:'pos'});
     }
   } else {
     if(runRatio >= 2.0) {
-      timingScore += 7; factors.push({text:pos+'-Run! ('+posInRun+' in letzten 8) 🚨',type:'pos'});
+      timingScore += 7; factors.push({text:'Starker '+pos+'-Run läuft! '+posInRun+' von 8 letzten Picks auf '+pos+' — handle jetzt oder warte auf Reste',type:'pos'});
     } else if(runRatio >= 1.5) {
-      timingScore += 4; factors.push({text:pos+'-Run beginnt ('+posInRun+' in letzten 8)',type:'pos'});
+      timingScore += 4; factors.push({text:'Ein '+pos+'-Run zeichnet sich ab ('+posInRun+'/8 letzten Picks) — die anderen Teams werden nervös',type:'pos'});
     }
   }
 
@@ -2612,11 +2612,11 @@ function calcDraftScore(player) {
   }).length;
 
   if(goodAltsGone >= 3) {
-    timingScore += 5; factors.push({text:goodAltsGone+' gleichwertige '+pos+'s weg vor nächstem Pick!',type:'pos'});
+    timingScore += 5; factors.push({text:goodAltsGone+' gleichwertige '+pos+'s werden bis zu deinem nächsten Pick weg sein — das ist deine letzte echte Chance',type:'pos'});
   } else if(goodAltsGone === 2) {
-    timingScore += 3; factors.push({text:'2 gleichwertige '+pos+'s vor nächstem Pick weg',type:'pos'});
+    timingScore += 3; factors.push({text:'2 vergleichbare '+pos+'s könnten bis zu deinem nächsten Pick verschwinden',type:'pos'});
   } else if(goodAltsGone === 1) {
-    timingScore += 2; factors.push({text:'1 gleichwertiger '+pos+' vor nächstem Pick weg',type:'pos'});
+    timingScore += 2; factors.push({text:'Mindestens 1 ähnlicher '+pos+' könnte bis zu deinem nächsten Pick weg sein',type:'pos'});
   }
 
   // 4C. On-the-clock Urgency (0-3 pts)
@@ -2638,22 +2638,22 @@ function calcDraftScore(player) {
     
     if(strategy.risk === 'safe') {
       // Safe: kleine Spread belohnen, grosse bestrafen
-      if(spreadPct < 0.05)      { riskBonus += 8; factors.push({text:'🟢 Sehr sicher (±'+Math.round(spread)+'pts)',type:'pos'}); }
-      else if(spreadPct < 0.12) { riskBonus += 3; factors.push({text:'🟡 Solide (±'+Math.round(spread)+'pts)',type:'neu'}); }
-      else if(spreadPct < 0.22) { riskBonus -= 5; factors.push({text:'🟠 Unsicher (±'+Math.round(spread)+'pts)',type:'neg'}); }
-      else                      { riskBonus -= 10; factors.push({text:'🔴 Hohes Risiko (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      if(spreadPct < 0.05)      { riskBonus += 8; factors.push({text:'Extrem zuverlässige Projektion — nur ±'+Math.round(spread)+' Punkte Schwankungsbreite',type:'pos'}); }
+      else if(spreadPct < 0.12) { riskBonus += 3; factors.push({text:'Verlässliche Projektion mit normaler Schwankung (±'+Math.round(spread)+'pts)',type:'neu'}); }
+      else if(spreadPct < 0.22) { riskBonus -= 5; factors.push({text:'Hohe Varianz in der Projektion — Leistung könnte stark schwanken (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      else                      { riskBonus -= 10; factors.push({text:'Boom-or-Bust Profil — entweder Leistungsträger oder Totalausfall (±'+Math.round(spread)+'pts)',type:'neg'}); }
     } else if(strategy.risk === 'boom') {
       // Boom: Upside belohnen
-      if(upside >= 50)      { riskBonus += 10; factors.push({text:'🚀 Top Upside (+'+Math.round(upside)+')',type:'pos'}); }
-      else if(upside >= 30) { riskBonus += 6; factors.push({text:'📈 Solides Upside (+'+Math.round(upside)+')',type:'pos'}); }
+      if(upside >= 50)      { riskBonus += 10; factors.push({text:'Explosives Upside-Potenzial — bei guter Form könnte er den Draft stehlen (+'+Math.round(upside)+'pts)',type:'pos'}); }
+      else if(upside >= 30) { riskBonus += 6; factors.push({text:'Solides Upside-Potenzial bei guter Saison (+'+Math.round(upside)+'pts)',type:'pos'}); }
       else if(upside >= 15) { riskBonus += 2; }
-      else                  { riskBonus -= 3; factors.push({text:'Wenig Upside',type:'neg'}); }
+      else                  { riskBonus -= 3; factors.push({text:'Begrenztes Upside — kaum Potenzial für eine Überraschungsleistung',type:'neg'}); }
     } else {
       // Balanced: leichte Confidence-Belohnung
-      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'🟢 Sicher (±'+Math.round(spread)+'pts)',type:'pos'}); }
-      else if(spreadPct < 0.18) { riskBonus += 1; factors.push({text:'🟡 Solide (±'+Math.round(spread)+'pts)',type:'neu'}); }
-      else if(spreadPct < 0.28) { riskBonus -= 3; factors.push({text:'🟠 Unsicher (±'+Math.round(spread)+'pts)',type:'neg'}); }
-      else                      { riskBonus -= 6; factors.push({text:'🔴 Risiko (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'Solide und verlässlich — die Projektion schwankt kaum (±'+Math.round(spread)+'pts)',type:'pos'}); }
+      else if(spreadPct < 0.18) { riskBonus += 1; factors.push({text:'Normale Projektion mit durchschnittlicher Schwankung (±'+Math.round(spread)+'pts)',type:'neu'}); }
+      else if(spreadPct < 0.28) { riskBonus -= 3; factors.push({text:'Überdurchschnittliche Varianz — Leistung schwer vorherzusagen (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      else                      { riskBonus -= 6; factors.push({text:'Hohes Risiko — die Projektion hat eine grosse Streubreite (±'+Math.round(spread)+'pts)',type:'neg'}); }
     }
   }
   
@@ -2691,16 +2691,16 @@ function calcDraftScore(player) {
       // Sleeper sagt er ist bald weg → kein "kannst warten" Neg-Faktor
       // Nichts hinzufügen, der LETZTE CHANCE Tag erklärt es bereits
     } else if(valueScore < 30 && availRank > 2) {
-      factors.push({text:'Rang #'+availRank+' verfügbar — bessere Picks vorhanden',type:'neg'});
+      factors.push({text:'Es gibt noch bessere Optionen auf dem Board — dieser Pick ist nicht zwingend',type:'neg'});
     } else if(!hasNeedFactor && needScore < 18) {
-      if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'TE-Timing: ideale Zone noch nicht erreicht (R4-7)',type:'neg'});
-      else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'TE-Timing: du planst TE erst spät zu draften',type:'neg'});
-      else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'QB-Timing: du planst QB erst spät (R9+)',type:'neg'});
-      else factors.push({text:'Diese Position ist momentan noch nicht dringend',type:'neg'});
+      if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'Für TE ist jetzt noch zu früh — dein Fenster öffnet sich erst in R4-7',type:'neg'});
+      else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'Du planst TE als Streaming-Option — kein Grund jetzt zu investieren',type:'neg'});
+      else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'Dein QB-Timing-Plan sieht erst R9+ vor — jetzt wäre zu früh',type:'neg'});
+      else factors.push({text:'Diese Position drängt sich aktuell nicht auf — du hast noch Zeit',type:'neg'});
     } else if(timingScore < 8 && !isUrgent) {
-      factors.push({text:'Kein Druck — du kannst noch eine Runde warten',type:'neg'});
+      factors.push({text:'Kein Zeitdruck — er sollte nächste Runde noch verfügbar sein',type:'neg'});
     } else {
-      factors.push({text:'Andere Spieler haben höheren Empfehlungs-Score',type:'neg'});
+      factors.push({text:'Andere Spieler auf dem Board bieten aktuell besseren Wert',type:'neg'});
     }
   }
 
@@ -2850,45 +2850,42 @@ function showPlayerModal(playerName) {
   if(p.college) bioItems.push({lbl:'COLLEGE', val:p.college});
   if(p.number) bioItems.push({lbl:'#', val:p.number});
 
-  // Header
+  // Header — stabiles 3-Spalten-Grid: Bild | Info | Score+Rang
   var scoreColor = rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--red)';
-  var h = '<div style="display:flex;gap:20px;align-items:stretch;margin-bottom:16px;">';
-  // Bild
+  var h = '<div style="display:grid;grid-template-columns:130px 1fr auto;gap:18px;align-items:start;margin-bottom:16px;">';
+
+  // Spalte 1: Bild
   h += imgHtml;
-  // Mitte — Name + Stats + Bio
-  h += '<div style="flex:1;min-width:0;display:flex;flex-direction:column;justify-content:space-between;gap:10px;">';
 
-  // Zeile 1: Badge + Name
-  h += '<div>';
-  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">';
+  // Spalte 2: Name, Stats, Projektion, Bio
+  h += '<div style="min-width:0;">';
+  // Name + Badge
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">';
   h += '<span class="badge '+pc+'">'+p.pos+'</span>';
-  h += '<span style="font-family:var(--display);font-size:24px;text-transform:uppercase;letter-spacing:-.3px;">'+p.name+'</span>';
+  h += '<span style="font-family:var(--display);font-size:22px;text-transform:uppercase;letter-spacing:-.3px;line-height:1.1;">'+p.name+'</span>';
   h += '</div>';
-
-  // Zeile 2: Team / Rank / Sleeper  
-  h += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:8px;">';
-  h += '<span style="font-size:12px;font-weight:700;color:var(--text2);font-family:var(--mono);">'+( p.team||'')+'</span>';
+  // Team / Rank / Slp
+  h += '<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">';
+  h += '<span style="font-size:12px;font-weight:700;color:var(--text2);font-family:var(--mono);">'+(p.team||'')+'</span>';
   h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">RANK #'+p.rank+'</span>';
   if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">SLP '+p.sleeperRank+'</span>';
   h += '</div>';
-
-  // Zeile 3: Projektion — Pts gross + High grün + Low rot
+  // Projektion
   if(p.projFpts) {
-    h += '<div style="display:flex;align-items:baseline;gap:10px;background:var(--bg3);border:1px solid var(--border2);padding:6px 10px;border-radius:3px;margin-bottom:8px;">';
-    h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-right:2px;">PROJ</span>';
-    h += '<span style="font-family:var(--display);font-size:22px;color:var(--amber);">'+Math.round(p.projFpts)+'</span>';
-    h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
-    h += '<span style="font-size:10px;color:var(--green);font-family:var(--mono);font-weight:700;">▲ '+p.projHigh+'</span>';
-    h += '<span style="font-size:10px;color:var(--red);font-family:var(--mono);font-weight:700;">▼ '+p.projLow+'</span>';
+    h += '<div style="display:flex;align-items:baseline;gap:10px;background:var(--bg3);border:1px solid var(--border2);padding:7px 12px;border-radius:3px;margin-bottom:10px;">';
+    h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">PROJ</span>';
+    h += '<span style="font-family:var(--display);font-size:24px;color:var(--amber);line-height:1;">'+Math.round(p.projFpts)+'</span>';
+    h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span>';
+    h += '<span style="font-size:11px;color:var(--green);font-family:var(--mono);font-weight:700;margin-left:4px;">▲ '+p.projHigh+'</span>';
+    h += '<span style="font-size:11px;color:var(--red);font-family:var(--mono);font-weight:700;">▼ '+p.projLow+'</span>';
     h += '</div>';
   }
-
-  // Bio pills (ohne Rang — der kommt separat prominent)
+  // Bio pills (ohne Rang — kommt rechts prominent)
   var bioWithoutRank = bioItems.filter(function(b){return b.lbl!=='RANG';});
   if(bioWithoutRank.length) {
     h += '<div style="display:flex;gap:5px;flex-wrap:wrap;">';
     bioWithoutRank.forEach(function(b){
-      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:2px 8px;border-radius:2px;">';
+      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:3px 9px;border-radius:2px;">';
       h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+b.lbl+' </span>';
       h += '<span style="font-size:11px;color:var(--text);font-family:var(--mono);font-weight:700;">'+b.val+'</span>';
       h += '</div>';
@@ -2897,21 +2894,19 @@ function showPlayerModal(playerName) {
   }
   h += '</div>';
 
-  // Rechts — Score + Positionsrang
-  h += '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;flex-shrink:0;min-width:80px;">';
-  // Score
+  // Spalte 3: Score + Positionsrang
+  h += '<div style="display:flex;flex-direction:column;align-items:center;gap:10px;min-width:90px;">';
   h += '<div style="text-align:center;">';
-  h += '<div style="font-family:var(--display);font-size:56px;color:'+scoreColor+';line-height:1;text-shadow:0 0 24px '+scoreColor+';">'+rec.score+'</div>';
-  h += '<div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.15em;">SCORE</div>';
+  h += '<div style="font-family:var(--display);font-size:54px;color:'+scoreColor+';line-height:1;text-shadow:0 0 24px '+scoreColor+';">'+rec.score+'</div>';
+  h += '<div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.15em;margin-top:2px;">SCORE</div>';
   h += '</div>';
-  // Positionsrang — prominent
   if(p.pos && p.rank) {
-    h += '<div style="background:rgba(255,170,0,.08);border:1px solid rgba(255,170,0,.35);border-radius:3px;padding:6px 10px;text-align:center;width:100%;">';
-    h += '<div style="font-family:var(--display);font-size:20px;color:var(--amber);line-height:1;">'+posRankLabel+'</div>';
-    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);letter-spacing:.08em;margin-top:2px;">GESAMT</div>';
-    h += '<div style="width:100%;height:1px;background:rgba(255,170,0,.15);margin:5px 0;"></div>';
-    h += '<div style="font-family:var(--display);font-size:16px;color:var(--green);line-height:1;">'+posRankAvailLabel+'</div>';
-    h += '<div style="font-size:8px;color:var(--green);font-family:var(--mono);letter-spacing:.08em;margin-top:2px;opacity:.7;">VERBLEIBEND</div>';
+    h += '<div style="background:rgba(255,170,0,.07);border:1px solid rgba(255,170,0,.3);border-radius:3px;padding:8px 12px;text-align:center;width:100%;">';
+    h += '<div style="font-family:var(--display);font-size:22px;color:var(--amber);line-height:1;">'+posRankLabel+'</div>';
+    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em;margin-top:3px;">GESAMT</div>';
+    h += '<div style="height:1px;background:rgba(255,170,0,.15);margin:6px 0;"></div>';
+    h += '<div style="font-family:var(--display);font-size:18px;color:var(--green);line-height:1;">'+posRankAvailLabel+'</div>';
+    h += '<div style="font-size:8px;color:var(--green);font-family:var(--mono);letter-spacing:.06em;margin-top:3px;opacity:.75;">VERBLEIBEND</div>';
     h += '</div>';
   }
   h += '</div>';
