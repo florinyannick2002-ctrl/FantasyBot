@@ -298,7 +298,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 <!-- Player Detail Modal -->
 <div id="player-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.style.display='none';">
   <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:860px;width:100%;overflow:visible;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);">
-    <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:14px;right:14px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:28px;height:28px;border-radius:2px;cursor:pointer;font-size:14px;font-weight:800;display:flex;align-items:center;justify-content:center;">×</button>
+    <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:12px;right:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:36px;height:36px;border-radius:3px;cursor:pointer;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .12s;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">×</button>
     <div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">📊 SPIELER ANALYSE</div>
     <div id="modal-body"></div>
   </div>
@@ -2335,9 +2335,9 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    if(vor >= 30) factors.push({text:'+'+Math.round(vor)+'pts besser projiziert als der beste '+pos+', den du bei deinem nächsten Pick noch kriegen würdest',type:'pos'});
-    else if(vor >= 15) factors.push({text:'+'+Math.round(vor)+'pts mehr als der nächste verfügbare '+pos+' bei deinem Pick',type:'pos'});
-    else if(vor >= 5) factors.push({text:'+'+Math.round(vor)+'pts Mehrwert',type:'pos'});
+    if(vor >= 30) factors.push({text:Math.round(vor)+' Punkte besser projiziert als der beste '+pos+', den du bei deinem nächsten Pick noch kriegen würdest',type:'pos'});
+    else if(vor >= 15) factors.push({text:Math.round(vor)+' Punkte mehr als der nächste verfügbare '+pos+' bei deinem Pick',type:'pos'});
+    else if(vor >= 5) factors.push({text:Math.round(vor)+' Punkte Mehrwert gegenüber dem nächsten '+pos,type:'pos'});
   } else {
     // Fallback: Rank-basiert
     if(rank <= 12) valueScore += 22;
@@ -2352,7 +2352,13 @@ function calcDraftScore(player) {
   var tierDiff = (tier||6) - bestAvailTier; // 0 = bestes verfügbares
   var tierBonus = tierDiff === 0 ? 10 : tierDiff === 1 ? 7 : tierDiff === 2 ? 4 : tierDiff === 3 ? 1 : 0;
   valueScore += tierBonus;
-  if(tierDiff === 0) factors.push({text:'Bester noch verfügbarer '+pos+' seiner Klasse auf dem Board (Tier '+tier+')',type:'pos'});
+  if(tierDiff === 0) {
+    // Nur zeigen wenn NICHT bereits die Scarcity-Meldung feuert (die ist informativer)
+    var samePosFwd = available.filter(function(p){ return p.pos === pos && (p.tier||6) <= (tier||6); });
+    if(samePosFwd.length > 2 || (tier||6) > 4) {
+      factors.push({text:'Bester noch verfügbarer '+pos+' seiner Klasse auf dem Board (Tier '+tier+')',type:'pos'});
+    }
+  }
   else if(tierDiff === 1) factors.push({text:'Eine Tier-Stufe unter dem besten verfügbaren '+pos+', aber immer noch eine gute Option',type:'pos'});
   
   // 1C. Opportunity Cost (0-5 pts) — verschwindet er?
@@ -2498,7 +2504,7 @@ function calcDraftScore(player) {
 
   // ── ROSTER TYP ──
   if(isSuperflex && pos === 'QB') {
-    stratBonus += 8; factors.push({text:'Im Superflex-Format ist QB-Wert deutlich erhöht — starkes Pick-Argument',type:'pos'});
+    stratBonus += 8; factors.push({text:'Im Superflex-Format ist QB-Wert deutlich erhöht. Starkes Pick-Argument.',type:'pos'});
   }
 
   needScore += stratBonus;
@@ -2519,10 +2525,10 @@ function calcDraftScore(player) {
   // 3A. Strength of Schedule (-4 bis +4)
   if(player.team && SOS[player.team] && SOS[player.team][pos] !== undefined) {
     var sv = SOS[player.team][pos];
-    if(sv === 5) { contextScore += 4; factors.push({text:'Traumkalender — gegen die schwächsten Verteidigungen der Liga',type:'pos'}); }
-    else if(sv === 4) { contextScore += 2; factors.push({text:'Angenehmer Spielplan — durchgehend gute Matchups erwartet',type:'pos'}); }
-    else if(sv === 2) { contextScore -= 2; factors.push({text:'Schwieriger Spielplan — viele starke Verteidigungen auf dem Weg',type:'neg'}); }
-    else if(sv === 1) { contextScore -= 4; factors.push({text:'Härtester Schedule im Feld — die Matchups werden das ganze Jahr ein Problem sein',type:'neg'}); }
+    if(sv === 5) { contextScore += 4; factors.push({text:'Traumkalender. Er spielt gegen die schwächsten Verteidigungen der Liga.',type:'pos'}); }
+    else if(sv === 4) { contextScore += 2; factors.push({text:'Angenehmer Spielplan mit durchgehend guten Matchups erwartet.',type:'pos'}); }
+    else if(sv === 2) { contextScore -= 2; factors.push({text:'Schwieriger Spielplan. Viele starke Verteidigungen auf dem Weg.',type:'neg'}); }
+    else if(sv === 1) { contextScore -= 4; factors.push({text:'Härtester Schedule im Feld. Die Matchups werden das ganze Jahr ein Problem sein.',type:'neg'}); }
   }
   
   // 3B. Age (-5 bis +5)
@@ -2656,7 +2662,7 @@ function calcDraftScore(player) {
       else                  { riskBonus -= 3; factors.push({text:'Begrenztes Upside — kaum Potenzial für eine Überraschungsleistung',type:'neg'}); }
     } else {
       // Balanced: leichte Confidence-Belohnung
-      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'Solide und verlässlich — die Projektion schwankt kaum (±'+Math.round(spread)+'pts)',type:'pos'}); }
+      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'Solide und verlässlich. Die Projektion schwankt kaum (±'+Math.round(spread)+'pts).',type:'pos'}); }
       else if(spreadPct < 0.18) { riskBonus += 1; factors.push({text:'Normale Projektion mit durchschnittlicher Schwankung (±'+Math.round(spread)+'pts)',type:'neu'}); }
       else if(spreadPct < 0.28) { riskBonus -= 3; factors.push({text:'Überdurchschnittliche Varianz — Leistung schwer vorherzusagen (±'+Math.round(spread)+'pts)',type:'neg'}); }
       else                      { riskBonus -= 6; factors.push({text:'Hohes Risiko — die Projektion hat eine grosse Streubreite (±'+Math.round(spread)+'pts)',type:'neg'}); }
