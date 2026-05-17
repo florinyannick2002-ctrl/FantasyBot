@@ -3224,10 +3224,10 @@ function showPlayerModal(playerName) {
     // Hochrechnung Box (nur wenn Spiele verpasst)
     if(canExtrapH && p.lastSeasonPts) {
       var extPts = Math.round(p.lastSeasonPts * rateH * 10) / 10;
-      // Rang bei extrapolierten Punkten
+      // Rang: wie wäre er geendet wenn alle anderen ihre echten Punkte behalten?
       var src3 = (useCustom && customRankings.length) ? customRankings : allPlayers;
       var posScoresAll = src3
-        .filter(function(x){ return x.pos===p.pos && x.lastSeasonPts > 0; })
+        .filter(function(x){ return x.pos===p.pos && x.lastSeasonPts > 0 && x.sleeperId !== p.sleeperId; })
         .map(function(x){ return x.lastSeasonPts; });
       posScoresAll.sort(function(a,b){ return b-a; });
       var extRank = 1;
@@ -3237,18 +3237,35 @@ function showPlayerModal(playerName) {
                     extRank<=(p.pos==='QB'||p.pos==='TE'?24:p.pos==='WR'?60:48)?'var(--amber)':'var(--red)';
 
       h += '<div style="flex:1;background:var(--bg3);border:1px solid rgba(255,170,0,.3);border-top:2px solid var(--amber);border-radius:4px;padding:10px 14px;">';
-      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">⤴ HOCHRECHNUNG 17 SPIELE</div>';
-      h += '<div style="display:flex;align-items:baseline;gap:10px;">';
+      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:8px;">⤴ HOCHRECHNUNG 17 SPIELE</div>';
+
+      // Rang + Punkte nebeneinander
+      h += '<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;">';
       h += '<div>';
       h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">RANG</div>';
-      h += '<span style="font-family:var(--display);font-size:22px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
+      h += '<span style="font-family:var(--display);font-size:24px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
       h += '</div>';
-      h += '<div style="border-left:1px solid var(--border2);padding-left:10px;">';
+      h += '<div style="border-left:1px solid var(--border2);padding-left:14px;">';
       h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">PUNKTE</div>';
-      h += '<span style="font-family:var(--display);font-size:22px;color:var(--amber);line-height:1;">'+extPts+'</span>';
+      h += '<span style="font-family:var(--display);font-size:24px;color:var(--amber);line-height:1;">'+extPts+'</span>';
       h += '</div>';
       h += '</div>';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-top:4px;font-style:italic;">bei '+gpV2+' gespielten Spielen</div>';
+
+      // Alle Detail-Stats hochgerechnet
+      if(hasLastStats && p.lastStats) {
+        h += '<div style="border-top:1px solid rgba(255,170,0,.2);margin-top:8px;padding-top:8px;">';
+        statDefsNoGp.forEach(function(def){
+          var rawV = p.lastStats[def.k]!=null ? p.lastStats[def.k] : null;
+          if(rawV===null) return;
+          var extV = Math.round(rawV * rateH * 10) / 10;
+          h += '<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,170,0,.08);">';
+          h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);font-weight:700;">'+def.lbl+'</span>';
+          h += '<span style="font-family:var(--display);font-size:14px;color:var(--amber);line-height:1;">'+fmt(extV)+'</span>';
+          h += '</div>';
+        });
+        h += '</div>';
+        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-top:6px;font-style:italic;">bei '+gpV2+' gespielten Spielen</div>';
+      }
       h += '</div>';
     }
     h += '</div>';
