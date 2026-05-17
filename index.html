@@ -2908,12 +2908,12 @@ function showPlayerModal(playerName) {
     else                  { g=Math.floor(r.total*0.33); y=Math.floor(r.total*0.66); }
     return rank<=g?'var(--green)':rank<=y?'var(--amber)':'var(--red)';
   }
-  var NFL_SEASON_GAMES = 17; // NFL Regular Season 2025
+  var NFL_SEASON_GAMES = 17;
 
   function fmt(n) {
-    // Zahlen ab 1000 mit Komma: 1847 → 1,847
     if(n == null) return '—';
-    return n >= 1000 ? Math.round(n).toLocaleString() : Math.round(n*10)/10;
+    var r = Math.round(n*10)/10;
+    return r >= 1000 ? Math.floor(r).toLocaleString() : r;
   }
 
   function gpColor(gp, total) {
@@ -2923,33 +2923,41 @@ function showPlayerModal(playerName) {
 
   function statCell(label, val, rankObj, noRank, isGp) {
     if(val === null || val === undefined) {
-      return '<div style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8px 6px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;min-height:62px;opacity:.35;">'
-        +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+label+'</span>'
-        +'<span style="font-size:13px;font-family:var(--display);color:var(--text3);margin-top:3px;">—</span>'
+      return '<div style="display:flex;align-items:center;justify-content:space-between;padding:6px 10px;background:var(--bg3);border:1px solid var(--border2);border-radius:4px;opacity:.3;min-width:0;">'
+        +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;flex-shrink:0;">'+label+'</span>'
+        +'<span style="font-size:13px;font-family:var(--display);color:var(--text3);">—</span>'
         +'</div>';
     }
 
     if(isGp) {
       var total = NFL_SEASON_GAMES;
       var col = gpColor(val, total);
-      return '<div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 6px;background:var(--bg3);border:1px solid var(--border2);border-left:3px solid '+col+';border-radius:4px;min-height:62px;">'
-        +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+label+'</span>'
-        +'<span style="font-family:var(--display);font-size:16px;color:'+col+';line-height:1;margin-top:3px;">'+val+'<span style="font-size:11px;opacity:.6;">/'+total+'</span></span>'
-        +'<div style="width:100%;background:var(--bg4);border-radius:2px;height:3px;margin-top:4px;overflow:hidden;">'
-        +'<div style="height:3px;border-radius:2px;background:'+col+';width:'+(val/total*100).toFixed(0)+'%;"></div>'
+      var pct = Math.round(val/total*100);
+      return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg3);border:1px solid var(--border2);border-left:3px solid '+col+';border-radius:4px;min-width:0;">'
+        +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;flex-shrink:0;">GP</span>'
+        +'<div style="flex:1;min-width:0;">'
+        +'<div style="display:flex;align-items:baseline;gap:4px;">'
+        +'<span style="font-family:var(--display);font-size:16px;color:'+col+';line-height:1;">'+val+'</span>'
+        +'<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">/'+total+'</span>'
+        +'<span style="font-size:9px;color:'+col+';font-family:var(--mono);font-weight:700;margin-left:2px;">'+pct+'%</span>'
         +'</div>'
-        +'</div>';
+        +'<div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:3px;overflow:hidden;">'
+        +'<div style="height:3px;border-radius:2px;background:'+col+';width:'+pct+'%;"></div>'
+        +'</div></div></div>';
     }
 
     var col = rankColor(rankObj, p ? p.pos : null);
-    var rankBadge = rankObj ? '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+col+';opacity:.8;">#'+rankObj.rank+'</span>' : '';
-    var bestLine = (rankObj && rankObj.best != null && rankObj.best !== val)
-      ? '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);opacity:.6;margin-top:2px;">best: '+fmt(rankObj.best)+'</span>' : '<span style="font-size:8px;opacity:0;">·</span>';
+    var diff = (rankObj && rankObj.best != null && rankObj.best !== val)
+      ? (val > rankObj.best ? '+' : '') + fmt(val - rankObj.best) : null;
+    var diffCol = diff && parseFloat(diff) > 0 ? 'var(--green)' : 'var(--red)';
 
-    return '<div style="display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:8px 6px;background:var(--bg3);border:1px solid var(--border2);border-top:2px solid '+col+';border-radius:4px;min-height:62px;">'
-      +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+label+'</span>'
-      +'<span style="font-family:var(--display);font-size:17px;color:'+col+';line-height:1;margin-top:2px;">'+fmt(val)+'</span>'
-      +'<div style="display:flex;align-items:center;gap:4px;margin-top:2px;">'+rankBadge+bestLine+'</div>'
+    return '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--bg3);border:1px solid var(--border2);border-top:2px solid '+col+';border-radius:4px;min-width:0;">'
+      +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:40px;">'+label+'</span>'
+      +'<span style="font-family:var(--display);font-size:18px;color:'+col+';line-height:1;flex-shrink:0;">'+fmt(val)+'</span>'
+      +'<div style="display:flex;flex-direction:column;gap:1px;min-width:0;">'
+      +(rankObj ? '<span style="font-size:8px;font-family:var(--mono);font-weight:700;color:'+col+';opacity:.85;">#'+rankObj.rank+' / '+rankObj.total+'</span>' : '')
+      +(diff ? '<span style="font-size:8px;font-family:var(--mono);color:'+diffCol+';opacity:.75;">'+diff+' vs #1</span>' : '')
+      +'</div>'
       +'</div>';
   }
 
@@ -3070,19 +3078,41 @@ function showPlayerModal(playerName) {
     ];
     if(statDefs.length) {
       if(hasLastStats) {
-        h += '<div style="margin-bottom:6px;">';
-        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">2025 SAISON — STATS</div>';
-        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:3px;">';
+        var gp = p.lastStats['gp'] || NFL_SEASON_GAMES;
+        var canExtrap = gp > 0 && gp < NFL_SEASON_GAMES - 1; // mind. 2 Spiele verpasst
+        h += '<div style="margin-bottom:8px;">';
+        h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
+        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">2025 SAISON — STATS</div>';
+        if(canExtrap) h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:700;background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.3);padding:1px 6px;border-radius:2px;cursor:pointer;" onclick="var el=document.getElementById(\'extrap-'+p.sleeperId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';">⤴ Hochrechnung</div>';
+        h += '</div>';
+        h += '<div style="display:flex;flex-direction:column;gap:3px;">';
         statDefs.forEach(function(def){
           var val=(p.lastStats&&p.lastStats[def.k]!=null)?p.lastStats[def.k]:null;
           h += statCell(def.lbl,val,def.noRank?null:statRank(def.k,val,def.hi),def.noRank,def.isGp);
         });
-        h += '</div></div>';
+        h += '</div>';
+        // Hochrechnung auf 17 Spiele
+        if(canExtrap) {
+          var rate = NFL_SEASON_GAMES / gp;
+          h += '<div id="extrap-'+p.sleeperId+'" style="display:none;margin-top:6px;">';
+          h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">⤴ HOCHRECHNUNG AUF 17 SPIELE (bei '+gp+' gespielten)</div>';
+          h += '<div style="display:flex;flex-direction:column;gap:3px;">';
+          statDefs.forEach(function(def){
+            if(def.isGp) return; // GP nicht hochrechnen
+            var rawVal=(p.lastStats&&p.lastStats[def.k]!=null)?p.lastStats[def.k]:null;
+            var extVal = rawVal != null ? Math.round(rawVal * rate) : null;
+            h += statCell(def.lbl, extVal, def.noRank?null:statRank(def.k,extVal,def.hi), def.noRank, false);
+          });
+          h += '</div>';
+          h += '<div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:4px;font-style:italic;">* Per-Game-Rate × 17 — setzt gleichmässige Leistung voraus</div>';
+          h += '</div>';
+        }
+        h += '</div>';
       }
       if(hasProjStats) {
-        h += '<div style="margin-bottom:6px;">';
+        h += '<div style="margin-bottom:8px;">';
         h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">SLP PROJ 2026 — STATS</div>';
-        h += '<div style="display:grid;grid-template-columns:repeat('+statDefs.length+',1fr);gap:3px;">';
+        h += '<div style="display:flex;flex-direction:column;gap:3px;">';
         statDefs.forEach(function(def){
           var val=(p.projStats&&p.projStats[def.k]!=null)?p.projStats[def.k]:null;
           h += statCell(def.lbl,val,def.noRank?null:projRank(def.k,val,def.hi),def.noRank,def.isGp);
