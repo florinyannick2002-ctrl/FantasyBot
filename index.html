@@ -3265,10 +3265,12 @@ function showPlayerModal(playerName) {
     var gridCols = '90px' + (showLast?' 1fr':'') + (showExt?' 1fr':'') + (showProj?' 1fr':'');
 
     if(showLast || showProj) {
+      // Tabelle mit exakt gleicher Grid-Aufteilung wie Box drüber (1fr | 1fr)
+      // Label als eigene Zeile vor dem Wert, nicht als eigene Spalte
       h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:4px;">';
       // Header
       h += '<div style="display:grid;grid-template-columns:'+gridCols+';background:var(--bg4);">';
-      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);"></div>';
+      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.08em;">KATEGORIE</div>';
       if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">2025 SAISON</div>';
       if(showExt)  h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.1em;text-align:center;'+(showProj?'border-right:1px solid var(--border2);':'')+'">HOCHGERECHNET</div>';
       if(showProj) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;text-align:center;">SLP PROJ 2026</div>';
@@ -3301,7 +3303,7 @@ function showPlayerModal(playerName) {
           if(lastVal!=null){
             h += '<span style="font-family:var(--display);font-size:17px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
             if(lastRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+lastCol+';font-weight:700;">#'+lastRk.rank+'/'+lastRk.total+'</span>';
-            if(lastRk&&lastRk.best!=null&&lastRk.best!==lastVal) h += '<span style="font-size:9px;font-family:var(--mono);color:var(--amber);">↑'+fmt(lastRk.best)+'</span>';
+            if(lastRk&&lastRk.best!=null&&lastRk.best!==lastVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);background:var(--bg4);border:1px solid rgba(255,170,0,.3);padding:1px 5px;border-radius:2px;">MAX <span style="color:var(--amber);font-weight:700;">'+fmt(lastRk.best)+'</span></span>';
           } else h += '<span style="color:var(--text3);">—</span>';
           h += '</div>';
         }
@@ -3323,6 +3325,7 @@ function showPlayerModal(playerName) {
             h += '<span style="font-family:var(--display);font-size:17px;color:'+projCol+';line-height:1;">'+fmt(projVal)+'</span>';
             if(projRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+projCol+';font-weight:700;">#'+projRk.rank+'/'+projRk.total+'</span>';
             if(tStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+tCol+';">'+tStr+'</span>';
+            else if(projRk&&projRk.best!=null&&projRk.best!==projVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);background:var(--bg4);border:1px solid rgba(0,184,255,.3);padding:1px 5px;border-radius:2px;">MAX <span style="color:var(--blue);font-weight:700;">'+fmt(projRk.best)+'</span></span>';
           } else h += '<span style="color:var(--text3);">—</span>';
           h += '</div>';
         }
