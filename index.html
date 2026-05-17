@@ -3209,32 +3209,71 @@ function showPlayerModal(playerName) {
       h += '</div>';
     }
 
-    // ── SLP Proj 2026 Tabelle ─────────────────────────────────────────────────
-    if(hasProjStats) {
-      h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;">';
-      h += '<div style="display:grid;grid-template-columns:100px 1fr;background:var(--bg4);">';
-      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);font-size:8px;font-family:var(--mono);color:var(--text3);font-weight:800;letter-spacing:.1em;">KATEGORIE</div>';
-      h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;">SLP PROJ 2026</div>';
+    // ── Tabelle: 2025 SAISON | SLP PROJ 2026 ────────────────────────────────
+    var showLast = hasLastStats && p.lastStats;
+    var showProj = hasProjStats && p.projStats;
+    var hasBothCols = showLast && showProj;
+    var gridCols = hasBothCols ? '90px 1fr 1fr' : '90px 1fr';
+
+    if(showLast || showProj) {
+      h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:4px;">';
+      // Header
+      h += '<div style="display:grid;grid-template-columns:'+gridCols+';background:var(--bg4);">';
+      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);"></div>';
+      if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(hasBothCols?'border-right:1px solid var(--border2);':'')+'">2025 SAISON</div>';
+      if(showProj) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;text-align:center;">SLP PROJ 2026</div>';
       h += '</div>';
+
+      // Zeilen
       statDefsNoGp.forEach(function(def, idx){
-        var projVal = p.projStats && p.projStats[def.k]!=null ? p.projStats[def.k] : null;
-        if(projVal===null) return;
-        var projRankObj = projRank(def.k, projVal, def.hi);
-        var projCol = rankColor(projRankObj, p.pos);
+        var lastVal = showLast && p.lastStats[def.k]!=null ? p.lastStats[def.k] : null;
+        var projVal = showProj && p.projStats[def.k]!=null ? p.projStats[def.k] : null;
+        if(lastVal===null && projVal===null) return;
+
+        var lastRk = lastVal!=null ? statRank(def.k,lastVal,def.hi) : null;
+        var projRk = projVal!=null ? projRank(def.k,projVal,def.hi) : null;
+        var lastCol = rankColor(lastRk, p.pos);
+        var projCol = rankColor(projRk, p.pos);
         var rowBg = idx%2===0 ? 'var(--bg3)' : 'var(--bg4)';
-        h += '<div style="display:grid;grid-template-columns:100px 1fr;border-top:1px solid var(--border2);">';
+
+        // Trend
+        var tStr='', tCol='var(--text3)';
+        if(hasBothCols && lastVal!=null && projVal!=null) {
+          var td2=Math.round(projVal-lastVal);
+          if(td2!==0){tStr=(td2>0?'▲+':'▼')+td2;tCol=td2>0?'var(--green)':'var(--red)';}
+        }
+
+        h += '<div style="display:grid;grid-template-columns:'+gridCols+';border-top:1px solid var(--border2);">';
+        // Label
         h += '<div style="background:'+rowBg+';padding:6px 10px;border-right:1px solid var(--border2);font-size:9px;font-family:var(--mono);font-weight:700;color:var(--text3);display:flex;align-items:center;">'+def.lbl+'</div>';
-        h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:8px;">';
-        h += '<span style="font-family:var(--display);font-size:17px;color:'+projCol+';line-height:1;">'+fmt(projVal)+'</span>';
-        if(projRankObj) h += '<span style="font-size:9px;font-family:var(--mono);color:'+projCol+';font-weight:700;">#'+projRankObj.rank+'/'+projRankObj.total+'</span>';
-        if(projRankObj&&projRankObj.best!=null&&projRankObj.best!==projVal) h += '<span style="font-size:9px;font-family:var(--mono);color:var(--amber);">↑ '+fmt(projRankObj.best)+'</span>';
-        h += '</div></div>';
+        // 2025 Saison
+        if(showLast) {
+          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(hasBothCols?'border-right:1px solid var(--border2);':'')+'">';
+          if(lastVal!=null){
+            h += '<span style="font-family:var(--display);font-size:17px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
+            if(lastRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+lastCol+';font-weight:700;">#'+lastRk.rank+'/'+lastRk.total+'</span>';
+            if(lastRk&&lastRk.best!=null&&lastRk.best!==lastVal) h += '<span style="font-size:9px;font-family:var(--mono);color:var(--amber);">↑'+fmt(lastRk.best)+'</span>';
+          } else h += '<span style="color:var(--text3);">—</span>';
+          h += '</div>';
+        }
+        // SLP Proj 2026
+        if(showProj) {
+          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;">';
+          if(projVal!=null){
+            h += '<span style="font-family:var(--display);font-size:17px;color:'+projCol+';line-height:1;">'+fmt(projVal)+'</span>';
+            if(projRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+projCol+';font-weight:700;">#'+projRk.rank+'/'+projRk.total+'</span>';
+            if(tStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+tCol+';">'+tStr+'</span>';
+            else if(projRk&&projRk.best!=null&&projRk.best!==projVal) h += '<span style="font-size:9px;font-family:var(--mono);color:var(--amber);">↑'+fmt(projRk.best)+'</span>';
+          } else h += '<span style="color:var(--text3);">—</span>';
+          h += '</div>';
+        }
+        h += '</div>';
       });
       h += '</div>';
     } else if(!hasHeaderBoxes) {
       h += '<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;font-style:italic;">Keine Stats verfügbar.<br>Draft laden → Sleeper-Daten werden geladen.</div>';
     } else {
-      h += '<div style="margin-top:8px;padding:12px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:10px;font-style:italic;border:1px solid var(--border2);border-radius:4px;">SLP Proj 2026 noch nicht geladen.</div>';
+      h += '<div style="margin-top:8px;padding:12px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:10px;font-style:italic;border:1px solid var(--border2);border-radius:4px;">Stats noch nicht geladen — bitte Draft laden.</div>';
     }
   }
   h += '</div>'; // end tab 2
