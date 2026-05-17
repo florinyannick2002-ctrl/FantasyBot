@@ -3242,16 +3242,19 @@ function showPlayerModal(playerName) {
     // Rechts: Hochrechnung (wenn Spiele verpasst)
     if(canExtrapH && extPts) {
       h += '<div style="border-left:1px solid rgba(255,170,0,.3);border-top:2px solid var(--amber);border-radius:0 4px 4px 0;padding:10px 14px;background:rgba(255,170,0,.04);">';
-      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">⤴ HOCHRECHNUNG 17 SPIELE</div>';
-      h += '<div style="display:flex;align-items:baseline;gap:14px;">';
+      // Label + Rang/Punkte zusammen oben
+      h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:0;">';
+      h += '<span style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">⤴ HOCHRECHNUNG 17 SPIELE</span>';
+      h += '</div>';
+      h += '<div style="display:flex;align-items:baseline;gap:14px;margin-top:2px;">';
       h += '<div><div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">RANG</div>';
       h += '<span style="font-family:var(--display);font-size:26px;color:'+extCol2+';line-height:1;">'+extLabel+'</span></div>';
       h += '<div><div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">PUNKTE</div>';
       h += '<span style="font-family:var(--display);font-size:26px;color:var(--amber);line-height:1;">'+extPts+'</span></div>';
       h += '</div>';
-      // Progress bar 17/17 auf gleicher Höhe wie links
-      h += '<div style="display:flex;align-items:baseline;gap:5px;margin-top:8px;">';
-      h += '<span style="font-family:var(--display);font-size:12px;color:var(--amber);opacity:.6;">'+NFL_SEASON_GAMES+'</span>';
+      // Progress bar 17/17 unten
+      h += '<div style="display:flex;align-items:baseline;gap:5px;margin-top:6px;">';
+      h += '<span style="font-family:var(--display);font-size:12px;color:var(--amber);opacity:.7;">'+NFL_SEASON_GAMES+'</span>';
       h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">/'+NFL_SEASON_GAMES+'</span>';
       h += '<span style="font-size:10px;color:var(--amber);font-family:var(--mono);font-weight:700;opacity:.7;">100%</span>';
       h += '</div>';
@@ -3312,9 +3315,13 @@ function showPlayerModal(playerName) {
         }
 
         if(showExt) {
+          var extRk = extVal!=null ? statRank(def.k, extVal, def.hi) : null;
+          var extCl = rankColor(extRk, p.pos);
           h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(showProj?'border-right:1px solid var(--border2);':'')+'">';
-          if(extVal!=null) h += '<span style="font-family:var(--display);font-size:17px;color:var(--amber);line-height:1;">'+fmt(extVal)+'</span>';
-          else h += '<span style="color:var(--text3);">—</span>';
+          if(extVal!=null){
+            h += '<span style="font-family:var(--display);font-size:17px;color:'+extCl+';line-height:1;">'+fmt(extVal)+'</span>';
+            if(extRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+extCl+';font-weight:700;">#'+extRk.rank+'/'+extRk.total+'</span>';
+          } else h += '<span style="color:var(--text3);">—</span>';
           h += '</div>';
         }
 
