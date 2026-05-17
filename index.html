@@ -2880,8 +2880,8 @@ function showPlayerModal(playerName) {
                       .map(function(x){ return x.lastStats[statKey]; });
     if(!vals.length) return null;
     vals.sort(function(a,b){ return higherBetter?b-a:a-b; });
-    var rank = vals.indexOf(val)+1;
-    if(rank===0) rank = vals.length;
+    var rank = 1; for(var ri=0;ri<vals.length;ri++){ if(higherBetter ? vals[ri]>val : vals[ri]<val) rank++; }
+
     return {rank:rank, total:vals.length, best:vals[0]};
   }
   function projRank(statKey, val, higherBetter) {
@@ -2891,8 +2891,8 @@ function showPlayerModal(playerName) {
                       .map(function(x){ return x.projStats[statKey]; });
     if(!vals.length) return null;
     vals.sort(function(a,b){ return higherBetter?b-a:a-b; });
-    var rank = vals.indexOf(val)+1;
-    if(rank===0) rank = vals.length;
+    var rank = 1; for(var ri=0;ri<vals.length;ri++){ if(higherBetter ? vals[ri]>val : vals[ri]<val) rank++; }
+
     return {rank:rank, total:vals.length, best:vals[0]};
   }
   function rankColor(r, pos3) {
@@ -3181,20 +3181,23 @@ function showPlayerModal(playerName) {
     if(posRank2025) {
       var prCol2 = posRank2025.rank<=(p.pos==='QB'||p.pos==='TE'?12:p.pos==='WR'?30:24)?'var(--green)':
                    posRank2025.rank<=(p.pos==='QB'||p.pos==='TE'?24:p.pos==='WR'?60:48)?'var(--amber)':'var(--red)';
-      h += '<div style="background:var(--bg3);border:1px solid var(--border2);border-top:3px solid '+prCol2+';border-radius:4px;padding:10px 14px;margin-bottom:10px;display:flex;align-items:center;gap:16px;">';
-      h += '<div>';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:2px;">FANTASY RANG 2025</div>';
-      h += '<div style="display:flex;align-items:baseline;gap:8px;">';
-      h += '<span style="font-family:var(--display);font-size:32px;color:'+prCol2+';line-height:1;">'+posRank2025.label+'</span>';
-      h += '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);">von '+posRank2025.total+' '+p.pos+'s</span>';
-      h += '</div></div>';
+      h += '<div style="background:var(--bg3);border:1px solid var(--border2);border-top:2px solid '+prCol2+';border-radius:4px;padding:10px 14px;margin-bottom:10px;">';
+      // Zeile 1: Label-Zeile
+      h += '<div style="display:flex;gap:16px;align-items:center;margin-bottom:2px;">';
+      h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">FANTASY RANG 2025</span>';
+      if(p.lastSeasonPts) h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;border-left:1px solid var(--border2);padding-left:16px;">FANTASY PUNKTE 2025</span>';
+      h += '</div>';
+      // Zeile 2: Zahlen auf gleicher Höhe
+      h += '<div style="display:flex;align-items:baseline;gap:16px;">';
+      h += '<span style="font-family:var(--display);font-size:28px;color:'+prCol2+';line-height:1;">'+posRank2025.label+'</span>';
+      h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">von '+posRank2025.total+'</span>';
       if(p.lastSeasonPts) {
-        h += '<div style="border-left:1px solid var(--border2);padding-left:16px;">';
-        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:2px;">FANTASY PUNKTE 2025</div>';
-        h += '<span style="font-family:var(--display);font-size:24px;color:var(--amber);line-height:1;">'+p.lastSeasonPts+'</span>';
-        h += '<span style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-left:4px;">pts</span>';
+        h += '<div style="border-left:1px solid var(--border2);padding-left:16px;display:flex;align-items:baseline;gap:4px;">';
+        h += '<span style="font-family:var(--display);font-size:28px;color:var(--amber);line-height:1;">'+p.lastSeasonPts+'</span>';
+        h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span>';
         h += '</div>';
       }
+      h += '</div>';
       h += '</div>';
     }
 
@@ -3242,15 +3245,18 @@ function showPlayerModal(playerName) {
     // Rechts: Hochrechnung (wenn Spiele verpasst)
     if(canExtrapH && extPts) {
       h += '<div style="border-left:1px solid rgba(255,170,0,.3);border-top:2px solid var(--amber);border-radius:0 4px 4px 0;padding:10px 14px;background:rgba(255,170,0,.04);">';
-      // Label + Rang/Punkte zusammen oben
-      h += '<div style="display:flex;align-items:center;gap:10px;margin-bottom:0;">';
+      // Label-Zeile
+      h += '<div style="display:flex;gap:14px;align-items:center;margin-bottom:2px;">';
       h += '<span style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">⤴ HOCHRECHNUNG 17 SPIELE</span>';
+      h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;border-left:1px solid rgba(255,170,0,.25);padding-left:14px;">PUNKTE</span>';
       h += '</div>';
-      h += '<div style="display:flex;align-items:baseline;gap:14px;margin-top:2px;">';
-      h += '<div><div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">RANG</div>';
-      h += '<span style="font-family:var(--display);font-size:26px;color:'+extCol2+';line-height:1;">'+extLabel+'</span></div>';
-      h += '<div><div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">PUNKTE</div>';
-      h += '<span style="font-family:var(--display);font-size:26px;color:var(--amber);line-height:1;">'+extPts+'</span></div>';
+      // Zahlen auf gleicher Höhe wie Fantasy Rang Box
+      h += '<div style="display:flex;align-items:baseline;gap:16px;">';
+      h += '<span style="font-family:var(--display);font-size:28px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
+      h += '<div style="border-left:1px solid rgba(255,170,0,.25);padding-left:16px;display:flex;align-items:baseline;gap:4px;">';
+      h += '<span style="font-family:var(--display);font-size:28px;color:var(--amber);line-height:1;">'+extPts+'</span>';
+      h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span>';
+      h += '</div>';
       h += '</div>';
       // Progress bar 17/17 unten
       h += '<div style="display:flex;align-items:baseline;gap:5px;margin-top:6px;">';
