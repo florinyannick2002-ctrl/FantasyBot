@@ -3203,91 +3203,80 @@ function showPlayerModal(playerName) {
     var canExtrapH = gpV2 != null && gpV2 > 0 && gpV2 < NFL_SEASON_GAMES;
     var rateH = canExtrapH ? NFL_SEASON_GAMES / gpV2 : 1;
 
-    h += '<div style="display:flex;gap:8px;margin-bottom:10px;">';
+  // ── Eine Box: GP links, Hochrechnung rechts ─────────────────────────────
+  var gpV2 = p.lastStats && p.lastStats['gp'] != null ? p.lastStats['gp'] : null;
+  var canExtrapH = gpV2 != null && gpV2 > 0 && gpV2 < NFL_SEASON_GAMES;
+  var rateH = canExtrapH ? NFL_SEASON_GAMES / gpV2 : 1;
+  var extPts = null, extLabel = null, extCol2 = null;
+  if(canExtrapH && p.lastSeasonPts) {
+    extPts = Math.round(p.lastSeasonPts * rateH * 10) / 10;
+    var src3 = (useCustom && customRankings.length) ? customRankings : allPlayers;
+    var posScoresAll = src3
+      .filter(function(x){ return x.pos===p.pos && x.lastSeasonPts>0 && x.sleeperId!==p.sleeperId; })
+      .map(function(x){ return x.lastSeasonPts; });
+    posScoresAll.sort(function(a,b){ return b-a; });
+    var extRank=1;
+    for(var si=0;si<posScoresAll.length;si++){ if(posScoresAll[si]>extPts) extRank++; }
+    extLabel = p.pos + extRank;
+    extCol2 = extRank<=(p.pos==='QB'||p.pos==='TE'?12:p.pos==='WR'?30:24)?'var(--green)':
+              extRank<=(p.pos==='QB'||p.pos==='TE'?24:p.pos==='WR'?60:48)?'var(--amber)':'var(--red)';
+  }
 
-    // GP Box
-    if(gpV2 != null) {
-      var gpColH = gpColor(gpV2, NFL_SEASON_GAMES);
-      var gpPctH = Math.round(gpV2/NFL_SEASON_GAMES*100);
-      h += '<div style="flex:1;background:var(--bg3);border:1px solid var(--border2);border-left:3px solid '+gpColH+';border-radius:4px;padding:10px 14px;">';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">GAMES PLAYED 2025</div>';
-      h += '<div style="display:flex;align-items:baseline;gap:5px;">';
-      h += '<span style="font-family:var(--display);font-size:26px;color:'+gpColH+';line-height:1;">'+gpV2+'</span>';
-      h += '<span style="font-size:12px;color:var(--text3);font-family:var(--mono);">/'+NFL_SEASON_GAMES+'</span>';
-      h += '<span style="font-size:11px;color:'+gpColH+';font-family:var(--mono);font-weight:700;">'+gpPctH+'%</span>';
+  if(gpV2 != null) {
+    var gpColH = gpColor(gpV2, NFL_SEASON_GAMES);
+    var gpPctH = Math.round(gpV2/NFL_SEASON_GAMES*100);
+    h += '<div style="background:var(--bg3);border:1px solid var(--border2);border-left:3px solid '+gpColH+';border-radius:4px;padding:10px 14px;margin-bottom:10px;">';
+    // Erste Zeile: GP links + Hochrechnung rechts
+    h += '<div style="display:flex;align-items:flex-start;gap:0;">';
+    // GP
+    h += '<div style="flex:1;">';
+    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">GAMES PLAYED 2025</div>';
+    h += '<div style="display:flex;align-items:baseline;gap:5px;">';
+    h += '<span style="font-family:var(--display);font-size:26px;color:'+gpColH+';line-height:1;">'+gpV2+'</span>';
+    h += '<span style="font-size:12px;color:var(--text3);font-family:var(--mono);">/'+NFL_SEASON_GAMES+'</span>';
+    h += '<span style="font-size:11px;color:'+gpColH+';font-family:var(--mono);font-weight:700;">'+gpPctH+'%</span>';
+    h += '</div>';
+    h += '<div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden;max-width:180px;">';
+    h += '<div style="height:3px;background:'+gpColH+';width:'+gpPctH+'%;border-radius:2px;"></div></div>';
+    h += '</div>';
+    // Hochrechnung rechts (wenn Spiele verpasst)
+    if(canExtrapH && extPts) {
+      h += '<div style="border-left:1px solid rgba(255,170,0,.25);padding-left:14px;min-width:160px;">';
+      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">⤴ HOCHRECHNUNG 17 SPIELE</div>';
+      h += '<div style="display:flex;gap:14px;align-items:baseline;">';
+      h += '<div><div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">RANG</div>';
+      h += '<span style="font-family:var(--display);font-size:22px;color:'+extCol2+';line-height:1;">'+extLabel+'</span></div>';
+      h += '<div><div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">PUNKTE</div>';
+      h += '<span style="font-family:var(--display);font-size:22px;color:var(--amber);line-height:1;">'+extPts+'</span></div>';
       h += '</div>';
-      h += '<div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:6px;overflow:hidden;">';
-      h += '<div style="height:3px;background:'+gpColH+';width:'+gpPctH+'%;border-radius:2px;"></div></div>';
-      h += '</div>';
-    }
-
-    // Hochrechnung Box (nur wenn Spiele verpasst)
-    if(canExtrapH && p.lastSeasonPts) {
-      var extPts = Math.round(p.lastSeasonPts * rateH * 10) / 10;
-      // Rang: wie wäre er geendet wenn alle anderen ihre echten Punkte behalten?
-      var src3 = (useCustom && customRankings.length) ? customRankings : allPlayers;
-      var posScoresAll = src3
-        .filter(function(x){ return x.pos===p.pos && x.lastSeasonPts > 0 && x.sleeperId !== p.sleeperId; })
-        .map(function(x){ return x.lastSeasonPts; });
-      posScoresAll.sort(function(a,b){ return b-a; });
-      var extRank = 1;
-      for(var si=0; si<posScoresAll.length; si++){ if(posScoresAll[si]>extPts) extRank++; }
-      var extLabel = p.pos + extRank;
-      var extCol2 = extRank<=(p.pos==='QB'||p.pos==='TE'?12:p.pos==='WR'?30:24)?'var(--green)':
-                    extRank<=(p.pos==='QB'||p.pos==='TE'?24:p.pos==='WR'?60:48)?'var(--amber)':'var(--red)';
-
-      h += '<div style="flex:1;background:var(--bg3);border:1px solid rgba(255,170,0,.3);border-top:2px solid var(--amber);border-radius:4px;padding:10px 14px;">';
-      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:8px;">⤴ HOCHRECHNUNG 17 SPIELE</div>';
-
-      // Rang + Punkte nebeneinander
-      h += '<div style="display:flex;align-items:baseline;gap:14px;margin-bottom:6px;">';
-      h += '<div>';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">RANG</div>';
-      h += '<span style="font-family:var(--display);font-size:24px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
-      h += '</div>';
-      h += '<div style="border-left:1px solid var(--border2);padding-left:14px;">';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-bottom:1px;">PUNKTE</div>';
-      h += '<span style="font-family:var(--display);font-size:24px;color:var(--amber);line-height:1;">'+extPts+'</span>';
-      h += '</div>';
-      h += '</div>';
-
-      // Alle Detail-Stats hochgerechnet
-      if(hasLastStats && p.lastStats) {
-        h += '<div style="border-top:1px solid rgba(255,170,0,.2);margin-top:8px;padding-top:8px;">';
-        statDefsNoGp.forEach(function(def){
-          var rawV = p.lastStats[def.k]!=null ? p.lastStats[def.k] : null;
-          if(rawV===null) return;
-          var extV = Math.round(rawV * rateH * 10) / 10;
-          h += '<div style="display:flex;align-items:center;justify-content:space-between;padding:2px 0;border-bottom:1px solid rgba(255,170,0,.08);">';
-          h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);font-weight:700;">'+def.lbl+'</span>';
-          h += '<span style="font-family:var(--display);font-size:14px;color:var(--amber);line-height:1;">'+fmt(extV)+'</span>';
-          h += '</div>';
-        });
-        h += '</div>';
-        h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-top:6px;font-style:italic;">bei '+gpV2+' gespielten Spielen</div>';
-      }
+      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);margin-top:4px;font-style:italic;">bei '+gpV2+' gespielten Spielen</div>';
       h += '</div>';
     }
     h += '</div>';
+    h += '</div>';
+  }
 
-    // ── Tabelle: 2025 SAISON | SLP PROJ 2026 ────────────────────────────────
+    // ── Tabelle: 2025 SAISON | HOCHGERECHNET | SLP PROJ 2026 ─────────────────
     var showLast = hasLastStats && p.lastStats;
+    var showExt  = canExtrapH && showLast;
     var showProj = hasProjStats && p.projStats;
-    var hasBothCols = showLast && showProj;
-    var gridCols = hasBothCols ? '90px 1fr 1fr' : '90px 1fr';
+    var numCols  = 1 + (showLast?1:0) + (showExt?1:0) + (showProj?1:0);
+    var gridCols = '90px' + (showLast?' 1fr':'') + (showExt?' 1fr':'') + (showProj?' 1fr':'');
 
     if(showLast || showProj) {
       h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:4px;">';
       // Header
       h += '<div style="display:grid;grid-template-columns:'+gridCols+';background:var(--bg4);">';
       h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);"></div>';
-      if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(hasBothCols?'border-right:1px solid var(--border2);':'')+'">2025 SAISON</div>';
+      if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">2025 SAISON</div>';
+      if(showExt)  h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.1em;text-align:center;'+(showProj?'border-right:1px solid var(--border2);':'')+'">HOCHGERECHNET</div>';
       if(showProj) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;text-align:center;">SLP PROJ 2026</div>';
       h += '</div>';
 
       // Zeilen
       statDefsNoGp.forEach(function(def, idx){
         var lastVal = showLast && p.lastStats[def.k]!=null ? p.lastStats[def.k] : null;
+        var extVal  = showExt && lastVal!=null ? Math.round(lastVal * rateH * 10)/10 : null;
         var projVal = showProj && p.projStats[def.k]!=null ? p.projStats[def.k] : null;
         if(lastVal===null && projVal===null) return;
 
@@ -3297,19 +3286,17 @@ function showPlayerModal(playerName) {
         var projCol = rankColor(projRk, p.pos);
         var rowBg = idx%2===0 ? 'var(--bg3)' : 'var(--bg4)';
 
-        // Trend
         var tStr='', tCol='var(--text3)';
-        if(hasBothCols && lastVal!=null && projVal!=null) {
+        if(showProj && showLast && lastVal!=null && projVal!=null) {
           var td2=Math.round(projVal-lastVal);
           if(td2!==0){tStr=(td2>0?'▲+':'▼')+td2;tCol=td2>0?'var(--green)':'var(--red)';}
         }
 
         h += '<div style="display:grid;grid-template-columns:'+gridCols+';border-top:1px solid var(--border2);">';
-        // Label
         h += '<div style="background:'+rowBg+';padding:6px 10px;border-right:1px solid var(--border2);font-size:9px;font-family:var(--mono);font-weight:700;color:var(--text3);display:flex;align-items:center;">'+def.lbl+'</div>';
-        // 2025 Saison
+
         if(showLast) {
-          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(hasBothCols?'border-right:1px solid var(--border2);':'')+'">';
+          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">';
           if(lastVal!=null){
             h += '<span style="font-family:var(--display);font-size:17px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
             if(lastRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+lastCol+';font-weight:700;">#'+lastRk.rank+'/'+lastRk.total+'</span>';
@@ -3317,24 +3304,28 @@ function showPlayerModal(playerName) {
           } else h += '<span style="color:var(--text3);">—</span>';
           h += '</div>';
         }
-        // SLP Proj 2026
+
+        if(showExt) {
+          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(showProj?'border-right:1px solid var(--border2);':'')+'">';
+          if(extVal!=null) h += '<span style="font-family:var(--display);font-size:17px;color:var(--amber);line-height:1;">'+fmt(extVal)+'</span>';
+          else h += '<span style="color:var(--text3);">—</span>';
+          h += '</div>';
+        }
+
         if(showProj) {
           h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;">';
           if(projVal!=null){
             h += '<span style="font-family:var(--display);font-size:17px;color:'+projCol+';line-height:1;">'+fmt(projVal)+'</span>';
             if(projRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+projCol+';font-weight:700;">#'+projRk.rank+'/'+projRk.total+'</span>';
             if(tStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+tCol+';">'+tStr+'</span>';
-            else if(projRk&&projRk.best!=null&&projRk.best!==projVal) h += '<span style="font-size:9px;font-family:var(--mono);color:var(--amber);">↑'+fmt(projRk.best)+'</span>';
           } else h += '<span style="color:var(--text3);">—</span>';
           h += '</div>';
         }
         h += '</div>';
       });
       h += '</div>';
-    } else if(!hasHeaderBoxes) {
+    } else if(!gpV2 && !posRank2025) {
       h += '<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;font-style:italic;">Keine Stats verfügbar.<br>Draft laden → Sleeper-Daten werden geladen.</div>';
-    } else {
-      h += '<div style="margin-top:8px;padding:12px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:10px;font-style:italic;border:1px solid var(--border2);border-radius:4px;">Stats noch nicht geladen — bitte Draft laden.</div>';
     }
   }
   h += '</div>'; // end tab 2
