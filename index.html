@@ -3264,69 +3264,71 @@ function showPlayerModal(playerName) {
     var numCols  = 1 + (showLast?1:0) + (showExt?1:0) + (showProj?1:0);
     var gridCols = '90px' + (showLast?' 1fr':'') + (showExt?' 1fr':'') + (showProj?' 1fr':'');
 
+    // Tabelle: gleiche 1fr|1fr Aufteilung wie Box drüber
+    // Label embedded in linker Datenzelle → kein Alignment-Problem
+    var tableColsStr = showExt ? '1fr 1fr' : (showProj ? '1fr 1fr' : '1fr');
+
     if(showLast || showProj) {
-      // Tabelle mit exakt gleicher Grid-Aufteilung wie Box drüber (1fr | 1fr)
-      // Label als eigene Zeile vor dem Wert, nicht als eigene Spalte
       h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:4px;">';
-      // Header
-      h += '<div style="display:grid;grid-template-columns:'+gridCols+';background:var(--bg4);">';
-      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.08em;">KATEGORIE</div>';
-      if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">2025 SAISON</div>';
-      if(showExt)  h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.1em;text-align:center;'+(showProj?'border-right:1px solid var(--border2);':'')+'">HOCHGERECHNET</div>';
-      if(showProj) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;text-align:center;">SLP PROJ 2026</div>';
+      // Header — exakt 1fr|1fr wie Box drüber
+      h += '<div style="display:grid;grid-template-columns:'+tableColsStr+';background:var(--bg4);">';
+      if(showLast || showExt) h += '<div style="padding:5px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;'+(showProj||showExt?'border-right:1px solid var(--border2);':'')+'">2025 SAISON'+(showExt?' → HOCHGERECHNET':''+'</div>');
+      if(!showExt && showProj) h += '<div style="padding:5px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;">SLP PROJ 2026</div>';
       h += '</div>';
 
-      // Zeilen
       statDefsNoGp.forEach(function(def, idx){
         var lastVal = showLast && p.lastStats[def.k]!=null ? p.lastStats[def.k] : null;
-        var extVal  = showExt && lastVal!=null ? Math.round(lastVal * rateH * 10)/10 : null;
+        var extVal  = showExt && lastVal!=null ? Math.round(lastVal*rateH*10)/10 : null;
         var projVal = showProj && p.projStats[def.k]!=null ? p.projStats[def.k] : null;
-        if(lastVal===null && projVal===null) return;
+        if(lastVal===null && extVal===null && projVal===null) return;
 
         var lastRk = lastVal!=null ? statRank(def.k,lastVal,def.hi) : null;
+        var extRk  = extVal!=null  ? statRank(def.k,extVal,def.hi)  : null;
         var projRk = projVal!=null ? projRank(def.k,projVal,def.hi) : null;
         var lastCol = rankColor(lastRk, p.pos);
-        var projCol = rankColor(projRk, p.pos);
+        var extCl   = rankColor(extRk,  p.pos);
+        var projCol = rankColor(projRk,  p.pos);
         var rowBg = idx%2===0 ? 'var(--bg3)' : 'var(--bg4)';
 
-        var tStr='', tCol='var(--text3)';
-        if(showProj && showLast && lastVal!=null && projVal!=null) {
-          var td2=Math.round(projVal-lastVal);
-          if(td2!==0){tStr=(td2>0?'▲+':'▼')+td2;tCol=td2>0?'var(--green)':'var(--red)';}
-        }
+        h += '<div style="display:grid;grid-template-columns:'+tableColsStr+';border-top:1px solid var(--border2);">';
 
-        h += '<div style="display:grid;grid-template-columns:'+gridCols+';border-top:1px solid var(--border2);">';
-        h += '<div style="background:'+rowBg+';padding:6px 10px;border-right:1px solid var(--border2);font-size:9px;font-family:var(--mono);font-weight:700;color:var(--text3);display:flex;align-items:center;">'+def.lbl+'</div>';
-
-        if(showLast) {
-          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">';
-          if(lastVal!=null){
-            h += '<span style="font-family:var(--display);font-size:17px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
-            if(lastRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+lastCol+';font-weight:700;">#'+lastRk.rank+'/'+lastRk.total+'</span>';
-            if(lastRk&&lastRk.best!=null&&lastRk.best!==lastVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);background:var(--bg4);border:1px solid rgba(255,170,0,.3);padding:1px 5px;border-radius:2px;">MAX <span style="color:var(--amber);font-weight:700;">'+fmt(lastRk.best)+'</span></span>';
-          } else h += '<span style="color:var(--text3);">—</span>';
+        // Linke Zelle: Label + 2025 SAISON
+        h += '<div style="background:'+rowBg+';padding:5px 10px;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">';
+        h += '<div style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--text3);margin-bottom:2px;">'+def.lbl+'</div>';
+        if(lastVal!=null){
+          h += '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">';
+          h += '<span style="font-family:var(--display);font-size:17px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
+          if(lastRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+lastCol+';font-weight:700;">#'+lastRk.rank+'/'+lastRk.total+'</span>';
+          if(lastRk&&lastRk.best!=null&&lastRk.best!==lastVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);background:var(--bg4);border:1px solid rgba(255,170,0,.3);padding:1px 5px;border-radius:2px;">MAX <span style="color:var(--amber);font-weight:700;">'+fmt(lastRk.best)+'</span></span>';
           h += '</div>';
         }
+        h += '</div>';
 
+        // Rechte Zelle: HOCHGERECHNET oder PROJ
         if(showExt) {
-          var extRk = extVal!=null ? statRank(def.k, extVal, def.hi) : null;
-          var extCl = rankColor(extRk, p.pos);
-          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;'+(showProj?'border-right:1px solid var(--border2);':'')+'">';
+          h += '<div style="background:'+rowBg+';padding:5px 10px;">';
+          h += '<div style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--amber);opacity:.6;margin-bottom:2px;">HOCHGERECHNET</div>';
           if(extVal!=null){
+            h += '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">';
             h += '<span style="font-family:var(--display);font-size:17px;color:'+extCl+';line-height:1;">'+fmt(extVal)+'</span>';
             if(extRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+extCl+';font-weight:700;">#'+extRk.rank+'/'+extRk.total+'</span>';
-          } else h += '<span style="color:var(--text3);">—</span>';
+            if(extRk&&extRk.best!=null&&extRk.best!==extVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);background:var(--bg4);border:1px solid rgba(255,170,0,.3);padding:1px 5px;border-radius:2px;">MAX <span style="color:var(--amber);font-weight:700;">'+fmt(extRk.best)+'</span></span>';
+            h += '</div>';
+          }
           h += '</div>';
-        }
-
-        if(showProj) {
-          h += '<div style="background:'+rowBg+';padding:6px 10px;display:flex;align-items:center;gap:6px;">';
+        } else if(showProj) {
+          var tStr='', tCol='var(--text3)';
+          if(showLast&&lastVal!=null&&projVal!=null){var td2=Math.round(projVal-lastVal);if(td2!==0){tStr=(td2>0?'▲+':'▼')+td2;tCol=td2>0?'var(--green)':'var(--red)';}}
+          h += '<div style="background:'+rowBg+';padding:5px 10px;">';
+          h += '<div style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--blue);opacity:.6;margin-bottom:2px;">SLP PROJ 2026</div>';
           if(projVal!=null){
+            h += '<div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">';
             h += '<span style="font-family:var(--display);font-size:17px;color:'+projCol+';line-height:1;">'+fmt(projVal)+'</span>';
             if(projRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+projCol+';font-weight:700;">#'+projRk.rank+'/'+projRk.total+'</span>';
             if(tStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+tCol+';">'+tStr+'</span>';
             else if(projRk&&projRk.best!=null&&projRk.best!==projVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);background:var(--bg4);border:1px solid rgba(0,184,255,.3);padding:1px 5px;border-radius:2px;">MAX <span style="color:var(--blue);font-weight:700;">'+fmt(projRk.best)+'</span></span>';
-          } else h += '<span style="color:var(--text3);">—</span>';
+            h += '</div>';
+          }
           h += '</div>';
         }
         h += '</div>';
