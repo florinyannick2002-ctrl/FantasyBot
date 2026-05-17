@@ -297,10 +297,10 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 
 <!-- Player Detail Modal -->
 <div id="player-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.style.display='none';">
-  <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:860px;width:100%;overflow:visible;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);">
+  <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:860px;width:100%;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);display:flex;flex-direction:column;max-height:88vh;">
     <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:12px;right:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:36px;height:36px;border-radius:3px;cursor:pointer;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .12s;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">×</button>
     <div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">📊 SPIELER ANALYSE</div>
-    <div id="modal-body"></div>
+    <div id="modal-body" style="overflow-y:auto;flex:1;padding-right:4px;"></div>
   </div>
 </div>
 <div class="app">
@@ -3161,49 +3161,106 @@ function showPlayerModal(playerName) {
   }
   h += '</div>'; // end tab 1
 
-  // ── TAB 2: Stats (hidden) ─────────────────────────────────────────────────
+  // ── TAB 2: Stats ─────────────────────────────────────────────────────────
   h += '<div id="'+tabId+'_c2" style="display:none;">';
   if(hasLastStats || hasProjStats) {
+    var gp2 = p.lastStats ? (p.lastStats['gp'] || NFL_SEASON_GAMES) : NFL_SEASON_GAMES;
+    var canExtrap2 = hasLastStats && gp2 > 0 && gp2 < NFL_SEASON_GAMES - 1;
+    var rate2 = canExtrap2 ? NFL_SEASON_GAMES / gp2 : 1;
+
+    // Filtere GP raus für die Tabelle (GP hat eigene Zeile)
+    var statDefsNoGp = statDefs.filter(function(d){ return !d.isGp; });
+
+    // ── GP Zeile oben ───────────────────────────────────────────────────────
     if(hasLastStats) {
-      var gp2 = p.lastStats['gp'] || NFL_SEASON_GAMES;
-      var canExtrap2 = gp2 > 0 && gp2 < NFL_SEASON_GAMES - 1;
-      h += '<div style="margin-bottom:10px;">';
-      h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;">';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">2025 SAISON — STATS</div>';
-      if(canExtrap2) h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:700;background:rgba(255,170,0,.1);border:1px solid rgba(255,170,0,.3);padding:1px 6px;border-radius:2px;cursor:pointer;" onclick="var el=document.getElementById(\'ext2_'+p.sleeperId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';">⤴ Hochrechnung</div>';
-      h += '</div>';
-      h += '<div style="display:flex;flex-direction:column;gap:3px;">';
-      statDefs.forEach(function(def){
-        var val=(p.lastStats&&p.lastStats[def.k]!=null)?p.lastStats[def.k]:null;
-        h += statCell(def.lbl,val,def.noRank?null:statRank(def.k,val,def.hi),def.noRank,def.isGp);
-      });
-      h += '</div>';
-      if(canExtrap2) {
-        var rate2 = NFL_SEASON_GAMES / gp2;
-        h += '<div id="ext2_'+p.sleeperId+'" style="display:none;margin-top:6px;">';
-        h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">⤴ HOCHRECHNUNG AUF 17 SPIELE (bei '+gp2+' gespielten)</div>';
-        h += '<div style="display:flex;flex-direction:column;gap:3px;">';
-        statDefs.forEach(function(def){
-          if(def.isGp) return;
-          var rawVal=(p.lastStats&&p.lastStats[def.k]!=null)?p.lastStats[def.k]:null;
-          var extVal = rawVal!=null ? Math.round(rawVal*rate2) : null;
-          h += statCell(def.lbl,extVal,def.noRank?null:statRank(def.k,extVal,def.hi),def.noRank,false);
-        });
-        h += '</div><div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:4px;font-style:italic;">* Per-Game-Rate × 17</div>';
+      var gpVal = p.lastStats['gp'];
+      if(gpVal != null) h += statCell('GP', gpVal, null, true, true);
+    }
+
+    // ── Vergleichs-Tabelle: 2025 SAISON | SLP PROJ 2026 ────────────────────
+    var hasBoth = hasLastStats && hasProjStats;
+    h += '<div style="margin-top:10px;">';
+
+    // Header-Zeile
+    h += '<div style="display:grid;grid-template-columns:90px 1fr'+(hasBoth?' 1fr':'')+';gap:6px;align-items:center;margin-bottom:4px;padding:0 4px;">';
+    h += '<div></div>';
+    h += '<div style="font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;">2025 SAISON</div>';
+    if(hasBoth) h += '<div style="font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;text-align:center;">SLP PROJ 2026</div>';
+    h += '</div>';
+
+    // Stat-Zeilen
+    statDefsNoGp.forEach(function(def){
+      var lastVal = hasLastStats && p.lastStats[def.k]!=null ? p.lastStats[def.k] : null;
+      var projVal = hasProjStats && p.projStats[def.k]!=null ? p.projStats[def.k] : null;
+      if(lastVal===null && projVal===null) return; // beide leer → überspringen
+
+      var lastRank = lastVal!=null ? statRank(def.k, lastVal, def.hi) : null;
+      var projRankObj = projVal!=null ? projRank(def.k, projVal, def.hi) : null;
+      var lastCol = rankColor(lastRank, p.pos);
+      var projCol = rankColor(projRankObj, p.pos);
+
+      // Trend: proj vs last
+      var trendStr = '', trendCol = 'var(--text3)';
+      if(hasBoth && lastVal!=null && projVal!=null) {
+        var diff = Math.round(projVal - lastVal);
+        if(diff !== 0) {
+          trendStr = (diff > 0 ? '▲+' : '▼') + diff;
+          trendCol = diff > 0 ? 'var(--green)' : 'var(--red)';
+        }
+      }
+
+      h += '<div style="display:grid;grid-template-columns:90px 1fr'+(hasBoth?' 1fr':'')+';gap:6px;align-items:center;padding:5px 4px;border-bottom:1px solid var(--border2);">';
+
+      // Label
+      h += '<div style="font-size:9px;font-family:var(--mono);font-weight:700;color:var(--text3);letter-spacing:.06em;">'+def.lbl+'</div>';
+
+      // 2025 Saison
+      if(hasLastStats) {
+        h += '<div style="display:flex;align-items:center;gap:6px;">';
+        if(lastVal!=null) {
+          h += '<span style="font-family:var(--display);font-size:18px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
+          if(lastRank) h += '<span style="font-size:8px;font-family:var(--mono);color:'+lastCol+';opacity:.75;">#'+lastRank.rank+'/'+lastRank.total+'</span>';
+          if(lastRank && lastRank.best!=null && lastRank.best!==lastVal) h += '<span style="font-size:8px;font-family:var(--mono);color:var(--text3);opacity:.55;">max: '+fmt(lastRank.best)+'</span>';
+        } else h += '<span style="color:var(--text3);font-size:11px;">—</span>';
+        h += '</div>';
+      }
+
+      // SLP Proj 2026
+      if(hasBoth) {
+        h += '<div style="display:flex;align-items:center;gap:6px;">';
+        if(projVal!=null) {
+          h += '<span style="font-family:var(--display);font-size:18px;color:'+projCol+';line-height:1;">'+fmt(projVal)+'</span>';
+          if(projRankObj) h += '<span style="font-size:8px;font-family:var(--mono);color:'+projCol+';opacity:.75;">#'+projRankObj.rank+'/'+projRankObj.total+'</span>';
+          if(trendStr) h += '<span style="font-size:9px;font-family:var(--mono);font-weight:700;color:'+trendCol+';">'+trendStr+'</span>';
+        } else h += '<span style="color:var(--text3);font-size:11px;">—</span>';
         h += '</div>';
       }
       h += '</div>';
-    }
-    if(hasProjStats) {
-      h += '<div style="margin-bottom:8px;">';
-      h += '<div style="font-size:8px;color:var(--blue);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:4px;">SLP PROJ 2026 — STATS</div>';
-      h += '<div style="display:flex;flex-direction:column;gap:3px;">';
-      statDefs.forEach(function(def){
-        var val=(p.projStats&&p.projStats[def.k]!=null)?p.projStats[def.k]:null;
-        h += statCell(def.lbl,val,def.noRank?null:projRank(def.k,val,def.hi),def.noRank,def.isGp);
+    });
+    h += '</div>';
+
+    // ── Hochrechnung (aufklappbar) ───────────────────────────────────────────
+    if(canExtrap2) {
+      h += '<div style="margin-top:10px;">';
+      h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:700;background:rgba(255,170,0,.07);border:1px solid rgba(255,170,0,.25);padding:5px 10px;border-radius:3px;cursor:pointer;display:flex;justify-content:space-between;" onclick="var el=document.getElementById(\'ext2_'+p.sleeperId+'\');var arr=document.getElementById(\'ext2arr_'+p.sleeperId+'\');el.style.display=el.style.display===\'none\'?\'block\':\'none\';arr.textContent=el.style.display===\'none\'?\'▸\':\'▾\';">';
+      h += '<span>⤴ HOCHRECHNUNG AUF 17 SPIELE ('+gp2+' gespielt)</span><span id="ext2arr_'+p.sleeperId+'">▸</span></div>';
+      h += '<div id="ext2_'+p.sleeperId+'" style="display:none;padding:8px 4px 0;">';
+      statDefsNoGp.forEach(function(def){
+        var rawVal=hasLastStats&&p.lastStats[def.k]!=null?p.lastStats[def.k]:null;
+        var extVal=rawVal!=null?Math.round(rawVal*rate2):null;
+        if(extVal===null) return;
+        var rk = statRank(def.k, extVal, def.hi);
+        var col = rankColor(rk, p.pos);
+        h += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-bottom:1px solid rgba(255,170,0,.08);">';
+        h += '<span style="font-size:9px;font-family:var(--mono);color:var(--text3);min-width:90px;">'+def.lbl+'</span>';
+        h += '<span style="font-family:var(--display);font-size:17px;color:'+col+';">'+fmt(extVal)+'</span>';
+        if(rk) h += '<span style="font-size:8px;font-family:var(--mono);color:'+col+';opacity:.75;">#'+rk.rank+'/'+rk.total+'</span>';
+        h += '</div>';
       });
+      h += '<div style="font-size:9px;color:var(--text3);font-family:var(--mono);margin-top:6px;font-style:italic;">Per-Game-Rate × 17 — setzt konstante Leistung voraus</div>';
       h += '</div></div>';
     }
+
   } else {
     h += '<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;">Keine Stats verfügbar.<br>Draft laden → Sleeper Stats werden geladen.</div>';
   }
