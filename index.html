@@ -313,8 +313,8 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   <div style="display:flex;flex-direction:column;gap:4px;">
     <div class="section-label" style="margin-bottom:4px;">Navigation</div>
     <button class="nav-item active" data-tab="draft"><span>📋</span> Draft Board</button>
-    <button class="nav-item" data-tab="myteam"><span>⭐</span> Mein Team</button>
-    <button class="nav-item" data-tab="rankings"><span>📋</span> Mein Ranking</button>
+    <button class="nav-item" data-tab="myteam"><span>⭐</span> My Team</button>
+    <button class="nav-item" data-tab="rankings"><span>📋</span> My Rankings</button>
     <button class="nav-item" data-tab="notizen"><span>📝</span> Noteen</button>
     <button class="nav-item" data-tab="todo"><span>✅</span> Todo</button>
   </div>
@@ -322,7 +322,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   <div style="display:flex;flex-direction:column;gap:6px;">
     <div class="section-label">Sleeper Draft ID</div>
     <input type="text" id="draft-id-input" placeholder="z.B. 114020987..."/>
-    <button class="btn-primary" id="load-btn">Draft laden ↗</button>
+    <button class="btn-primary" id="load-btn">Load Draft ↗</button>
     <button class="btn-ghost" id="demo-btn">Start Demo</button>
   </div>
 </aside>
@@ -330,10 +330,10 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 <main class="main">
   <div class="tabs">
     <button class="tab active" data-tab="draft">Draft Board</button>
-    <button class="tab" data-tab="myteam">Mein Team</button>
-    <button class="tab" data-tab="rankings">📋 Mein Ranking</button>
-    <button class="tab" data-tab="notizen">📝 Noteen</button>
-    <button class="tab" data-tab="strategie">🎯 Strategie</button>
+    <button class="tab" data-tab="myteam">My Team</button>
+    <button class="tab" data-tab="rankings">📋 My Rankings</button>
+    <button class="tab" data-tab="notizen">📝 Notes</button>
+    <button class="tab" data-tab="strategie">🎯 Strategy</button>
     <button class="tab" data-tab="todo">✅ Todo</button>
   </div>
 
@@ -378,16 +378,16 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
       <div class="section-label" style="margin-bottom:8px;">Sleeper Username</div>
       <div style="display:flex;gap:8px;">
-        <input type="text" id="sleeper-username-input" placeholder="Dein Sleeper Username..." style="flex:1;"/>
-        <button class="btn-primary" id="load-myteam-btn">Laden ↗</button>
+        <input type="text" id="sleeper-username-input" placeholder="Your Sleeper Username..." style="flex:1;"/>
+        <button class="btn-primary" id="load-myteam-btn">Load ↗</button>
       </div>
       <p style="font-size:11px;margin-top:6px;" id="myteam-status"></p>
     </div>
 
-    <!-- Mein Lineup -->
+    <!-- My Lineup -->
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-        <div class="section-label">Mein Lineup</div>
+        <div class="section-label">My Lineup</div>
         <span style="font-size:11px;color:var(--text3);font-family:var(--mono);" id="lineup-summary"></span>
       </div>
       <div id="lineup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">
@@ -420,7 +420,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       <summary style="cursor:pointer;font-size:12px;color:var(--text3);font-family:var(--mono);">⚙ Draft Astellungen (Notfall)</summary>
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
         <div>
-          <div class="section-label" style="margin-bottom:6px;">Mein Draft Slot</div>
+          <div class="section-label" style="margin-bottom:6px;">My Draft Slot</div>
           <input type="number" id="my-slot-input" placeholder="z.B. 5" min="1" max="20" style="width:100%;"/>
         </div>
         <div>
@@ -444,8 +444,8 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   <div class="panel" id="tab-rankings">
     <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;">
       <div>
-        <h2 style="font-size:16px;font-weight:600;">📋 Mein Ranking</h2>
-        <p style="font-size:12px;color:var(--text3);margin-top:3px;">PDF hochladen → wird gespeichert → bleibt erhalten bis du ein neues hochlädst</p>
+        <h2 style="font-size:16px;font-weight:600;">📋 My Rankings</h2>
+        <p style="font-size:12px;color:var(--text3);margin-top:3px;">Upload PDF → gets saved → persists until you upload a new one</p>
       </div>
       <button class="btn-sm btn-danger" id="clear-rank-btn" style="display:none;">Delete</button>
     </div>
@@ -478,11 +478,11 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
      </div>
 
   <div class="panel" id="tab-strategie">
-    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">🎯 Draft Strategie</h2>
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">🎯 Draft Strategy</h2>
     <p style="font-size:12px;color:var(--text3);margin-bottom:1.25rem;">Diese Astellungen beeinflussen die Recommendations im Draft Board.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
-        <div class="section-label" style="margin-bottom:10px;">Haupt-Strategie</div>
+        <div class="section-label" style="margin-bottom:10px;">Main Strategy</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <button class="strat-btn active" data-strat="best_available">⚖️ Best Available</button>
           <button class="strat-btn" data-strat="rb_heavy">🏃 RB Heavy — Early 2-3 Top-RBs</button>
@@ -520,22 +520,22 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
         <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px;">Handcuff Priorität</div>
           <select id="handcuff-setting" style="width:100%;font-size:12px;"><option value="yes">Ja</option><option value="no">Nein</option></select></div>
         <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px;">Bye Week Vermeidung</div>
-          <select id="bye-setting" style="width:100%;font-size:12px;"><option value="moderate">Moderat</option><option value="strict">Strikt</option><option value="ignore">Ignorieren</option></select></div>
+          <select id="bye-setting" style="width:100%;font-size:12px;"><option value="moderate">Moderate</option><option value="strict">Strict</option><option value="ignore">Ignore</option></select></div>
         <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px;">Scoring Format</div>
           <select id="scoring-setting" style="width:100%;font-size:12px;"><option value="ppr">PPR</option><option value="half_ppr">Half PPR</option><option value="standard">Standard</option></select></div>
         <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px;">Roster Typ</div>
           <select id="roster-setting" style="width:100%;font-size:12px;"><option value="standard">Standard</option><option value="superflex">Superflex</option><option value="2qb">2-QB</option></select></div>
         <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px;">Positional Run</div>
-          <select id="run-setting" style="width:100%;font-size:12px;"><option value="reactive">Reaktiv</option><option value="ignore">Ignorieren</option><option value="aggressive">Aggressiv</option></select></div>
+          <select id="run-setting" style="width:100%;font-size:12px;"><option value="reactive">Reaktiv</option><option value="ignore">Ignore</option><option value="aggressive">Aggressiv</option></select></div>
       </div>
     </div>
-    <button class="btn-primary" id="save-strategy-btn" style="width:100%;">✓ Strategie speichern</button>
+    <button class="btn-primary" id="save-strategy-btn" style="width:100%;">✓ Save Strategy</button>
     <p style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;" id="strategy-status"></p>
   </div>
 
   <div class="panel" id="tab-notizen">
-    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">📝 Gamesr Noteen</h2>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:1rem;">Noteen werden nach Gamesrname gespeichert — bleiben erhalten beim Rankings-Update.</p>
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">📝 Player Notes</h2>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1rem;">Notes are saved by player name — they persist when rankings are updated.</p>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
       <input type="text" id="note-search" placeholder="Gamesrname eingeben..." style="margin-bottom:8px;"/>
       <button class="btn-primary" id="add-note-btn" style="width:100%;">+ Gamesr hinzufügen</button>
@@ -570,7 +570,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
               <div style="font-size:13px;font-weight:600;">FantasyPros Rankings CSV uploaden</div>
-              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Rankings → CSV herunterladen → Tab "Mein Ranking" uploaden</div>
+              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Rankings → Download CSV → upload in "My Rankings" tab</div>
             </div>
           </label>
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
@@ -597,14 +597,14 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
               <div style="font-size:13px;font-weight:600;">Review Strategy</div>
-              <div style="font-size:11px;color:var(--text3);">Tab "Strategie" → RB Heavy / QB Timing / TE Timing / Risiko-Toleranz einstellen</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "Strategy" → Set RB Heavy / QB Timing / TE Timing / Risk Tolerance</div>
             </div>
           </label>
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
               <div style="font-size:13px;font-weight:600;">Sleeper Username eintragen</div>
-              <div style="font-size:11px;color:var(--text3);">Tab "Mein Team" → Username eingeben (YannickORG)</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "My Team" → Enter username (YannickORG)</div>
             </div>
           </label>
         </div>
@@ -623,8 +623,8 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">Noteen zu Risiko-Gamesrn hinzufügen</div>
-              <div style="font-size:11px;color:var(--text3);">Tab "Noteen" → Verletzungsanfällige oder unsichere Gamesr markieren</div>
+              <div style="font-size:13px;font-weight:600;">Add notes to risky players</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "Notes" → Flag injury-prone or risky players</div>
             </div>
           </label>
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
@@ -1642,7 +1642,7 @@ function renderPlayers(){
     var tc=Math.min(+tier,6);
     var tierColors=['','var(--blue)','var(--green)','var(--purple)','var(--amber)','var(--red)','var(--text3)'];
     var tierColor = tierColors[tc]||'var(--text3)';
-    h+='<div class="tier-header t'+tc+'"><span class="tier-line"></span><span class="tier-label" style="color:'+tierColor+';">TIER '+tier+' — '+(tierNames[tier]||'WEITERE').toUpperCase()+'</span><span class="tier-line"></span></div>';
+    h+='<div class="tier-header t'+tc+'"><span class="tier-line"></span><span class="tier-label" style="color:'+tierColor+';">TIER '+tier+' — '+(tierNames[tier]||'MORE').toUpperCase()+'</span><span class="tier-line"></span></div>';
     byTier[tier].forEach(function(p){
       var pc=posColors[p.pos]||'b-k';
       var pid=p.sleeperId||p.id||p.name;
@@ -1870,7 +1870,7 @@ function importBulk(){
   useCustom=true;
   document.getElementById('stats-row').style.display='grid';
   document.getElementById('controls-row').style.display='flex';
-  document.getElementById('pdf-status').textContent='✓ '+customRankings.length+' Gamesr importiert';
+  document.getElementById('pdf-status').textContent='✓ '+customRankings.length+' players imported';
   document.getElementById('pdf-status').style.color='var(--green)';
   renderRankingList();
   renderPlayers();
@@ -2030,7 +2030,7 @@ function handleProjFile(file){
       }
     });
     status.style.color='var(--green)';
-    status.textContent='✓ '+added+' Gamesr geladen, '+matched+' gematcht — '+file.name;
+    status.textContent='✓ '+added+' players loaded, '+matched+' matched — '+file.name;
     renderPlayers();
     renderRecommendations();
   };
@@ -2109,7 +2109,7 @@ function parseCSV(text){
   document.getElementById('stats-row').style.display='grid';
   document.getElementById('controls-row').style.display='flex';
   status.style.color='var(--green)';
-  status.textContent='✓ '+customRankings.length+' Gamesr importiert';
+  status.textContent='✓ '+customRankings.length+' players imported';
   renderRankingList();
   renderPlayers();
 }
@@ -2145,7 +2145,7 @@ function readPdf(file){
       document.getElementById('bulk-input').value=fullText;
       importBulk();
     }catch(err){
-      document.getElementById('pdf-status').textContent='// PDF Fehler: '+err.message;
+      document.getElementById('pdf-status').textContent='// PDF Error: '+err.message;
       document.getElementById('pdf-status').style.color='var(--red)';
     }
   };
@@ -2295,7 +2295,7 @@ function renderMyTeam(){
       var color=e[1]>=3?'color:var(--red)':e[1]>=2?'color:var(--amber)':'color:var(--text)';
       byeHtml+='<div style="'+color+';">Week '+e[0]+': '+e[1]+' Gamesr'+(e[1]>=3?' ⚠️':e[1]>=2?' ⚠':'')+'</div>';
     });
-  } else { byeHtml='<div style="color:var(--text3);">Noch keine Bye-Daten</div>'; }
+  } else { byeHtml='<div style="color:var(--text3);">No bye week data yet</div>'; }
   document.getElementById('bye-weeks').innerHTML=byeHtml;
 }
 
@@ -2801,7 +2801,7 @@ function generateDraftReason(p, rec) {
 
   if(score >= 82) {
     var openers = [
-      'I\'ll say it straight: '+name+' ist the best player on the board at this point.',
+      'I\'ll say it straight: '+name+' is the best player on the board at this point.',
       'Make the pick. '+name+' is exactly what you need right now.',
       'Whoever '+name+' passes on this now will regret it. This is a clear grab.',
       'No langer Gedanke nötig. '+name+' is your guy this round.'
@@ -3435,14 +3435,14 @@ async function loadMyTeam(){
   var username=document.getElementById('sleeper-username-input').value.trim();
   if(!username){alert('Bitte Username eingeben');return;}
   var status=document.getElementById('myteam-status');
-  status.textContent='Lade...';
+  status.textContent='Loading...';
   try{
     var r=await fetch('https://api.sleeper.app/v1/user/'+username);
-    if(!r.ok)throw new Error('User nicht gefunden');
+    if(!r.ok)throw new Error('User not found');
     var user=await r.json();
     mySleeperUserId=user.user_id;
     sleeperUsername=username;
-    status.textContent='✓ Ageloggt als '+username;
+    status.textContent='✓ Logged in as '+username;
     status.style.color='var(--green)';
     // Find draft slot
     if(draftId){
@@ -3494,7 +3494,7 @@ async function loadMyTeam(){
     if(draftId) await loadPicks();
     else renderPlayers(); // still update highlight even without live draft
   }catch(e){
-    status.textContent='Fehler: '+e.message;
+    status.textContent='Error: '+e.message;
     status.style.color='var(--red)';
   }
 }
@@ -3524,11 +3524,11 @@ async function loadDraft(){
   draftId=document.getElementById('draft-id-input').value.trim();
   if(!draftId){alert('Bitte Draft ID eingeben.');return;}
   var btn=document.getElementById('load-btn');
-  btn.textContent='Laden...';btn.disabled=true;
+  btn.textContent='Loading...';btn.disabled=true;
   document.getElementById('player-grid').innerHTML='<div class="empty-state">// Verbinde mit Sleeper...</div>';
   try{
     var r=await fetch('https://api.sleeper.app/v1/draft/'+draftId);
-    if(!r.ok)throw new Error('Draft nicht gefunden');
+    if(!r.ok)throw new Error('Draft not found');
     var draft=await r.json();
     document.getElementById('player-grid').innerHTML='<div class="empty-state">// Lade Gamesr...</div>';
     await loadSleeperPlayers(draft.sport||'nfl');
@@ -3551,7 +3551,7 @@ async function loadDraft(){
   }catch(e){
     document.getElementById('player-grid').innerHTML='<div class="empty-state">// Fehler: '+e.message+'</div>';
   }
-  btn.textContent='Draft laden ↗';btn.disabled=false;
+  btn.textContent='Load Draft ↗';btn.disabled=false;
 }
 
 async function loadSleeperPlayers(sport){
@@ -3718,7 +3718,7 @@ async function fetchSleeperSeasonData() {
     renderPlayers();
   } catch(e) {
     console.log('fetchSleeperSeasonData error',e);
-    if(statusEl){ statusEl.textContent='⚠ Stats konnten nicht geladen werden'; }
+    if(statusEl){ statusEl.textContent='⚠ Stats could not be loaded'; }
   }
 }
 
@@ -3789,7 +3789,7 @@ function renderRecentPicks(){
     var n = window._picksUntilMe;
     badge.style.display='block';
     if(n===0){
-      badge.textContent='🟡 DU BIST DRAN!';
+      badge.textContent='🟡 YOU\'RE ON THE CLOCK!';
       badge.style.cssText='flex-shrink:0;padding:4px 12px;border-radius:var(--radius);font-size:12px;font-weight:700;font-family:var(--mono);border:1px solid;white-space:nowrap;background:#2a1e08;border-color:#f5a623;color:#f5a623;';
     } else {
       badge.textContent='⏳ '+n+' Pick'+(n===1?'':'s');
@@ -3910,7 +3910,7 @@ document.addEventListener('DOMContentLoaded',function(){
     strategy.rosterType = document.getElementById('roster-setting').value;
     strategy.runReaction = document.getElementById('run-setting').value;
     try{localStorage.setItem('fantasybot_strategy',JSON.stringify(strategy));}catch(e){}
-    document.getElementById('strategy-status').textContent='✓ Strategie gespeichert!';
+    document.getElementById('strategy-status').textContent='✓ Strategy saved!';
     document.getElementById('strategy-status').style.color='var(--green)';
     renderRecommendations();
     setTimeout(function(){document.getElementById('strategy-status').textContent='';},2000);
