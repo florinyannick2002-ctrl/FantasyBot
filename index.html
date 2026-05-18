@@ -1585,10 +1585,7 @@ function renderFactorIcons(factors) {
     h += '</div>';
   }
 
-  // Breakdown als eigene kleine Zeile
-  if(breakdown) {
-    h += '<div class="fm-breakdown">'+breakdown.text.replace('Breakdown: ','')+'</div>';
-  }
+  // Breakdown hidden from draft board cards (visible in modal only)
   return h;
 }
 
