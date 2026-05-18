@@ -299,7 +299,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 <div id="player-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.style.display='none';">
   <div style="background:#0a0b10;border:1px solid var(--amber);border-top:3px solid var(--amber);border-radius:6px;max-width:860px;width:100%;padding:28px;position:relative;box-shadow:0 0 60px var(--amber-glow);display:flex;flex-direction:column;max-height:88vh;">
     <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:12px;right:12px;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);width:36px;height:36px;border-radius:3px;cursor:pointer;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;transition:all .12s;" onmouseover="this.style.borderColor='var(--amber)';this.style.color='var(--amber)'" onmouseout="this.style.borderColor='var(--border2)';this.style.color='var(--text2)'">×</button>
-    <div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">📊 SPIELER ANALYSE</div>
+    <div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.2em;text-transform:uppercase;margin-bottom:16px;">📊 PLAYER ANALYSIS</div>
     <div id="modal-body" style="flex:1;overflow:hidden;display:flex;flex-direction:column;"></div>
   </div>
 </div>
@@ -315,7 +315,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <button class="nav-item active" data-tab="draft"><span>📋</span> Draft Board</button>
     <button class="nav-item" data-tab="myteam"><span>⭐</span> Mein Team</button>
     <button class="nav-item" data-tab="rankings"><span>📋</span> Mein Ranking</button>
-    <button class="nav-item" data-tab="notizen"><span>📝</span> Notizen</button>
+    <button class="nav-item" data-tab="notizen"><span>📝</span> Noteen</button>
     <button class="nav-item" data-tab="todo"><span>✅</span> Todo</button>
   </div>
   <div class="divider"></div>
@@ -323,7 +323,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <div class="section-label">Sleeper Draft ID</div>
     <input type="text" id="draft-id-input" placeholder="z.B. 114020987..."/>
     <button class="btn-primary" id="load-btn">Draft laden ↗</button>
-    <button class="btn-ghost" id="demo-btn">Demo starten</button>
+    <button class="btn-ghost" id="demo-btn">Start Demo</button>
   </div>
 </aside>
 
@@ -332,7 +332,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <button class="tab active" data-tab="draft">Draft Board</button>
     <button class="tab" data-tab="myteam">Mein Team</button>
     <button class="tab" data-tab="rankings">📋 Mein Ranking</button>
-    <button class="tab" data-tab="notizen">📝 Notizen</button>
+    <button class="tab" data-tab="notizen">📝 Noteen</button>
     <button class="tab" data-tab="strategie">🎯 Strategie</button>
     <button class="tab" data-tab="todo">✅ Todo</button>
   </div>
@@ -340,8 +340,8 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   <div class="panel active" id="tab-draft">
     <div class="stats" id="stats-row" style="display:none;">
       <div class="stat"><div class="lbl">Gesamt</div><div class="val" id="s-total">—</div></div>
-      <div class="stat"><div class="lbl">Verfügbar</div><div class="val" id="s-avail" style="color:var(--green)">—</div></div>
-      <div class="stat"><div class="lbl">Gedraftet</div><div class="val" id="s-drafted" style="color:var(--red)">—</div></div>
+      <div class="stat"><div class="lbl">Available</div><div class="val" id="s-avail" style="color:var(--green)">—</div></div>
+      <div class="stat"><div class="lbl">Drafted</div><div class="val" id="s-drafted" style="color:var(--red)">—</div></div>
       <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
     <div id="rec-area"></div>
@@ -356,8 +356,8 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       <button class="pos-btn" data-pos="TE">TE</button>
       <button class="pos-btn" data-pos="K">K</button>
       <button class="pos-btn" data-pos="DEF">DEF</button>
-      <button id="scroll-to-pick-btn" style="margin-left:auto;background:var(--amber-bg);border:1px solid #f5a623;color:#f5a623;font-size:12px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-weight:600;display:none;">⬇ Mein Pick</button>
-      <input type="text" id="search-input" placeholder="Suchen..." style="width:150px;"/>
+      <button id="scroll-to-pick-btn" style="margin-left:auto;background:var(--amber-bg);border:1px solid #f5a623;color:#f5a623;font-size:12px;padding:5px 12px;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-weight:600;display:none;">⬇ My Pick</button>
+      <input type="text" id="search-input" placeholder="Search..." style="width:150px;"/>
     </div>
     <div class="recent-picks" id="recent-picks-bar">
       <div class="recent-picks-inner">
@@ -368,7 +368,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       </div>
     </div>
     <div id="player-grid">
-      <div class="empty-state">// Draft ID laden → Demo starten → oder Rankings importieren</div>
+      <div class="empty-state">// Draft ID laden → Start Demo → oder Rankings importieren</div>
     </div>
   </div>
 
@@ -415,9 +415,9 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       </div>
     </div>
 
-    <!-- Draft Einstellungen (Notfall) -->
+    <!-- Draft Astellungen (Notfall) -->
     <details style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
-      <summary style="cursor:pointer;font-size:12px;color:var(--text3);font-family:var(--mono);">⚙ Draft Einstellungen (Notfall)</summary>
+      <summary style="cursor:pointer;font-size:12px;color:var(--text3);font-family:var(--mono);">⚙ Draft Astellungen (Notfall)</summary>
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
         <div>
           <div class="section-label" style="margin-bottom:6px;">Mein Draft Slot</div>
@@ -436,7 +436,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
           <option value="3rdReversal">Snake + Third Round Reversal</option>
         </select>
       </div>
-      <button class="btn-ghost" id="save-draft-settings-btn" style="width:100%;">✓ Speichern</button>
+      <button class="btn-ghost" id="save-draft-settings-btn" style="width:100%;">✓ Save</button>
     </details>
 
   </div>
@@ -447,7 +447,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
         <h2 style="font-size:16px;font-weight:600;">📋 Mein Ranking</h2>
         <p style="font-size:12px;color:var(--text3);margin-top:3px;">PDF hochladen → wird gespeichert → bleibt erhalten bis du ein neues hochlädst</p>
       </div>
-      <button class="btn-sm btn-danger" id="clear-rank-btn" style="display:none;">Löschen</button>
+      <button class="btn-sm btn-danger" id="clear-rank-btn" style="display:none;">Delete</button>
     </div>
 
     <label for="pdf-file-input" id="pdf-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:2rem;text-align:center;cursor:pointer;background:var(--bg3);margin-bottom:1rem;transition:all .2s;display:block;" ondragover="event.preventDefault();this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border2)'" ondrop="event.preventDefault();this.style.borderColor='var(--border2)';if(event.dataTransfer.files[0])handlePdfFile(event.dataTransfer.files[0])">
@@ -462,10 +462,10 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 <!-- Projections Upload -->
     <div style="margin-top:1.5rem;border-top:1px solid var(--border);padding-top:1rem;">
       <h3 style="font-size:14px;font-weight:600;margin-bottom:4px;">📊 FantasyPros Projektionen</h3>
-      <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">QB, RB, WR oder TE CSV von fantasypros.com/nfl/projections/rb.php hochladen. Mehrere Dateien nacheinander.</p>
+      <p style="font-size:11px;color:var(--text3);margin-bottom:12px;">QB, RB, WR oder TE CSV of fantasypros.com/nfl/projections/rb.php hochladen. Mehrere Dateien nacheinander.</p>
       <label for="proj-file-input" id="proj-drop-zone" style="border:2px dashed var(--border2);border-radius:var(--radius-lg);padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg3);display:block;transition:all .2s;" ondragover="event.preventDefault();this.style.borderColor='var(--blue)'" ondragleave="this.style.borderColor='var(--border2)'" ondrop="event.preventDefault();this.style.borderColor='var(--border2)';if(event.dataTransfer.files[0])handleProjFile(event.dataTransfer.files[0])">
         <div style="font-size:28px;margin-bottom:6px;">📈</div>
-        <div style="font-size:13px;font-weight:600;">Projektionen CSV hochladen</div>
+        <div style="font-size:13px;font-weight:600;">Upload Projections CSV</div>
         <div style="font-size:11px;color:var(--text3);margin-top:4px;">QB / RB / WR / TE — jeweils einzeln</div>
       </label>
       <input type="file" id="proj-file-input" accept=".csv" style="display:none" onchange="handleProjFile(this.files[0])"/>
@@ -479,13 +479,13 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 
   <div class="panel" id="tab-strategie">
     <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">🎯 Draft Strategie</h2>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:1.25rem;">Diese Einstellungen beeinflussen die Empfehlungen im Draft Board.</p>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1.25rem;">Diese Astellungen beeinflussen die Recommendations im Draft Board.</p>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
         <div class="section-label" style="margin-bottom:10px;">Haupt-Strategie</div>
         <div style="display:flex;flex-direction:column;gap:6px;">
           <button class="strat-btn active" data-strat="best_available">⚖️ Best Available</button>
-          <button class="strat-btn" data-strat="rb_heavy">🏃 RB Heavy — Früh 2-3 Top-RBs</button>
+          <button class="strat-btn" data-strat="rb_heavy">🏃 RB Heavy — Early 2-3 Top-RBs</button>
           <button class="strat-btn" data-strat="wr_heavy">📡 WR Heavy — WR-Dominanz</button>
           <button class="strat-btn" data-strat="zero_rb">🚀 Zero RB — RBs erst ab R5+</button>
           <button class="strat-btn" data-strat="hero_rb">🦸 Hero RB — 1 Elite-RB, Rest WR</button>
@@ -496,24 +496,24 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
           <div class="section-label" style="margin-bottom:8px;">QB Timing</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
-            <button class="strat-btn-sm active" data-qb="late">Spät (R9+) — Streaming</button>
-            <button class="strat-btn-sm" data-qb="mid">Mitte (R5-8)</button>
-            <button class="strat-btn-sm" data-qb="early">Früh (R1-4) — Elite QB</button>
+            <button class="strat-btn-sm active" data-qb="late">Late (R9+) — Streaming</button>
+            <button class="strat-btn-sm" data-qb="mid">Middle (R5-8)</button>
+            <button class="strat-btn-sm" data-qb="early">Early (R1-4) — Elite QB</button>
             <button class="strat-btn-sm" data-qb="two_qb">Zwei QBs</button>
           </div>
         </div>
         <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
           <div class="section-label" style="margin-bottom:8px;">TE Timing</div>
           <div style="display:flex;flex-direction:column;gap:5px;">
-            <button class="strat-btn-sm active" data-te="mid">Mitte (R4-7)</button>
-            <button class="strat-btn-sm" data-te="early">Früh — Elite TE (R1-3)</button>
-            <button class="strat-btn-sm" data-te="late">Spät — Streaming</button>
+            <button class="strat-btn-sm active" data-te="mid">Middle (R4-7)</button>
+            <button class="strat-btn-sm" data-te="early">Early — Elite TE (R1-3)</button>
+            <button class="strat-btn-sm" data-te="late">Late — Streaming</button>
           </div>
         </div>
       </div>
     </div>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
-      <div class="section-label" style="margin-bottom:12px;">Erweiterte Einstellungen</div>
+      <div class="section-label" style="margin-bottom:12px;">Erweiterte Astellungen</div>
       <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;">
         <div><div style="font-size:12px;color:var(--text2);margin-bottom:5px;">Risiko-Toleranz</div>
           <select id="risk-setting" style="width:100%;font-size:12px;"><option value="balanced">Ausgewogen</option><option value="safe">Sicher (Floor)</option><option value="boom">Boom/Bust</option></select></div>
@@ -534,11 +534,11 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   </div>
 
   <div class="panel" id="tab-notizen">
-    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">📝 Spieler Notizen</h2>
-    <p style="font-size:12px;color:var(--text3);margin-bottom:1rem;">Notizen werden nach Spielername gespeichert — bleiben erhalten beim Rankings-Update.</p>
+    <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">📝 Gamesr Noteen</h2>
+    <p style="font-size:12px;color:var(--text3);margin-bottom:1rem;">Noteen werden nach Gamesrname gespeichert — bleiben erhalten beim Rankings-Update.</p>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
-      <input type="text" id="note-search" placeholder="Spielername eingeben..." style="margin-bottom:8px;"/>
-      <button class="btn-primary" id="add-note-btn" style="width:100%;">+ Spieler hinzufügen</button>
+      <input type="text" id="note-search" placeholder="Gamesrname eingeben..." style="margin-bottom:8px;"/>
+      <button class="btn-primary" id="add-note-btn" style="width:100%;">+ Gamesr hinzufügen</button>
     </div>
     <div id="notes-list"></div>
   </div>
@@ -555,14 +555,14 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">Sleeper ADP Dict updaten</div>
-              <div style="font-size:11px;color:var(--text3);">210 Spieler von BeatADP.com → Sleeper ADP Spalte kopieren → in HTML eintragen</div>
+              <div style="font-size:13px;font-weight:600;">Update Sleeper ADP Dict</div>
+              <div style="font-size:11px;color:var(--text3);">210 Gamesr of BeatADP.com → Sleeper ADP Spalte kopieren → in HTML eintragen</div>
             </div>
           </label>
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">SOS Dict updaten</div>
+              <div style="font-size:13px;font-weight:600;">Update SOS Dict</div>
               <div style="font-size:11px;color:var(--text3);">fantasypros.com → Strength of Schedule → Balken abzählen → in HTML eintragen</div>
             </div>
           </label>
@@ -584,7 +584,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       </div>
 
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.25rem;">
-        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">⚙️ App Einstellungen</div>
+        <div style="font-size:12px;font-weight:700;color:var(--blue);text-transform:uppercase;letter-spacing:.06em;margin-bottom:12px;">⚙️ App Astellungen</div>
         <div style="display:flex;flex-direction:column;gap:10px;">
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
@@ -596,7 +596,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">Strategie überprüfen</div>
+              <div style="font-size:13px;font-weight:600;">Review Strategy</div>
               <div style="font-size:11px;color:var(--text3);">Tab "Strategie" → RB Heavy / QB Timing / TE Timing / Risiko-Toleranz einstellen</div>
             </div>
           </label>
@@ -616,21 +616,21 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">Top 50 Spieler durchschauen</div>
+              <div style="font-size:13px;font-weight:600;">Top 50 Gamesr durchschauen</div>
               <div style="font-size:11px;color:var(--text3);">Eigene Rankings mit Sleeper ADP vergleichen, grosse Unterschiede notieren</div>
             </div>
           </label>
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">Notizen zu Risiko-Spielern hinzufügen</div>
-              <div style="font-size:11px;color:var(--text3);">Tab "Notizen" → Verletzungsanfällige oder unsichere Spieler markieren</div>
+              <div style="font-size:13px;font-weight:600;">Noteen zu Risiko-Gamesrn hinzufügen</div>
+              <div style="font-size:11px;color:var(--text3);">Tab "Noteen" → Verletzungsanfällige oder unsichere Gamesr markieren</div>
             </div>
           </label>
           <label style="display:flex;align-items:flex-start;gap:10px;cursor:pointer;">
             <input type="checkbox" style="margin-top:2px;width:16px;height:16px;accent-color:var(--green);">
             <div>
-              <div style="font-size:13px;font-weight:600;">Git Backup machen</div>
+              <div style="font-size:13px;font-weight:600;">Create Git Backup</div>
               <div style="font-size:11px;color:var(--text3);">git tag working-vFinal && git push origin working-vFinal</div>
             </div>
           </label>
@@ -646,7 +646,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 var customRankings = [];
 var allPlayers = [];
 var sleeperMap = {};
-var SLEEPER_STATS_2024 = {};  // player_id -> letzte Saison Punkte
+var SLEEPER_STATS_2024 = {};  // player_id -> letzte Season Points
 var SLEEPER_PROJ_2026 = {};   // player_id -> Sleeper Projektion 2026
 var SLEEPER_STATS_DETAIL = {}; // player_id -> {rush_att, rush_yd, rush_td, rec, rec_yd, rec_td, tar, pass_att, pass_yd, pass_td, pass_int}
 var SLEEPER_PROJ_DETAIL = {};  // player_id -> gleiche Felder für 2026
@@ -709,8 +709,8 @@ var strategy = {
 var draftId = '';
 var useCustom = false;
 var posColors = {QB:'b-qb',RB:'b-rb',WR:'b-wr',TE:'b-te',K:'b-k',DEF:'b-def'};
-var tierNames = {1:'Elite',2:'Sehr stark',3:'Stark',4:'Solide',5:'Tiefschiessen',6:'Spätpicks'};
-var LABELS = {1:{text:'🔥 Must Have',cls:'l1'},2:{text:'✅ Interessant',cls:'l2'},3:{text:'⚠️ Vorsicht',cls:'l3'},4:{text:'❌ Kein Interesse',cls:'l4'}};
+var tierNames = {1:'Elite',2:'Sehr stark',3:'Stark',4:'Solide',5:'Tiefschiessen',6:'Latepicks'};
+var LABELS = {1:{text:'🔥 Must Have',cls:'l1'},2:{text:'✅ Interessant',cls:'l2'},3:{text:'⚠️ Vorsicht',cls:'l3'},4:{text:'❌ No Interesse',cls:'l4'}};
 
 var SLEEPER_ADP = {
   "Bijan Robinson":1,
@@ -864,7 +864,7 @@ var SLEEPER_ADP = {
   "Matthew Golden":149,
   "Braelon Allen":150,
   "Rashid Shaheed":151,
-  "Adonai Mitchell":152,
+  "Adonai Atchell":152,
   "Kayshon Boutte":153,
   "Mike Washington Jr.":154,
   "Jalen McMillan":155,
@@ -872,7 +872,7 @@ var SLEEPER_ADP = {
   "Jonathon Brooks":157,
   "Cameron Ward":158,
   "Chimere Dike":159,
-  "Keaton Mitchell":160,
+  "Keaton Atchell":160,
   "Brandon Aiyuk":161,
   "Isiah Pacheco":162,
   "Jake Tonges":163,
@@ -1003,7 +1003,7 @@ var FP_PROJ={
 "Aidan O'Connell":{"f":9.0,"h":8.7,"l":8.7},
 "Jalen Milroe":{"f":9.0,"h":7.0,"l":7.0},
 "Drew Allar":{"f":8.9,"h":8.0,"l":8.0},
-"Mitchell Trubisky":{"f":8.9,"h":8.0,"l":7.7},
+"Atchell Trubisky":{"f":8.9,"h":8.0,"l":7.7},
 "Quinn Ewers":{"f":8.9,"h":7.3,"l":7.0},
 "Trey Lance":{"f":8.3,"h":9.4,"l":1.0},
 "Kyle Allen":{"f":8.3,"h":8.0,"l":7.0},
@@ -1078,7 +1078,7 @@ var FP_PROJ={
 "Jaydon Blue":{"f":54.5,"h":54.9,"l":54.9},
 "Jawhar Jordan":{"f":54.3,"h":73.5,"l":18.4},
 "Kyle Juszczyk":{"f":54.1,"h":51.4,"l":48.5},
-"Keaton Mitchell":{"f":51.1,"h":60.0,"l":27.8},
+"Keaton Atchell":{"f":51.1,"h":60.0,"l":27.8},
 "Malik Davis":{"f":50.5,"h":58.6,"l":28.8},
 "Jaylen Wright":{"f":47.8,"h":45.3,"l":39.3},
 "Kendre Miller":{"f":46.2,"h":69.0,"l":11.3},
@@ -1233,7 +1233,7 @@ var FP_PROJ={
 "Olamide Zaccheaus":{"f":81.5,"h":81.7,"l":81.7},
 "Ted Hurst":{"f":81.1,"h":82.3,"l":70.7},
 "Isaac TeSlaa":{"f":80.6,"h":78.9,"l":74.1},
-"Adonai Mitchell":{"f":79.7,"h":80.3,"l":80.3},
+"Adonai Atchell":{"f":79.7,"h":80.3,"l":80.3},
 "Mack Hollins":{"f":79.1,"h":104.4,"l":45.7},
 "Van Jefferson":{"f":75.0,"h":75.3,"l":75.3},
 "Dontayvion Wicks":{"f":74.7,"h":76.6,"l":64.5},
@@ -1280,7 +1280,7 @@ var FP_PROJ={
 "Kevin Coleman Jr.":{"f":22.0,"h":22.1,"l":22.1},
 "Tez Johnson":{"f":21.5,"h":21.6,"l":21.6},
 "Xavier Smith":{"f":19.9,"h":21.6,"l":21.6},
-"Mitch Tinsley":{"f":19.5,"h":19.5,"l":19.5},
+"Atch Tinsley":{"f":19.5,"h":19.5,"l":19.5},
 "Cyrus Allen":{"f":17.2,"h":17.2,"l":17.2},
 "Anthony Gould":{"f":16.3,"h":17.7,"l":17.7},
 "Greg Dortch":{"f":14.1,"h":16.1,"l":16.1},
@@ -1388,7 +1388,7 @@ var FP_PROJ={
 "Jeremy Ruckert":{"f":40.8,"h":41.2,"l":32.0},
 "Julian Hill":{"f":39.0,"h":37.1,"l":34.0},
 "Nate Boerkircher":{"f":36.0,"h":39.4,"l":25.1},
-"Mitchell Evans":{"f":34.3,"h":34.8,"l":26.0},
+"Atchell Evans":{"f":34.3,"h":34.8,"l":26.0},
 "Drew Sample":{"f":33.7,"h":36.5,"l":25.1},
 "Nick Vannett":{"f":33.3,"h":27.0,"l":27.0},
 "Cade Stover":{"f":32.6,"h":34.1,"l":26.8},
@@ -1495,7 +1495,7 @@ function applyADP(){
 function factorIcon(text) {
   var t = text.toLowerCase();
   if(t.includes('breakdown:')) return '📊';
-  // VOR / Punkte-Vorteil
+  // VOR / Points-Vorteil
   if(t.includes('besser projiziert')||t.includes('mehr als der nächste')||t.includes('besser als nächster')||t.includes('über dem nächsten')) return '💰';
   // Bester verfügbar / Tier
   if(t.includes('bester noch verfügbarer')||t.includes('bester verfügbarer')) return '👑';
@@ -1546,7 +1546,7 @@ function factorIcon(text) {
 }
 
 function renderFactorIcons(factors) {
-  // Trenne Breakdown von anderen Faktoren
+  // Trenne Breakdown of anderen Faktoren
   var breakdown = factors.find(function(f){return f.text.startsWith('Breakdown:');});
   var rest = factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
 
@@ -1603,7 +1603,7 @@ function renderPlayers(){
     return true;
   });
   var grid=document.getElementById('player-grid');
-  if(!filtered.length){grid.innerHTML='<div class="empty-state">// Keine Spieler</div>';return;}
+  if(!filtered.length){grid.innerHTML='<div class="empty-state">// Keine Gamesr</div>';return;}
   var byTier={};
   filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
   
@@ -1701,18 +1701,18 @@ function renderPlayers(){
       if(myDraftSlot && p.sleeperRank!=null){
         var slpRank=p.sleeperRank;
         if(picksLeft===0){
-          if(slpRank<=myNextPickOverall+totalTeams-2) availLabel='<span class="avail-tag avail-red">⚠ LETZTE CHANCE</span>';
-          else if(slpRank<=myNextPickOverall+totalTeams+2) availLabel='<span class="avail-tag avail-yellow">⚡ RISKANT</span>';
+          if(slpRank<=myNextPickOverall+totalTeams-2) availLabel='<span class="avail-tag avail-red">⚠ LAST CHANCE</span>';
+          else if(slpRank<=myNextPickOverall+totalTeams+2) availLabel='<span class="avail-tag avail-yellow">⚡ RISKY</span>';
         } else {
           if(slpRank<myNextPickOverall) availLabel='<span class="avail-tag avail-red">⚠ WAHRSCHEINLICH WEG</span>';
-          else if(slpRank<=myNextPickOverall+3) availLabel='<span class="avail-tag avail-yellow">⚡ RISKANT</span>';
+          else if(slpRank<=myNextPickOverall+3) availLabel='<span class="avail-tag avail-yellow">⚡ RISKY</span>';
         }
         // ADP-Wait: mein Rank sagt "weg" aber Sleeper sagt "noch da" → du kannst warten
         if(p.rank < myNextPickOverall && slpRank >= myNextPickOverall && !availLabel){
-          stealBadge='<span class="avail-tag avail-steal">📊 KANNST WARTEN</span>';
+          stealBadge='<span class="avail-tag avail-steal">📊 CAN WAIT</span>';
         }
       } else if(myDraftSlot && p.sleeperRank==null && p.rank < myNextPickOverall){
-        availLabel='<span class="avail-tag avail-red">⚠ LETZTE CHANCE</span>';
+        availLabel='<span class="avail-tag avail-red">⚠ LAST CHANCE</span>';
       }
 
       // SOS
@@ -1749,8 +1749,8 @@ function renderPlayers(){
       h+='<div class="pcard-bottom">';
       if(projPtsHtml) h+=projPtsHtml;
       if(projLabel) h+=projLabel;
-      // Letzte Saison Punkte
-      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="2025 Letzte Saison">&#39;25: <span style="color:var(--text2);">'+p.lastSeasonPts+'</span></span>';
+      // Letzte Season Points
+      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="2025 Letzte Season">&#39;25: <span style="color:var(--text2);">'+p.lastSeasonPts+'</span></span>';
       // Sleeper Proj (nur wenn kein FP_PROJ vorhanden)
       if(p.sleeperProjPts && !p.projFpts) h+='<span style="font-size:10px;color:var(--text3);font-family:var(--mono);" title="Sleeper Proj 2026">PROJ: <span style="color:var(--amber);">'+p.sleeperProjPts+'</span></span>';
       h+='<span class="pcard-meta">'+( p.team||'')+'</span>';
@@ -1822,7 +1822,7 @@ function renderRankingList(){
   if(delBtn)delBtn.style.display='block';
   var byTier={};
   customRankings.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
-  var h='<div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+customRankings.length+' Spieler importiert</div>';
+  var h='<div style="font-size:12px;color:var(--text3);font-family:var(--mono);margin-bottom:8px;">'+customRankings.length+' Gamesr importiert</div>';
   Object.keys(byTier).sort(function(a,b){return+a-+b;}).forEach(function(tier){
     h+='<div style="font-size:10px;font-weight:600;font-family:var(--mono);color:var(--text3);padding:8px 0 4px;text-transform:uppercase;letter-spacing:.06em;">Tier '+tier+'</div>';
     byTier[tier].forEach(function(p){
@@ -1870,7 +1870,7 @@ function importBulk(){
   useCustom=true;
   document.getElementById('stats-row').style.display='grid';
   document.getElementById('controls-row').style.display='flex';
-  document.getElementById('pdf-status').textContent='✓ '+customRankings.length+' Spieler importiert';
+  document.getElementById('pdf-status').textContent='✓ '+customRankings.length+' Gamesr importiert';
   document.getElementById('pdf-status').style.color='var(--green)';
   renderRankingList();
   renderPlayers();
@@ -1881,11 +1881,11 @@ function clearRankings(){
   customRankings=[];useCustom=false;saveRankings();renderRankingList();renderPlayers();
 }
 
-// Notizen
+// Noteen
 function renderNotes(){
   var list=document.getElementById('notes-list');
   var entries=Object.entries(playerNotes);
-  if(!entries.length){list.innerHTML='<div class="empty-state">// Noch keine Notizen</div>';return;}
+  if(!entries.length){list.innerHTML='<div class="empty-state">// Noch keine Noteen</div>';return;}
   list.innerHTML='';
   entries.forEach(function(e){
     var name=e[0],data=e[1];
@@ -1899,7 +1899,7 @@ function renderNotes(){
     header.appendChild(n);
     var sel=document.createElement('select');
     sel.style.cssText='width:auto;flex:0 0 180px;';
-    sel.innerHTML='<option value="">— Kein Label —</option>';
+    sel.innerHTML='<option value="">— No Label —</option>';
     Object.entries(LABELS).forEach(function(le){
       var opt=document.createElement('option');
       opt.value=le[0];opt.textContent=le[1].text;
@@ -1922,7 +1922,7 @@ function renderNotes(){
     card.appendChild(header);
     var ta=document.createElement('textarea');
     ta.className='note-input';
-    ta.placeholder='Notiz...';
+    ta.placeholder='Note...';
     ta.value=data.note||'';
     ta.addEventListener('blur',(function(nm){return function(){
       if(!playerNotes[nm])playerNotes[nm]={};
@@ -2030,7 +2030,7 @@ function handleProjFile(file){
       }
     });
     status.style.color='var(--green)';
-    status.textContent='✓ '+added+' Spieler geladen, '+matched+' gematcht — '+file.name;
+    status.textContent='✓ '+added+' Gamesr geladen, '+matched+' gematcht — '+file.name;
     renderPlayers();
     renderRecommendations();
   };
@@ -2109,7 +2109,7 @@ function parseCSV(text){
   document.getElementById('stats-row').style.display='grid';
   document.getElementById('controls-row').style.display='flex';
   status.style.color='var(--green)';
-  status.textContent='✓ '+customRankings.length+' Spieler importiert';
+  status.textContent='✓ '+customRankings.length+' Gamesr importiert';
   renderRankingList();
   renderPlayers();
 }
@@ -2293,7 +2293,7 @@ function renderMyTeam(){
   if(Object.keys(byeCount).length){
     Object.entries(byeCount).sort(function(a,b){return+a[0]-+b[0];}).forEach(function(e){
       var color=e[1]>=3?'color:var(--red)':e[1]>=2?'color:var(--amber)':'color:var(--text)';
-      byeHtml+='<div style="'+color+';">Woche '+e[0]+': '+e[1]+' Spieler'+(e[1]>=3?' ⚠️':e[1]>=2?' ⚠':'')+'</div>';
+      byeHtml+='<div style="'+color+';">Week '+e[0]+': '+e[1]+' Gamesr'+(e[1]>=3?' ⚠️':e[1]>=2?' ⚠':'')+'</div>';
     });
   } else { byeHtml='<div style="color:var(--text3);">Noch keine Bye-Daten</div>'; }
   document.getElementById('bye-weeks').innerHTML=byeHtml;
@@ -2329,7 +2329,7 @@ function calcDraftScore(player) {
   var totalPicked = draftedIds.size;
   var myNextPickOverall = totalPicked + 1 + picksLeft + totalTeams;
   
-  // Hilfs-Funktion: Beste Alternative bei nächstem Pick an gleicher Pos
+  // Hilfs-Funktion: Beste Alternative with nächstem Pick an gleicher Pos
   function bestAvailableAtNextPick(targetPos) {
     var alts = available.filter(function(p){
       return p.pos === targetPos && p.name !== player.name && (p.sleeperRank||999) >= myNextPickOverall;
@@ -2338,7 +2338,7 @@ function calcDraftScore(player) {
   }
   
   // ═══════════════════════════════════════════════════════════
-  // 1. VALUE (40 Punkte) — Wie wertvoll ist der Spieler?
+  // 1. VALUE (40 Points) — Wie wertvoll ist der Gamesr?
   // ═══════════════════════════════════════════════════════════
   var valueScore = 0;
   
@@ -2349,9 +2349,9 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    if(vor >= 30) factors.push({text:Math.round(vor)+' Punkte besser projiziert als der beste '+pos+', den du bei deinem nächsten Pick noch kriegen würdest',type:'pos'});
-    else if(vor >= 15) factors.push({text:Math.round(vor)+' Punkte mehr als der nächste verfügbare '+pos+' bei deinem Pick',type:'pos'});
-    else if(vor >= 5) factors.push({text:Math.round(vor)+' Punkte Mehrwert gegenüber dem nächsten '+pos,type:'pos'});
+    if(vor >= 30) factors.push({text:Math.round(vor)+' points better projected than the best '+pos+', den du with deinem nächsten Pick noch kriegen würdest',type:'pos'});
+    else if(vor >= 15) factors.push({text:Math.round(vor)+' points more than the next available '+pos+' with deinem Pick',type:'pos'});
+    else if(vor >= 5) factors.push({text:Math.round(vor)+' points of value over the next '+pos,type:'pos'});
   } else {
     // Fallback: Rank-basiert
     if(rank <= 12) valueScore += 22;
@@ -2370,10 +2370,10 @@ function calcDraftScore(player) {
     // Nur zeigen wenn NICHT bereits die Scarcity-Meldung feuert (die ist informativer)
     var samePosFwd = available.filter(function(p){ return p.pos === pos && (p.tier||6) <= (tier||6); });
     if(samePosFwd.length > 2 || (tier||6) > 4) {
-      factors.push({text:'Bester noch verfügbarer '+pos+' seiner Klasse auf dem Board (Tier '+tier+')',type:'pos'});
+      factors.push({text:'Best remaining '+pos+' of his tier on the board (Tier '+tier+')',type:'pos'});
     }
   }
-  else if(tierDiff === 1) factors.push({text:'Eine Tier-Stufe unter dem besten verfügbaren '+pos+', aber immer noch eine gute Option',type:'pos'});
+  else if(tierDiff === 1) factors.push({text:'One tier below the best available '+pos+', but still a solid option',type:'pos'});
   
   // 1C. Opportunity Cost (0-5 pts) — verschwindet er?
   if(player.sleeperRank && myDraftSlot) {
@@ -2383,7 +2383,7 @@ function calcDraftScore(player) {
   }
   
   // ═══════════════════════════════════════════════════════════
-  // 2. NEED (25 Punkte) — Brauche ich diese Position?
+  // 2. NEED (25 Points) — Brauche ich diese Position?
   // ═══════════════════════════════════════════════════════════
   var needScore = 0;
   
@@ -2394,7 +2394,7 @@ function calcDraftScore(player) {
   var have = posCounts[pos] || 0;
   
   if(pos === 'QB' || pos === 'TE') {
-    if(have === 0 && needed >= 1) { needScore += 12; factors.push({text:'Kein '+pos+' im Team. Diese Position muss jetzt adressiert werden.',type:'pos'}); }
+    if(have === 0 && needed >= 1) { needScore += 12; factors.push({text:'No '+pos+' on team. This position needs to be addressed now.',type:'pos'}); }
     else if(have >= needed) needScore += 0;
   } else if(pos === 'RB' || pos === 'WR') {
     var round = Math.floor(totalPicked / totalTeams) + 1;
@@ -2405,18 +2405,18 @@ function calcDraftScore(player) {
     
     if(have === 0) {
       if(rbHeavyWR) {
-        // RB Heavy: WR early ist nicht dringend — kein Bonus, kein "Noch kein WR!"
+        // RB Heavy: WR early ist nicht dringend — kein Bonus, kein "No WR yet!"
         needScore += 4;
-        factors.push({text:'Gemäss deinem RB-Heavy-Plan holst du WRs in späteren Runden',type:'neu'});
+        factors.push({text:'Per your RB-Heavy plan, WRs come in later rounds',type:'neu'});
       } else if(zeroRbRB) {
         needScore += 4;
-        factors.push({text:'Zero-RB-Strategie: RBs kommen erst ab Runde 5+, kein Grund zur Eile',type:'neu'});
+        factors.push({text:'Zero-RB strategy: RBs come in round 5+, no rush',type:'neu'});
       } else {
         needScore += 12;
         factors.push({text:'Noch kein '+pos+'!',type:'pos'});
       }
     }
-    else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'Ein zweiter solider '+pos+' fehlt noch im Kader',type:'pos'}); }
+    else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'A second solid '+pos+' is still missing from the roster',type:'pos'}); }
     else if(have === 2) needScore += 4;
     else if(have >= 3) needScore -= 2;
   } else if(pos === 'K' || pos === 'DEF') {
@@ -2429,48 +2429,48 @@ function calcDraftScore(player) {
   var isPPR = strategy.scoring === 'ppr';
   var isStandard = strategy.scoring === 'standard';
 
-  // ── HAUPT-STRATEGIE ──
+  // ── HAUPT-STRATEGY ──
   if(strategy.main === 'rb_heavy') {
     if(pos === 'RB' && round <= 4 && have < 3) {
-      stratBonus = 8; factors.push({text:'Passt perfekt zu deiner RB-Heavy-Strategie. Früh die besten RBs sichern.',type:'pos'});
+      stratBonus = 8; factors.push({text:'Passt perfekt zu deiner RB-Heavy-Strategie. Early die besten RBs sichern.',type:'pos'});
     } else if(pos === 'RB' && round <= 6 && have < 4) {
       stratBonus = 4;
     } else if(pos === 'WR' && round <= 3 && have < 1) {
-      stratBonus = -3; factors.push({text:'WR in Runde '+round+' widerspricht deinem RB-Heavy-Plan',type:'neg'});
+      stratBonus = -3; factors.push({text:'WR in Round '+round+' widerspricht deinem RB-Heavy-Plan',type:'neg'});
     }
   }
   else if(strategy.main === 'wr_heavy') {
     if(pos === 'WR' && round <= 5 && have < 3) {
-      stratBonus = 8; factors.push({text:'Deckt sich mit deiner WR-Heavy-Strategie. Genau der richtige Zug.',type:'pos'});
+      stratBonus = 8; factors.push({text:'Aligns with your WR-Heavy strategy. Exactly the right move.',type:'pos'});
     } else if(pos === 'RB' && round <= 3 && have < 1) {
-      stratBonus = -3; factors.push({text:'RB in Runde '+round+' passt nicht zu deiner WR-Heavy-Ausrichtung',type:'neg'});
+      stratBonus = -3; factors.push({text:'RB in Round '+round+' passt nicht zu deiner WR-Heavy-Ausrichtung',type:'neg'});
     }
   }
   else if(strategy.main === 'zero_rb') {
     if(pos === 'RB' && round <= 5) {
-      stratBonus = -7; factors.push({text:'Zero-RB: du planst RBs erst ab Runde 5+. Dieser Pick käme zu früh.',type:'neg'});
+      stratBonus = -7; factors.push({text:'Zero-RB: you plan RBs from round 5+. This pick is too early.',type:'neg'});
     } else if(pos === 'RB' && round === 6) {
       stratBonus = -2;
     } else if(pos === 'WR' && round <= 5 && have < 4) {
-      stratBonus = 7; factors.push({text:'Früher WR passt ideal zu deiner Zero-RB-Strategie',type:'pos'});
+      stratBonus = 7; factors.push({text:'Earlyer WR passt ideal zu deiner Zero-RB-Strategie',type:'pos'});
     } else if(pos === 'TE' && round <= 4 && have === 0) {
-      stratBonus = 4; factors.push({text:'Früher TE-Griff ergänzt deine Zero-RB-Strategie gut',type:'pos'});
+      stratBonus = 4; factors.push({text:'Earlyer TE-Griff ergänzt deine Zero-RB-Strategie gut',type:'pos'});
     }
   }
   else if(strategy.main === 'hero_rb') {
     if(pos === 'RB' && have === 0 && round <= 2) {
-      stratBonus = 10; factors.push({text:'Genau der Elite-RB, den deine Hero-RB-Strategie in Runde '+round+' braucht',type:'pos'});
+      stratBonus = 10; factors.push({text:'Exactly the elite RB your Hero-RB strategy needs in round '+round+' needs',type:'pos'});
     } else if(pos === 'RB' && have === 1 && round <= 8) {
-      stratBonus = -6; factors.push({text:'Dein Elite-RB ist gesetzt — Zeit, den WR-Fokus zu setzen',type:'neg'});
+      stratBonus = -6; factors.push({text:'Your elite RB is locked in. Time to focus on WRs.',type:'neg'});
     } else if(pos === 'WR' && have >= 0 && round >= 2 && have < 4) {
-      stratBonus = 5; factors.push({text:'Hero-RB läuft — WR-Fokus ab Runde 2 ist genau der Plan',type:'pos'});
+      stratBonus = 5; factors.push({text:'Hero-RB is set — WR focus from round 2 is the plan',type:'pos'});
     }
   }
   else if(strategy.main === 'te_premium') {
     if(pos === 'TE' && rank <= 12 && have === 0) {
-      stratBonus = 10; factors.push({text:'Sichert dir den Elite-TE, auf den deine TE-Premium-Strategie ausgelegt ist',type:'pos'});
+      stratBonus = 10; factors.push({text:'Secures the elite TE your TE-Premium strategy is built around',type:'pos'});
     } else if(pos === 'TE' && rank <= 25 && have === 0) {
-      stratBonus = 6; factors.push({text:'Solider TE-Griff im Rahmen deiner TE-Premium-Strategie',type:'pos'});
+      stratBonus = 6; factors.push({text:'Solid TE pick within your TE-Premium strategy',type:'pos'});
     }
   }
   // best_available: kein Strategie-Bonus (Algo entscheidet frei)
@@ -2478,30 +2478,30 @@ function calcDraftScore(player) {
   // ── QB TIMING ──
   if(pos === 'QB') {
     if(strategy.qbTiming === 'early') {
-      if(round <= 4 && have === 0) { stratBonus += 6; factors.push({text:'Elite-QB in Runde '+round+' — passt exakt zu deiner Early-QB-Strategie',type:'pos'}); }
+      if(round <= 4 && have === 0) { stratBonus += 6; factors.push({text:'Elite QB in round '+round+' — fits exactly with your early QB strategy',type:'pos'}); }
       else if(round > 4 && have === 0) { stratBonus -= 3; }
     } else if(strategy.qbTiming === 'mid') {
-      if(round >= 5 && round <= 8 && have === 0) { stratBonus += 5; factors.push({text:'QB in Runde '+round+' — goldene Zone für deine Mid-QB-Strategie',type:'pos'}); }
-      else if(round < 5 && have === 0) { stratBonus -= 4; factors.push({text:'QB jetzt wäre zu früh für dein Mid-Timing-Konzept — warte auf Runde 5-8',type:'neg'}); }
+      if(round >= 5 && round <= 8 && have === 0) { stratBonus += 5; factors.push({text:'QB in round '+round+' — golden window for your mid-QB strategy',type:'pos'}); }
+      else if(round < 5 && have === 0) { stratBonus -= 4; factors.push({text:'QB now is too early for your mid-timing concept — wait for rounds 5-8',type:'neg'}); }
     } else if(strategy.qbTiming === 'late') {
-      if(round >= 9 && have === 0) { stratBonus += 5; factors.push({text:'QB spät holen ist dein Plan — Runde '+round+' ist genau der richtige Moment',type:'pos'}); }
-      else if(round <= 8 && have === 0) { stratBonus -= 5; factors.push({text:'Du planst QB erst in Runde 9+ — dieser Pick wäre zu früh für deine Strategie',type:'neg'}); }
+      if(round >= 9 && have === 0) { stratBonus += 5; factors.push({text:'Taking QB late is your plan — round '+round+' is exactly the right moment',type:'pos'}); }
+      else if(round <= 8 && have === 0) { stratBonus -= 5; factors.push({text:'Du planst QB erst in Round 9+ — this pick would be too early for your strategy',type:'neg'}); }
     } else if(strategy.qbTiming === 'two_qb') {
-      if(have < 2) { stratBonus += 6; factors.push({text:'Deine 2-QB-Liga erfordert frühe QB-Sicherung — dieser Zug macht Sinn',type:'pos'}); }
+      if(have < 2) { stratBonus += 6; factors.push({text:'Your 2-QB league requires early QB security — this move makes sense',type:'pos'}); }
     }
   }
 
   // ── TE TIMING ──
   if(pos === 'TE') {
     if(strategy.teTiming === 'early') {
-      if(round <= 3 && have === 0) { stratBonus += 6; factors.push({text:'Elite-TE in Runde '+round+' — deine TE-Strategie wird hier konsequent umgesetzt',type:'pos'}); }
+      if(round <= 3 && have === 0) { stratBonus += 6; factors.push({text:'Elite TE in round '+round+' — your TE strategy is being executed consistently here',type:'pos'}); }
       else if(round > 3 && have === 0) stratBonus -= 2;
     } else if(strategy.teTiming === 'mid') {
-      if(round >= 4 && round <= 7 && have === 0) { stratBonus += 4; factors.push({text:'TE in Runde '+round+' — optimales Fenster für deine Mid-TE-Strategie',type:'pos'}); }
-      else if(round < 4 && have === 0) { stratBonus -= 4; factors.push({text:'TE jetzt wäre zu früh — dein Plan sieht R4-7 vor',type:'neg'}); }
+      if(round >= 4 && round <= 7 && have === 0) { stratBonus += 4; factors.push({text:'TE in round '+round+' — optimal window for your mid-TE strategy',type:'pos'}); }
+      else if(round < 4 && have === 0) { stratBonus -= 4; factors.push({text:'TE now is too early — your plan targets rounds 4-7',type:'neg'}); }
     } else if(strategy.teTiming === 'late') {
-      if(round >= 8 && have === 0) { stratBonus += 4; factors.push({text:'Late-TE ist dein Konzept — Runde '+round+' passt perfekt dazu',type:'pos'}); }
-      else if(round < 8 && have === 0) { stratBonus -= 3; factors.push({text:'Du planst TE spät zu holen — dieser Pick käme zu früh',type:'neg'}); }
+      if(round >= 8 && have === 0) { stratBonus += 4; factors.push({text:'Late-TE is your concept — round '+round+' fits perfectly',type:'pos'}); }
+      else if(round < 8 && have === 0) { stratBonus -= 3; factors.push({text:'You plan to take TE late — this pick is too early',type:'neg'}); }
     }
   }
 
@@ -2516,9 +2516,9 @@ function calcDraftScore(player) {
     if(pos === 'WR') { stratBonus -= 1; }
   }
 
-  // ── ROSTER TYP ──
+  // ── ROSTER TYPE ──
   if(isSuperflex && pos === 'QB') {
-    stratBonus += 8; factors.push({text:'Im Superflex-Format ist QB-Wert deutlich erhöht. Starkes Pick-Argument.',type:'pos'});
+    stratBonus += 8; factors.push({text:'In Superflex format, QB value is significantly elevated. Strong pick argument.',type:'pos'});
   }
 
   needScore += stratBonus;
@@ -2526,33 +2526,33 @@ function calcDraftScore(player) {
   // 2C. Position Scarcity (0-5 pts)
   var samePos = available.filter(function(p){ return p.pos === pos && p.tier <= tier; });
   if(samePos.length <= 2 && tier <= 4) {
-    needScore += 5; factors.push({text:'Letzter '+pos+' dieser Qualitätsstufe (Tier '+tier+') auf dem Board. Danach wird es deutlich schlechter.',type:'pos'});
+    needScore += 5; factors.push({text:'Last '+pos+' of this quality tier (Tier '+tier+') on the board. It drops off sharply after this.',type:'pos'});
   } else if(samePos.length <= 4 && tier <= 3) {
     needScore += 3;
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 3. CONTEXT (20 Punkte) — Externe Faktoren
+  // 3. CONTEXT (20 Points) — Externe Faktoren
   // ═══════════════════════════════════════════════════════════
-  var contextScore = 10; // Start bei 50% Context Default
+  var contextScore = 10; // Start with 50% Context Default
 
   // 3A. Strength of Schedule (-4 bis +4)
   if(player.team && SOS[player.team] && SOS[player.team][pos] !== undefined) {
     var sv = SOS[player.team][pos];
-    if(sv === 5) { contextScore += 4; factors.push({text:'Traumkalender. Er spielt gegen die schwächsten Verteidigungen der Liga.',type:'pos'}); }
-    else if(sv === 4) { contextScore += 2; factors.push({text:'Angenehmer Spielplan mit durchgehend guten Matchups erwartet.',type:'pos'}); }
-    else if(sv === 2) { contextScore -= 2; factors.push({text:'Schwieriger Spielplan. Viele starke Verteidigungen auf dem Weg.',type:'neg'}); }
-    else if(sv === 1) { contextScore -= 4; factors.push({text:'Härtester Schedule im Feld. Die Matchups werden das ganze Jahr ein Problem sein.',type:'neg'}); }
+    if(sv === 5) { contextScore += 4; factors.push({text:'Dream schedule. He plays against the weakest defenses in the league.',type:'pos'}); }
+    else if(sv === 4) { contextScore += 2; factors.push({text:'Pleasant schedule with consistently good matchups ahead.',type:'pos'}); }
+    else if(sv === 2) { contextScore -= 2; factors.push({text:'Tough schedule. Many strong defenses ahead.',type:'neg'}); }
+    else if(sv === 1) { contextScore -= 4; factors.push({text:'Hardest schedule in the field. The matchups will be a problem all year.',type:'neg'}); }
   }
   
   // 3B. Age (-5 bis +5)
   if(player.age) {
-    if(player.age <= 23) { contextScore += 4; factors.push({text:'Mit '+player.age+' Jahren im besten Entwicklungsfenster — mehrjährige Hochphase zu erwarten',type:'pos'}); }
+    if(player.age <= 23) { contextScore += 4; factors.push({text:'At '+player.age+' years old in his prime development window — a multi-year peak is expected',type:'pos'}); }
     else if(player.age <= 26) contextScore += 2; // Aufstieg
     else if(player.age <= 28) { /* Peak, neutral */ }
-    else if(player.age <= 30) { contextScore -= 2; factors.push({text:'Mit '+player.age+' Jahren beginnt das Fenster sich zu schliessen — auf Regressions-Anzeichen achten',type:'neg'}); }
-    else if(player.age <= 32) { contextScore -= 4; factors.push({text:'Mit '+player.age+' Jahren im Herbst seiner Karriere — erhöhtes Verletzungs- und Regressionsrisiko',type:'neg'}); }
-    else { contextScore -= 5; factors.push({text:'Mit '+player.age+' Jahren nahe am Ende — Leistungsabfall und Verletzungsanfälligkeit sind reale Risiken',type:'neg'}); }
+    else if(player.age <= 30) { contextScore -= 2; factors.push({text:'At '+player.age+' years old the window is starting to close — watch for regression signs',type:'neg'}); }
+    else if(player.age <= 32) { contextScore -= 4; factors.push({text:'At '+player.age+' years old in the fall of his career — elevated injury and regression risk',type:'neg'}); }
+    else { contextScore -= 5; factors.push({text:'At '+player.age+' years old near the end — performance decline and injury are real risks',type:'neg'}); }
   }
   
   // 3C. Bye Week Konflikt (-4 bis 0)
@@ -2563,7 +2563,7 @@ function calcDraftScore(player) {
     }).length;
     var threshold = strategy.byeAvoidance === 'strict' ? 1 : 2;
     if(byeConflicts >= threshold + 1) {
-      contextScore -= 4; factors.push({text:'Bye Week '+player.bye+' — du hast bereits zu viele Spieler in dieser Woche',type:'neg'});
+      contextScore -= 4; factors.push({text:'Bye Week '+player.bye+' — du hast bereits zu viele Gamesr in dieser Week',type:'neg'});
     }
   }
   
@@ -2574,14 +2574,14 @@ function calcDraftScore(player) {
       return cr && cr.team === player.team && cr.pos === 'RB' && (cr.rank||999) <= 30;
     });
     if(hasStarterOnTeam && rank > 50) {
-      contextScore += 5; factors.push({text:'Direkter Backup für deinen Starter — fällt er aus, hast du sofort Ersatz im Kader',type:'pos'});
+      contextScore += 5; factors.push({text:'Direct backup for your starter — if he goes down, you have immediate replacement',type:'pos'});
     }
   }
   
   contextScore = Math.max(0, Math.min(20, contextScore));
   
   // ═══════════════════════════════════════════════════════════
-  // 4. TIMING (15 Punkte) — Jetzt oder warten?
+  // 4. TIMING (15 Points) — Jetzt oder warten?
   // ═══════════════════════════════════════════════════════════
   var timingScore = 0;
   
@@ -2597,15 +2597,15 @@ function calcDraftScore(player) {
     // Positional runs ignorieren
   } else if(strategy.runReaction === 'aggressive') {
     if(runRatio >= 1.5) {
-      timingScore += 7; factors.push({text:'Achtung: '+pos+'-Run! '+posInRun+' der letzten 8 Picks waren '+pos+'s. Du könntest leer ausgehen.',type:'pos'});
+      timingScore += 7; factors.push({text:'Watch out: '+pos+'-Run! '+posInRun+' der letzten 8 Picks waren '+pos+'s. You could be left out.',type:'pos'});
     } else if(oppInRun >= 4) {
-      timingScore += 5; factors.push({text:'Die anderen Teams holen gerade andere Positionen — '+pos+' liegt brach, jetzt zuschlagen',type:'pos'});
+      timingScore += 5; factors.push({text:'Other teams are currently targeting other positions — '+pos+' is sitting there, strike now',type:'pos'});
     }
   } else {
     if(runRatio >= 2.0) {
-      timingScore += 7; factors.push({text:'Starker '+pos+'-Run! '+posInRun+' der letzten 8 Picks auf '+pos+'. Handle jetzt oder riskiere die Reste.',type:'pos'});
+      timingScore += 7; factors.push({text:'Strong '+pos+'-Run! '+posInRun+' der letzten 8 Picks auf '+pos+'. Act now or risk getting the scraps.',type:'pos'});
     } else if(runRatio >= 1.5) {
-      timingScore += 4; factors.push({text:'Ein '+pos+'-Run zeichnet sich ab ('+posInRun+' der letzten 8 Picks). Die anderen Teams werden nervös.',type:'pos'});
+      timingScore += 4; factors.push({text:'A '+pos+'-run is developing ('+posInRun+' of the last 8 picks). Other teams are getting nervous.',type:'pos'});
     }
   }
 
@@ -2617,7 +2617,7 @@ function calcDraftScore(player) {
     var currentPick = totalPicked + 1;
     var currentRound = Math.ceil(currentPick / totalTeams);
     var nextRound = currentRound + 1;
-    // Snake: ungerade Runde = Slot X, gerade Runde = (totalTeams+1-Slot)
+    // Snake: ungerade Round = Slot X, gerade Round = (totalTeams+1-Slot)
     var nextPickInRound;
     if(draftType === 'linear') {
       nextPickInRound = myDraftSlot;
@@ -2638,11 +2638,11 @@ function calcDraftScore(player) {
   }).length;
 
   if(goodAltsGone >= 3) {
-    timingScore += 5; factors.push({text:goodAltsGone+' gleichwertige '+pos+'s werden bis zu deinem nächsten Pick weg sein. Das ist deine letzte echte Chance.',type:'pos'});
+    timingScore += 5; factors.push({text:goodAltsGone+' comparable '+pos+'s will be gone by your next pick. This is your last real chance.',type:'pos'});
   } else if(goodAltsGone === 2) {
-    timingScore += 3; factors.push({text:'2 vergleichbare '+pos+'s könnten bis zu deinem nächsten Pick verschwinden',type:'pos'});
+    timingScore += 3; factors.push({text:'2 comparable '+pos+'s could be gone by your next pick',type:'pos'});
   } else if(goodAltsGone === 1) {
-    timingScore += 2; factors.push({text:'Mindestens 1 ähnlicher '+pos+' könnte bis zu deinem nächsten Pick weg sein',type:'pos'});
+    timingScore += 2; factors.push({text:'At least 1 similar '+pos+' could be gone by your next pick',type:'pos'});
   }
 
   // 4C. On-the-clock Urgency (0-3 pts)
@@ -2664,22 +2664,22 @@ function calcDraftScore(player) {
     
     if(strategy.risk === 'safe') {
       // Safe: kleine Spread belohnen, grosse bestrafen
-      if(spreadPct < 0.05)      { riskBonus += 8; factors.push({text:'Extrem zuverlässige Projektion mit nur ±'+Math.round(spread)+' Punkten Schwankungsbreite',type:'pos'}); }
-      else if(spreadPct < 0.12) { riskBonus += 3; factors.push({text:'Verlässliche Projektion mit normaler Schwankung (±'+Math.round(spread)+'pts)',type:'neu'}); }
-      else if(spreadPct < 0.22) { riskBonus -= 5; factors.push({text:'Hohe Varianz in der Projektion — Leistung könnte stark schwanken (±'+Math.round(spread)+'pts)',type:'neg'}); }
-      else                      { riskBonus -= 10; factors.push({text:'Boom-or-Bust Profil. Entweder Leistungsträger oder kompletter Ausfall (±'+Math.round(spread)+'pts).',type:'neg'}); }
+      if(spreadPct < 0.05)      { riskBonus += 8; factors.push({text:'Extremely reliable projection with only ±'+Math.round(spread)+' points spread',type:'pos'}); }
+      else if(spreadPct < 0.12) { riskBonus += 3; factors.push({text:'Reliable projection with normal variance (±'+Math.round(spread)+'pts)',type:'neu'}); }
+      else if(spreadPct < 0.22) { riskBonus -= 5; factors.push({text:'High variance in projection — performance could vary significantly (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      else                      { riskBonus -= 10; factors.push({text:'Boom-or-Bust profile. Either a stud or a complete bust (±'+Math.round(spread)+'pts).',type:'neg'}); }
     } else if(strategy.risk === 'boom') {
       // Boom: Upside belohnen
-      if(upside >= 50)      { riskBonus += 10; factors.push({text:'Explosives Upside-Potenzial. Bei guter Form könnte er den Draft stehlen (+'+Math.round(upside)+'pts).',type:'pos'}); }
-      else if(upside >= 30) { riskBonus += 6; factors.push({text:'Solides Upside-Potenzial bei guter Saison (+'+Math.round(upside)+'pts)',type:'pos'}); }
+      if(upside >= 50)      { riskBonus += 10; factors.push({text:'Explosive upside potential. In top form he could steal the draft (+'+Math.round(upside)+'pts).',type:'pos'}); }
+      else if(upside >= 30) { riskBonus += 6; factors.push({text:'Solides Upside-Potenzial with guter Season (+'+Math.round(upside)+'pts)',type:'pos'}); }
       else if(upside >= 15) { riskBonus += 2; }
-      else                  { riskBonus -= 3; factors.push({text:'Begrenztes Upside — kaum Potenzial für eine Überraschungsleistung',type:'neg'}); }
+      else                  { riskBonus -= 3; factors.push({text:'Limited upside — little potential for a breakout performance',type:'neg'}); }
     } else {
       // Balanced: leichte Confidence-Belohnung
-      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'Solide und verlässlich. Die Projektion schwankt kaum (±'+Math.round(spread)+'pts).',type:'pos'}); }
-      else if(spreadPct < 0.18) { riskBonus += 1; factors.push({text:'Normale Projektion mit durchschnittlicher Schwankung (±'+Math.round(spread)+'pts)',type:'neu'}); }
-      else if(spreadPct < 0.28) { riskBonus -= 3; factors.push({text:'Überdurchschnittliche Varianz — Leistung schwer vorherzusagen (±'+Math.round(spread)+'pts)',type:'neg'}); }
-      else                      { riskBonus -= 6; factors.push({text:'Hohes Risiko — die Projektion hat eine grosse Streubreite (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      if(spreadPct < 0.08)      { riskBonus += 4; factors.push({text:'Solid and reliable. The projection barely fluctuates (±'+Math.round(spread)+'pts).',type:'pos'}); }
+      else if(spreadPct < 0.18) { riskBonus += 1; factors.push({text:'Normal projection with average variance (±'+Math.round(spread)+'pts)',type:'neu'}); }
+      else if(spreadPct < 0.28) { riskBonus -= 3; factors.push({text:'Above-average variance — performance hard to predict (±'+Math.round(spread)+'pts)',type:'neg'}); }
+      else                      { riskBonus -= 6; factors.push({text:'High risk — the projection has a wide spread (±'+Math.round(spread)+'pts)',type:'neg'}); }
     }
   }
   
@@ -2697,7 +2697,7 @@ function calcDraftScore(player) {
 
   // Wenn keine negativen Faktoren → erkläre warum nicht 100%
   var hasNeg = factors.some(function(f){return f.type==='neg';});
-  // Prüfe ob Spieler bereits als "letzte Chance" markiert ist (via Sleeper ADP)
+  // Prüfe ob Gamesr bereits als "letzte Chance" markiert ist (via Sleeper ADP)
   var isUrgent = false;
   if(myDraftSlot && player.sleeperRank != null) {
     var pl2 = window._picksUntilMe !== undefined ? window._picksUntilMe : 0;
@@ -2715,34 +2715,34 @@ function calcDraftScore(player) {
     });
     if(isUrgent) {
       // Sleeper sagt er ist bald weg → kein "kannst warten" Neg-Faktor
-      // Nichts hinzufügen, der LETZTE CHANCE Tag erklärt es bereits
+      // Nichts hinzufügen, der LAST CHANCE Tag erklärt es bereits
     } else if(valueScore < 30 && availRank > 2) {
-      factors.push({text:'Es gibt noch bessere Optionen auf dem Board. Dieser Pick ist nicht zwingend.',type:'neg'});
+      factors.push({text:'There are better options on the board. This pick is not a must.',type:'neg'});
     } else if(!hasNeedFactor && needScore < 18) {
-      if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'Für TE ist jetzt noch zu früh — dein Fenster öffnet sich erst in R4-7',type:'neg'});
-      else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'Du planst TE als Streaming-Option — kein Grund jetzt zu investieren',type:'neg'});
-      else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'Dein QB-Timing-Plan sieht erst R9+ vor — jetzt wäre zu früh',type:'neg'});
-      else factors.push({text:'Diese Position drängt sich aktuell nicht auf — du hast noch Zeit',type:'neg'});
+      if(pos === 'TE' && strategy.teTiming === 'mid') factors.push({text:'Too early for TE now — your window opens in rounds 4-7',type:'neg'});
+      else if(pos === 'TE' && strategy.teTiming === 'late') factors.push({text:'You plan to stream TE — no reason to invest now',type:'neg'});
+      else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'Your QB timing plan targets round 9+ — now is too early',type:'neg'});
+      else factors.push({text:'This position isn\'t pressing right now — you still have time',type:'neg'});
     } else if(timingScore < 8 && !isUrgent) {
-      factors.push({text:'Kein Zeitdruck — er sollte nächste Runde noch verfügbar sein',type:'neg'});
+      factors.push({text:'No Zeitdruck — er sollte nächste Round noch verfügbar sein',type:'neg'});
     } else {
-      factors.push({text:'Andere Spieler auf dem Board bieten aktuell besseren Wert',type:'neg'});
+      factors.push({text:'Andere Gamesr auf dem Board bieten aktuell besseren Whoevert',type:'neg'});
     }
   }
 
   // Score Breakdown als neutraler Faktor (mit Icon)
-  factors.push({text:'Breakdown: Spielerwert '+valueScore+'/40 · Positionsbedarf '+needScore+'/25 · Kontext (SOS/Alter/Bye) '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
+  factors.push({text:'Breakdown: Gamesrwert '+valueScore+'/40 · Positionsbedarf '+needScore+'/25 · Kontext (SOS/Alter/Bye) '+contextScore+'/20 · Timing '+timingScore+'/15',type:'neu'});
 
   // Faktoren nach Wichtigkeit sortieren — nach Impact-Score
   var typeOrder = {pos:0, neg:1, neu:2};
   // Impact-Gewicht: je höher, desto wichtiger (wird zum Sortieren invertiert)
   function factorImpact(text) {
     var t = text.toLowerCase();
-    // VOR / Punkte-Vorteil → höchste Priorität
+    // VOR / Points-Vorteil → höchste Priorität
     if(t.includes('pts besser') || t.includes('besser als nächster'))    return 100;
     if(t.includes('letzte chance') || t.includes('wahrscheinlich weg'))   return 95;
     if(t.includes('noch kein') || t.includes('brauche'))                  return 90;
-    if(t.includes('gleichwertige') && t.includes('weg'))                  return 88;
+    if(t.includes('comparable') && t.includes('weg'))                  return 88;
     if(t.includes('letzter tier') || t.includes('letzte'))                return 85;
     if(t.includes('bester verfügbar'))                                     return 80;
     if(t.includes('on clock') || t.includes('du bist dran'))              return 78;
@@ -2801,34 +2801,34 @@ function generateDraftReason(p, rec) {
 
   if(score >= 82) {
     var openers = [
-      'Ich sage es direkt: '+name+' ist der beste Spieler auf dem Board an diesem Punkt.',
-      'Mach den Pick. '+name+' ist genau das, was du gerade brauchst.',
-      'Wer '+name+' jetzt noch lässt, ärgert sich später. Das ist ein klarer Griff.',
-      'Kein langer Gedanke nötig. '+name+' ist dein Mann in dieser Runde.'
+      'I\'ll say it straight: '+name+' ist the best player on the board at this point.',
+      'Make the pick. '+name+' is exactly what you need right now.',
+      'Whoever '+name+' passes on this now will regret it. This is a clear grab.',
+      'No langer Gedanke nötig. '+name+' is your guy this round.'
     ];
     sentences.push(openers[Math.floor(score*7%openers.length)]);
-    if(pro1) sentences.push(pro1 + (pts ? '. Mit '+pts+' projizierten Punkten liefert er klaren Mehrwert.' : '.'));
-    if(con1) sentences.push('Der einzige Vorbehalt: '+con1.charAt(0).toLowerCase()+con1.slice(1)+'.');
+    if(pro1) sentences.push(pro1 + (pts ? '. At '+pts+' projected points he delivers clear value.' : '.'));
+    if(con1) sentences.push('The only caveat: '+con1.charAt(0).toLowerCase()+con1.slice(1)+'.');
   } else if(score >= 68) {
     var openers2 = [
-      'Ich mag '+name+' hier und würde ihn ziehen.',
-      'Solider Pick in dieser Runde. '+name+' bringt was du brauchst.',
-      'Wenn du '+name+' nimmst, machst du nichts falsch.'
+      'I like '+name+' here and would take him.',
+      'Solid pick this round. '+name+' brings what you need.',
+      'If you take '+name+' you\'re not making a mistake.'
     ];
     sentences.push(openers2[Math.floor(score*5%openers2.length)]);
     if(pro1) sentences.push(pro1+'.');
-    if(pro2) sentences.push('Dazu kommt noch: '+pro2.charAt(0).toLowerCase()+pro2.slice(1)+'.');
-    if(con1) sentences.push('Behalte im Hinterkopf: '+con1.charAt(0).toLowerCase()+con1.slice(1)+'.');
+    if(pro2) sentences.push('On top of that: '+pro2.charAt(0).toLowerCase()+pro2.slice(1)+'.');
+    if(con1) sentences.push('Keep in mind: '+con1.charAt(0).toLowerCase()+con1.slice(1)+'.');
   } else if(score >= 52) {
-    sentences.push(''+name+' ist eine machbare Option, aber nicht mein Lieblingspick hier.');
-    if(pro1) sentences.push('Was dafür spricht: '+pro1.charAt(0).toLowerCase()+pro1.slice(1)+'.');
-    if(con1) sentences.push('Was mich zögern lässt: '+con1.charAt(0).toLowerCase()+con1.slice(1)+'.');
-    sentences.push('Wenn kein besserer '+(pos||'Spieler')+' da ist, geht es in Ordnung.');
+    sentences.push(''+name+' is a workable option, but not my favorite pick here.');
+    if(pro1) sentences.push('What speaks for it: '+pro1.charAt(0).toLowerCase()+pro1.slice(1)+'.');
+    if(con1) sentences.push('What gives me pause: '+con1.charAt(0).toLowerCase()+con1.slice(1)+'.');
+    sentences.push('If there\'s no better '+(pos||'player')+' available, it works.');
   } else {
-    sentences.push(''+name+' ist aktuell nicht mein Wunschkandidat auf diesem Board.');
+    sentences.push(''+name+' is not my top candidate on this board right now.');
     if(con1) sentences.push(con1+'.');
-    if(pro1) sentences.push('Der einzige Pluspunkt: '+pro1.charAt(0).toLowerCase()+pro1.slice(1)+'.');
-    sentences.push('Ich würde abwarten und schauen was die nächste Runde bringt.');
+    if(pro1) sentences.push('The only upside: '+pro1.charAt(0).toLowerCase()+pro1.slice(1)+'.');
+    sentences.push('I\'d wait and see what the next round brings.');
   }
 
   return sentences.join(' ');
@@ -2855,8 +2855,8 @@ function showPlayerModal(playerName) {
   // Stats-Grid Helfer: Rang unter gleicher Position berechnen
   // Mindest-Schwellen damit Backups aus dem Ranking rausfliegen
   function minGpThreshold(pos3) {
-    if(pos3==='QB') return 4;   // mind. 4 Spiele als Starter
-    return 6;                    // RB/WR/TE mind. 6 Spiele
+    if(pos3==='QB') return 4;   // mind. 4 Games als Starter
+    return 6;                    // RB/WR/TE mind. 6 Games
   }
   function minAttThreshold(pos3) {
     if(pos3==='QB') return 80;  // mind. 80 Pass-Versuche
@@ -2864,7 +2864,7 @@ function showPlayerModal(playerName) {
     return 0;
   }
   function isQualified(x, forStats) {
-    // Spieler mit zu wenig GP oder Versuchen rausnehmen
+    // Gamesr mit zu wenig GP oder Versuchen rausnehmen
     var stats = forStats ? x.lastStats : x.projStats;
     if(!stats) return false;
     var gp = stats['gp']||0;
@@ -2972,15 +2972,15 @@ function showPlayerModal(playerName) {
 
   // Bio data from Sleeper
   var bioItems = [];
-  if(p.pos && p.rank) bioItems.push({lbl:'RANG', val:posRankLabel, sub:posRankAvailLabel+' VERBL.', highlight:posRankNum<=3});
-  if(p.age) bioItems.push({lbl:'ALTER', val:p.age+'j'});
-  if(p.height) { var hIn=parseInt(p.height); bioItems.push({lbl:'GRÖSSE', val: !isNaN(hIn) ? Math.floor(hIn/12)+"'"+( hIn%12 )+'"' : p.height+'"'}); }
-  if(p.weight) bioItems.push({lbl:'GEWICHT', val:p.weight+' lbs'});
+  if(p.pos && p.rank) bioItems.push({lbl:'RANK', val:posRankLabel, sub:posRankAvailLabel+' VERBL.', highlight:posRankNum<=3});
+  if(p.age) bioItems.push({lbl:'AGE', val:p.age+'y'});
+  if(p.height) { var hIn=parseInt(p.height); bioItems.push({lbl:'HEIGHT', val: !isNaN(hIn) ? Math.floor(hIn/12)+"'"+( hIn%12 )+'"' : p.height+'"'}); }
+  if(p.weight) bioItems.push({lbl:'WEIGHT', val:p.weight+' lbs'});
   if(p.exp!=null) bioItems.push({lbl:'EXP', val:p.exp+'J'});
   if(p.college) bioItems.push({lbl:'COLLEGE', val:p.college});
   if(p.number) bioItems.push({lbl:'#', val:p.number});
   // Verletzungsstatus
-  if(p.injuryStatus) bioItems.push({lbl:'VERLETZT', val:p.injuryStatus, danger:true});
+  if(p.injuryStatus) bioItems.push({lbl:'INJURED', val:p.injuryStatus, danger:true});
 
   // Header — stabiles 3-Spalten-Grid: Bild | Info | Score+Rang
   var scoreColor = rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--red)';
@@ -3002,7 +3002,7 @@ function showPlayerModal(playerName) {
   h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">RANK #'+p.rank+'</span>';
   if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">SLP '+p.sleeperRank+'</span>';
   h += '</div>';
-  // Projektion — FP + Sleeper nebeneinander, letzte Saison darunter
+  // Projektion — FP + Sleeper nebeneinander, letzte Season darunter
   var hasFpProj = !!p.projFpts;
   var hasSlpProj = !!p.sleeperProjPts;
   var hasLast = !!p.lastSeasonPts;
@@ -3036,10 +3036,10 @@ function showPlayerModal(playerName) {
       h += '</div></div>';
     }
 
-    // Box 3: 2025 Letzte Saison — nur raw Wert, kein Trend
+    // Box 3: 2025 Letzte Season — nur raw Whoevert, kein Trend
     if(hasLast) {
       h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:7px 10px;border-radius:3px;">';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2025 SAISON</div>';
+      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">2025 SEASON</div>';
       h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
       h += '<span style="font-family:var(--display);font-size:20px;color:var(--text2);line-height:1;">'+p.lastSeasonPts+'</span>';
       h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
@@ -3048,7 +3048,7 @@ function showPlayerModal(playerName) {
     h += '</div>';
   }
   // Bio pills (ohne Rang — kommt rechts prominent)
-  var bioWithoutRank = bioItems.filter(function(b){return b.lbl!=='RANG';});
+  var bioWithoutRank = bioItems.filter(function(b){return b.lbl!=='RANK';});
   if(bioWithoutRank.length) {
     h += '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px;">';
     bioWithoutRank.forEach(function(b){
@@ -3086,10 +3086,10 @@ function showPlayerModal(playerName) {
   if(p.pos && p.rank) {
     h += '<div style="background:rgba(255,170,0,.07);border:1px solid rgba(255,170,0,.3);border-radius:3px;padding:8px 12px;text-align:center;width:100%;">';
     h += '<div style="font-family:var(--display);font-size:22px;color:var(--amber);line-height:1;">'+posRankLabel+'</div>';
-    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em;margin-top:3px;">GESAMT</div>';
+    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em;margin-top:3px;">OVERALL</div>';
     h += '<div style="height:1px;background:rgba(255,170,0,.15);margin:6px 0;"></div>';
     h += '<div style="font-family:var(--display);font-size:18px;color:var(--green);line-height:1;">'+posRankAvailLabel+'</div>';
-    h += '<div style="font-size:8px;color:var(--green);font-family:var(--mono);letter-spacing:.06em;margin-top:3px;opacity:.75;">VERBLEIBEND</div>';
+    h += '<div style="font-size:8px;color:var(--green);font-family:var(--mono);letter-spacing:.06em;margin-top:3px;opacity:.75;">REMAINING</div>';
     h += '</div>';
   }
   h += '</div>';
@@ -3109,10 +3109,10 @@ function showPlayerModal(playerName) {
   h += '<div style="background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:14px;">'+reason+'</div>';
   // Score Bars
   var cats = [
-    {label:'SPIELERWERT', key:'v', max:40, color:'var(--blue)', desc:'VOR + Tier-Qualität + Opportunity Cost'},
-    {label:'POSITIONSBEDARF', key:'n', max:25, color:'var(--green)', desc:'Roster-Need + Strategie + Scarcity'},
-    {label:'KONTEXT', key:'c', max:20, color:'var(--purple)', desc:'SOS + Alter + Bye + Handcuff'},
-    {label:'TIMING', key:'t', max:15, color:'var(--amber)', desc:'Position-Run + Scarcity + On Clock'}
+    {label:'PLAYER VALUE', key:'v', max:40, color:'var(--blue)', desc:'VOR + Tier Quality + Opportunity Cost'},
+    {label:'POSITION NEED', key:'n', max:25, color:'var(--green)', desc:'Roster Need + Strategy + Scarcity'},
+    {label:'CONTEXT', key:'c', max:20, color:'var(--purple)', desc:'SOS + Age + Bye + Handcuff'},
+    {label:'TIMING', key:'t', max:15, color:'var(--amber)', desc:'Position Run + Scarcity + On Clock'}
   ];
   h += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px;">';
   cats.forEach(function(cat){
@@ -3140,7 +3140,7 @@ function showPlayerModal(playerName) {
     h += '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 9px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">';
     h += '<span style="font-size:16px;flex-shrink:0;line-height:1.4;">'+factorIcon(f.text)+'</span>';
     h += '<span style="font-size:11px;color:var(--green);line-height:1.5;">'+f.text+'</span></div>';
-  }); } else { h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">Keine positiven Faktoren</div>'; }
+  }); } else { h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">No positive factors</div>'; }
   h += '</div></div>';
   h += '<div>';
   h += '<div style="font-size:9px;font-family:var(--mono);font-weight:800;color:var(--red);letter-spacing:.15em;margin-bottom:8px;">✗ CONS <span style=\'opacity:.5;font-size:8px;\'>('+negF.length+')</span></div>';
@@ -3149,7 +3149,7 @@ function showPlayerModal(playerName) {
     h += '<div style="display:flex;align-items:flex-start;gap:8px;padding:6px 9px;background:rgba(255,51,68,.06);border:1px solid rgba(255,51,68,.15);border-radius:3px;">';
     h += '<span style="font-size:16px;flex-shrink:0;line-height:1.4;">'+factorIcon(f.text)+'</span>';
     h += '<span style="font-size:11px;color:var(--red);line-height:1.5;">'+f.text+'</span></div>';
-  }); } else { h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">Keine negativen Faktoren</div>'; }
+  }); } else { h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">No negative factors</div>'; }
   h += '</div></div>';
   h += '</div>';
   if(neuF.length) {
@@ -3204,11 +3204,11 @@ function showPlayerModal(playerName) {
     // Rang
     h += '<div style="margin-bottom:8px;">';
     h += '<div style="display:flex;gap:14px;align-items:center;margin-bottom:2px;">';
-    h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">FANTASY RANG 2025</span>';
-    if(p.lastSeasonPts) h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;padding-left:14px;border-left:1px solid var(--border2);">FANTASY PUNKTE 2025</span>';
+    h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">FANTASY RANK 2025</span>';
+    if(p.lastSeasonPts) h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;padding-left:14px;border-left:1px solid var(--border2);">FANTASY POINTS 2025</span>';
     h += '</div>';
     h += '<div style="display:flex;align-items:baseline;gap:10px;">';
-    if(posRank2025) { h += '<span style="font-family:var(--display);font-size:28px;color:'+prCol2+';line-height:1;">'+posRank2025.label+'</span>'; h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">von '+posRank2025.total+'</span>'; }
+    if(posRank2025) { h += '<span style="font-family:var(--display);font-size:28px;color:'+prCol2+';line-height:1;">'+posRank2025.label+'</span>'; h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">of '+posRank2025.total+'</span>'; }
     if(p.lastSeasonPts) { h += '<div style="border-left:1px solid var(--border2);padding-left:14px;display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--display);font-size:28px;color:var(--amber);line-height:1;">'+p.lastSeasonPts+'</span><span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span></div>'; }
     h += '</div></div>';
     // GP
@@ -3229,11 +3229,11 @@ function showPlayerModal(playerName) {
     // ── RECHTS: Hochrechnung oben + 17/17 unten ──────────────────────────────
     if(showRight) {
       h += '<div style="border-left:1px solid rgba(255,170,0,.3);border-top:0;background:rgba(255,170,0,.03);padding:10px 14px;display:flex;flex-direction:column;justify-content:space-between;">';
-      // Hochrechnung Rang+Punkte
+      // Hochrechnung Rang+Points
       h += '<div style="margin-bottom:8px;">';
       h += '<div style="display:flex;gap:14px;align-items:center;margin-bottom:2px;">';
-      h += '<span style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">⤴ HOCHRECHNUNG 17 SPIELE</span>';
-      h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;padding-left:14px;border-left:1px solid rgba(255,170,0,.25);">PUNKTE</span>';
+      h += '<span style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;">⤴ PROJECTED FULL SEASON</span>';
+      h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;padding-left:14px;border-left:1px solid rgba(255,170,0,.25);">POINTS</span>';
       h += '</div>';
       h += '<div style="display:flex;align-items:baseline;gap:10px;">';
       h += '<span style="font-family:var(--display);font-size:28px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
@@ -3243,10 +3243,10 @@ function showPlayerModal(playerName) {
       h += '</div></div></div>';
       // 17/17
       h += '<div>';
-      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">HOCHGERECHNET AUF</div>';
+      h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">PROJECTED TO</div>';
       h += '<div style="display:flex;align-items:baseline;gap:5px;">';
       h += '<span style="font-family:var(--display);font-size:20px;color:var(--amber);opacity:.7;line-height:1;">'+NFL_SEASON_GAMES+'</span>';
-      h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">/'+NFL_SEASON_GAMES+' Spiele</span>';
+      h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">/'+NFL_SEASON_GAMES+' Games</span>';
       h += '<span style="font-size:9px;color:var(--amber);font-family:var(--mono);font-weight:700;opacity:.7;">100%</span>';
       h += '</div>';
       h += '<div style="height:3px;background:var(--bg4);border-radius:2px;margin-top:5px;overflow:hidden;">';
@@ -3257,7 +3257,7 @@ function showPlayerModal(playerName) {
     h += '</div>';
 
 
-    // ── Tabelle: 2025 SAISON | HOCHGERECHNET | SLP PROJ 2026 ─────────────────
+    // ── Tabelle: 2025 SEASON | PROJECTED | SLP PROJ 2026 ─────────────────
     var showLast = hasLastStats && p.lastStats;
     var showExt  = canExtrapH && showLast;
     var showProj = hasProjStats && p.projStats;
@@ -3272,9 +3272,9 @@ function showPlayerModal(playerName) {
       h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:4px;">';
       // Header
       h += '<div style="display:grid;grid-template-columns:'+gridCols+';background:var(--bg4);">';
-      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.08em;">KATEGORIE</div>';
-      if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">2025 SAISON</div>';
-      if(showExt)  h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.1em;text-align:center;'+(showProj?'border-right:1px solid var(--border2);':'')+'">HOCHGERECHNET</div>';
+      h += '<div style="padding:6px 10px;border-right:1px solid var(--border2);font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:800;letter-spacing:.08em;">CATEGORY</div>';
+      if(showLast) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.1em;text-align:center;'+(showExt||showProj?'border-right:1px solid var(--border2);':'')+'">2025 SEASON</div>';
+      if(showExt)  h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--amber);letter-spacing:.1em;text-align:center;'+(showProj?'border-right:1px solid var(--border2);':'')+'">PROJECTED</div>';
       if(showProj) h += '<div style="padding:6px 10px;font-size:8px;font-family:var(--mono);font-weight:800;color:var(--blue);letter-spacing:.1em;text-align:center;">SLP PROJ 2026</div>';
       h += '</div>';
 
@@ -3332,7 +3332,7 @@ function showPlayerModal(playerName) {
       });
       h += '</div>';
     } else if(!gpV2 && !posRank2025) {
-      h += '<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;font-style:italic;">Keine Stats verfügbar.<br>Draft laden → Sleeper-Daten werden geladen.</div>';
+      h += '<div style="padding:30px;text-align:center;color:var(--text3);font-family:var(--mono);font-size:11px;font-style:italic;">No stats available.<br>Load draft → Sleeper data will be loaded.</div>';
     }
   }
   h += '</div>'; // end tab 2
@@ -3442,7 +3442,7 @@ async function loadMyTeam(){
     var user=await r.json();
     mySleeperUserId=user.user_id;
     sleeperUsername=username;
-    status.textContent='✓ Eingeloggt als '+username;
+    status.textContent='✓ Ageloggt als '+username;
     status.style.color='var(--green)';
     // Find draft slot
     if(draftId){
@@ -3530,14 +3530,14 @@ async function loadDraft(){
     var r=await fetch('https://api.sleeper.app/v1/draft/'+draftId);
     if(!r.ok)throw new Error('Draft nicht gefunden');
     var draft=await r.json();
-    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Lade Spieler...</div>';
+    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Lade Gamesr...</div>';
     await loadSleeperPlayers(draft.sport||'nfl');
     document.getElementById('player-grid').innerHTML='<div class="empty-state">// Lade Picks...</div>';
     await loadPicks();
     document.getElementById('stats-row').style.display='grid';
     document.getElementById('controls-row').style.display='flex';
     fetchProjectedPicks();
-    fetchSleeperSeasonData(); // 2025 Saison Punkte + Sleeper Proj 2026
+    fetchSleeperSeasonData(); // 2025 Season Points + Sleeper Proj 2026
     if(!useCustom){
       allPlayers=Object.values(sleeperMap)
         .filter(function(p){return p.sleeperRank;})
@@ -3591,10 +3591,10 @@ async function loadSleeperPlayers(sport){
       proj.forEach(function(item,idx){
         var pid=item.player_id;
         var rank=idx+1;
-        // Sleeper weekly proj × 18 Wochen = Saisonprojektion (entspricht dem was Sleeper anzeigt)
+        // Sleeper weekly proj × 18 Weekn = Seasonprojektion (entspricht dem was Sleeper anzeigt)
         // ADP-Rang + Sleeper Proj direkt aus API (season total, kein Multiplier nötig)
         var rawProj = (item.stats && (item.stats['pts_ppr'] || item.stats['pts_half_ppr'] || item.stats['pts_std'])) || 0;
-        // rawProj kann weekly (z.B. 13.9) oder season-total sein — × 17 gibt Saisonwert
+        // rawProj kann weekly (z.B. 13.9) oder season-total sein — × 17 gibt Seasonwert
         var slpProj = rawProj > 0 ? Math.round(rawProj * 17 * 10) / 10 : null;
         if(sleeperMap){
           Object.values(sleeperMap).forEach(function(sm){
@@ -3620,15 +3620,15 @@ async function fetchSleeperSeasonData() {
   var scoringKey = strategy.scoring === 'standard' ? 'pts_std' :
                    strategy.scoring === 'half' ? 'pts_half_ppr' : 'pts_ppr';
   var statusEl = document.getElementById('sleeper-stats-status');
-  if(statusEl){ statusEl.style.display='block'; statusEl.textContent='⏳ Lade 2025 Stats & 2026 Proj...'; }
+  if(statusEl){ statusEl.style.display='block'; statusEl.textContent='⏳ Loading 2025 Stats & 2026 Proj...'; }
   try {
-    // Versuche zuerst Week 0 = Saison-Totals direkt (1 Call statt 18)
+    // Versuche zuerst Week 0 = Season-Totals direkt (1 Call statt 18)
     var [statsW0, projW0] = await Promise.all([
       fetch('https://api.sleeper.app/v1/stats/nfl/regular/2025/0').then(function(r){return r.ok?r.json():{};}).catch(function(){return {};}),
       fetch('https://api.sleeper.app/v1/projections/nfl/regular/2026/0').then(function(r){return r.ok?r.json():{};}).catch(function(){return {};})
     ]);
 
-    // Prüfe ob Week 0 Daten enthält (mindestens 50 Spieler mit Punkten)
+    // Prüfe ob Week 0 Daten enthält (mindestens 50 Gamesr mit Pointsn)
     var statsW0Keys = Object.keys(statsW0).filter(function(k){return statsW0[k]&&statsW0[k][scoringKey]>0;});
     var projW0Keys  = Object.keys(projW0).filter(function(k){return projW0[k]&&projW0[k][scoringKey]>0;});
     var useWeekly = statsW0Keys.length < 50;
@@ -3636,8 +3636,8 @@ async function fetchSleeperSeasonData() {
     var statsData = statsW0, projData = projW0;
 
     if(useWeekly) {
-      // Fallback: alle 18 Wochen summieren
-      if(statusEl) statusEl.textContent='⏳ Summiere 18 Wochen...';
+      // Fallback: alle 18 Weekn summieren
+      if(statusEl) statusEl.textContent='⏳ Summing 18 weeks...';
       var weeks = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18];
       var [statsRes, projRes] = await Promise.all([
         Promise.all(weeks.map(function(w){
@@ -3676,7 +3676,7 @@ async function fetchSleeperSeasonData() {
       });
     }
 
-    // Werte in globale Dicts übertragen (Punkte + Detail-Stats)
+    // Whoeverte in globale Dicts übertragen (Points + Detail-Stats)
     var statKeys = ['gp','rush_att','rush_yd','rush_td','rec','rec_yd','rec_td','rec_tgt','tar','pass_att','pass_yd','pass_td','pass_int'];
     SLEEPER_STATS_2024 = {};
     if(!useWeekly) SLEEPER_STATS_DETAIL = {};
@@ -3705,7 +3705,7 @@ async function fetchSleeperSeasonData() {
       }
     });
 
-    // Spieler anreichern
+    // Gamesr anreichern
     var targets = customRankings.length ? customRankings : allPlayers;
     targets.forEach(function(p){
       if(!p.sleeperId) return;
@@ -3714,7 +3714,7 @@ async function fetchSleeperSeasonData() {
       if(last) { p.lastSeasonPts = Math.round(last*10)/10; p.lastStats = SLEEPER_STATS_DETAIL[p.sleeperId]||null; }
       if(proj) { p.sleeperProjPts = Math.round(proj*10)/10; p.projStats = SLEEPER_PROJ_DETAIL[p.sleeperId]||null; }
     });
-    if(statusEl){ statusEl.textContent='✓ Sleeper Stats geladen'; setTimeout(function(){ statusEl.style.display='none'; },3000); }
+    if(statusEl){ statusEl.textContent='✓ Sleeper Stats loaded'; setTimeout(function(){ statusEl.style.display='none'; },3000); }
     renderPlayers();
   } catch(e) {
     console.log('fetchSleeperSeasonData error',e);
