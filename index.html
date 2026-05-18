@@ -1496,7 +1496,7 @@ function factorIcon(text) {
   var t = text.toLowerCase();
   if(t.includes('breakdown:')) return '📊';
   // VOR / Points-Vorteil
-  if(t.includes('besser projiziert')||t.includes('mehr als der nächste')||t.includes('besser als nächster')||t.includes('über dem nächsten')) return '💰';
+  if(t.includes('better projected')||t.includes('points more than')||t.includes('better projected')) return '💰';
   // Bester verfügbar / Tier
   if(t.includes('best remaining')||t.includes('best available')) return '👑';
   if(t.includes('quality tier')||t.includes('last tier')||t.includes('last tier')) return '🚨';
@@ -2349,8 +2349,8 @@ function calcDraftScore(player) {
     var vor = player.projFpts - altPts;
     var vorScore = Math.min(25, Math.max(0, Math.round(vor * 0.5)));
     valueScore += vorScore;
-    if(vor >= 30) factors.push({text:Math.round(vor)+' points better projected than the best '+pos+', den du with deinem nächsten Pick noch kriegen würdest',type:'pos'});
-    else if(vor >= 15) factors.push({text:Math.round(vor)+' points more than the next available '+pos+' with deinem Pick',type:'pos'});
+    if(vor >= 30) factors.push({text:Math.round(vor)+' points better projected than the best '+pos+' you could get at your next pick',type:'pos'});
+    else if(vor >= 15) factors.push({text:Math.round(vor)+' points more than the next available '+pos+' at your pick',type:'pos'});
     else if(vor >= 5) factors.push({text:Math.round(vor)+' points of value over the next '+pos,type:'pos'});
   } else {
     // Fallback: Rank-basiert
@@ -2436,7 +2436,7 @@ function calcDraftScore(player) {
     } else if(pos === 'RB' && round <= 6 && have < 4) {
       stratBonus = 4;
     } else if(pos === 'WR' && round <= 3 && have < 1) {
-      stratBonus = -3; factors.push({text:'WR in Round '+round+' widerspricht deinem RB-Heavy-Plan',type:'neg'});
+      stratBonus = -3; factors.push({text:'WR in round '+round+' goes against your RB-Heavy plan',type:'neg'});
     }
   }
   else if(strategy.main === 'wr_heavy') {
@@ -2711,7 +2711,7 @@ function calcDraftScore(player) {
   if(!hasNeg && totalScore < 85) {
     var availRank = available.filter(function(p){return (p.rank||999) < rank;}).length + 1;
     var hasNeedFactor = factors.some(function(f){
-      return f.type==='pos' && (f.text.toLowerCase().includes('noch kein') || f.text.toLowerCase().includes('brauche'));
+      return f.type==='pos' && (f.text.toLowerCase().includes('no ') && (f.text.toLowerCase().includes('yet') || f.text.toLowerCase().includes('on team')) || f.text.toLowerCase().includes('need a second'));
     });
     if(isUrgent) {
       // Sleeper sagt er ist bald weg → kein "kannst warten" Neg-Faktor
@@ -2741,7 +2741,7 @@ function calcDraftScore(player) {
     // VOR / Points-Vorteil → höchste Priorität
     if(t.includes('pts besser') || t.includes('besser als nächster'))    return 100;
     if(t.includes('letzte chance') || t.includes('wahrscheinlich weg'))   return 95;
-    if(t.includes('noch kein') || t.includes('brauche'))                  return 90;
+    if(t.includes('no rb yet')||t.includes('no wr yet')||t.includes('no te yet')||t.includes('no qb yet')||t.includes('no rb on')||t.includes('no wr on')||t.includes('no te on')||t.includes('need a second')) return 90;
     if(t.includes('comparable') && t.includes('weg'))                  return 88;
     if(t.includes('letzter tier') || t.includes('letzte'))                return 85;
     if(t.includes('bester verfügbar'))                                     return 80;
