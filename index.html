@@ -315,7 +315,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <button class="nav-item active" data-tab="draft"><span>📋</span> Draft Board</button>
     <button class="nav-item" data-tab="myteam"><span>⭐</span> My Team</button>
     <button class="nav-item" data-tab="rankings"><span>📋</span> My Rankings</button>
-    <button class="nav-item" data-tab="notizen"><span>📝</span> Noteen</button>
+    <button class="nav-item" data-tab="notes"><span>📝</span> Notes</button>
     <button class="nav-item" data-tab="todo"><span>✅</span> Todo</button>
   </div>
   <div class="divider"></div>
@@ -332,7 +332,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <button class="tab active" data-tab="draft">Draft Board</button>
     <button class="tab" data-tab="myteam">My Team</button>
     <button class="tab" data-tab="rankings">📋 My Rankings</button>
-    <button class="tab" data-tab="notizen">📝 Notes</button>
+    <button class="tab" data-tab="notes">📝 Notes</button>
     <button class="tab" data-tab="strategie">🎯 Strategy</button>
     <button class="tab" data-tab="todo">✅ Todo</button>
   </div>
@@ -533,7 +533,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
     <p style="font-size:11px;color:var(--text3);margin-top:8px;text-align:center;" id="strategy-status"></p>
   </div>
 
-  <div class="panel" id="tab-notizen">
+  <div class="panel" id="tab-notes">
     <h2 style="font-size:16px;font-weight:600;margin-bottom:4px;">📝 Player Notes</h2>
     <p style="font-size:12px;color:var(--text3);margin-bottom:1rem;">Notes are saved by player name — they persist when rankings are updated.</p>
     <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;margin-bottom:1rem;">
@@ -1454,7 +1454,7 @@ function showTab(name){
   if(panel)panel.classList.add('active');
   document.querySelectorAll('.tab').forEach(function(b){b.classList.toggle('active',b.dataset.tab===name);});
   document.querySelectorAll('.nav-item').forEach(function(b){b.classList.toggle('active',b.dataset.tab===name);});
-  if(name==='notizen')renderNotes();
+  if(name==='notes')renderNotes();
 }
 
 function applyADP(){
@@ -1881,7 +1881,7 @@ function clearRankings(){
   customRankings=[];useCustom=false;saveRankings();renderRankingList();renderPlayers();
 }
 
-// Noteen
+// Notes
 function renderNotes(){
   var list=document.getElementById('notes-list');
   var entries=Object.entries(playerNotes);
@@ -2432,7 +2432,7 @@ function calcDraftScore(player) {
   // ── HAUPT-STRATEGY ──
   if(strategy.main === 'rb_heavy') {
     if(pos === 'RB' && round <= 4 && have < 3) {
-      stratBonus = 8; factors.push({text:'Passt perfekt zu deiner RB-Heavy-Strategie. Secure the best RBs early.',type:'pos'});
+      stratBonus = 8; factors.push({text:'Fits perfectly with your RB-Heavy strategy. Secure the best RBs early.',type:'pos'});
     } else if(pos === 'RB' && round <= 6 && have < 4) {
       stratBonus = 4;
     } else if(pos === 'WR' && round <= 3 && have < 1) {
@@ -2443,7 +2443,7 @@ function calcDraftScore(player) {
     if(pos === 'WR' && round <= 5 && have < 3) {
       stratBonus = 8; factors.push({text:'Aligns with your WR-Heavy strategy. Exactly the right move.',type:'pos'});
     } else if(pos === 'RB' && round <= 3 && have < 1) {
-      stratBonus = -3; factors.push({text:'RB in Round '+round+' passt nicht zu deiner WR-Heavy-Ausrichtung',type:'neg'});
+      stratBonus = -3; factors.push({text:'RB in round '+round+' goes against your WR-Heavy strategy',type:'neg'});
     }
   }
   else if(strategy.main === 'zero_rb') {
@@ -2459,7 +2459,7 @@ function calcDraftScore(player) {
   }
   else if(strategy.main === 'hero_rb') {
     if(pos === 'RB' && have === 0 && round <= 2) {
-      stratBonus = 10; factors.push({text:'Exactly the elite RB your Hero-RB strategy needs in round '+round+' needs',type:'pos'});
+      stratBonus = 10; factors.push({text:'Exactly the elite RB your Hero-RB strategy needs in round '+round,type:'pos'});
     } else if(pos === 'RB' && have === 1 && round <= 8) {
       stratBonus = -6; factors.push({text:'Your elite RB is locked in. Time to focus on WRs.',type:'neg'});
     } else if(pos === 'WR' && have >= 0 && round >= 2 && have < 4) {
