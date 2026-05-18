@@ -3104,7 +3104,7 @@ function showPlayerModal(playerName) {
   h += '</div>';
 
   // ── TAB 1: Scout ─────────────────────────────────────────────────────────
-  h += '<div id="'+tabId+'_c1" style="overflow:hidden;display:flex;flex-direction:column;">' ;
+  h += '<div id="'+tabId+'_c1" style="overflow:hidden;display:flex;flex-direction:column;min-height:480px;">' ;
   // Draft Verdict
   h += '<div style="background:rgba(255,170,0,.06);border:1px solid rgba(255,170,0,.2);border-left:3px solid var(--amber);padding:10px 14px;border-radius:3px;font-size:12px;color:var(--text);line-height:1.6;margin-bottom:14px;">'+reason+'</div>';
   // Score Bars
@@ -3162,7 +3162,7 @@ function showPlayerModal(playerName) {
   h += '</div>'; // end tab 1
 
   // ── TAB 2: Stats ─────────────────────────────────────────────────────────
-  h += '<div id="'+tabId+'_c2" style="display:none;overflow-y:auto;max-height:100%;padding-right:4px;">';
+  h += '<div id="'+tabId+'_c2" style="display:none;overflow-y:auto;min-height:480px;padding-right:4px;">';
   {
     var statDefsNoGp = statDefs.filter(function(d){ return !d.isGp; });
 
