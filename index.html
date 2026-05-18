@@ -321,7 +321,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
   <div class="divider"></div>
   <div style="display:flex;flex-direction:column;gap:6px;">
     <div class="section-label">Sleeper Draft ID</div>
-    <input type="text" id="draft-id-input" placeholder="z.B. 114020987..."/>
+    <input type="text" id="draft-id-input" placeholder="e.g. 114020987..."/>
     <button class="btn-primary" id="load-btn">Load Draft ↗</button>
     <button class="btn-ghost" id="demo-btn">Start Demo</button>
   </div>
@@ -339,14 +339,14 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
 
   <div class="panel active" id="tab-draft">
     <div class="stats" id="stats-row" style="display:none;">
-      <div class="stat"><div class="lbl">Gesamt</div><div class="val" id="s-total">—</div></div>
+      <div class="stat"><div class="lbl">Total</div><div class="val" id="s-total">—</div></div>
       <div class="stat"><div class="lbl">Available</div><div class="val" id="s-avail" style="color:var(--green)">—</div></div>
       <div class="stat"><div class="lbl">Drafted</div><div class="val" id="s-drafted" style="color:var(--red)">—</div></div>
-      <div class="stat"><div class="lbl">Nächster Pick</div><div class="val" id="s-pick">—</div></div>
+      <div class="stat"><div class="lbl">Next Pick</div><div class="val" id="s-pick">—</div></div>
     </div>
     <div id="rec-area"></div>
     <div id="avail-legend" style="display:none;font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:6px;padding:4px 0;">
-      🔴 Letzte Möglichkeit &nbsp;·&nbsp; 🟡 Riskant
+      🔴 Last Chance &nbsp;·&nbsp; 🟡 Risky
     </div>
     <div class="controls" id="controls-row" style="display:none;">
       <button class="pos-btn active" data-pos="ALL">ALL</button>
@@ -368,7 +368,7 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       </div>
     </div>
     <div id="player-grid">
-      <div class="empty-state">// Draft ID laden → Start Demo → oder Rankings importieren</div>
+      <div class="empty-state">// Load Draft ID → Start Demo → or import Rankings</div>
     </div>
   </div>
 
@@ -421,11 +421,11 @@ button{font-family:var(--font);cursor:pointer;font-size:12px;border:none;border-
       <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
         <div>
           <div class="section-label" style="margin-bottom:6px;">My Draft Slot</div>
-          <input type="number" id="my-slot-input" placeholder="z.B. 5" min="1" max="20" style="width:100%;"/>
+          <input type="number" id="my-slot-input" placeholder="e.g. 5" min="1" max="20" style="width:100%;"/>
         </div>
         <div>
           <div class="section-label" style="margin-bottom:6px;">Anzahl Teams</div>
-          <input type="number" id="teams-input" placeholder="z.B. 10" min="2" max="20" value="10" style="width:100%;"/>
+          <input type="number" id="teams-input" placeholder="e.g. 10" min="2" max="20" value="10" style="width:100%;"/>
         </div>
       </div>
       <div style="margin-bottom:10px;">
@@ -1498,14 +1498,14 @@ function factorIcon(text) {
   // VOR / Points-Vorteil
   if(t.includes('besser projiziert')||t.includes('mehr als der nächste')||t.includes('besser als nächster')||t.includes('über dem nächsten')) return '💰';
   // Bester verfügbar / Tier
-  if(t.includes('bester noch verfügbarer')||t.includes('bester verfügbarer')) return '👑';
-  if(t.includes('qualitätsstufe')||t.includes('letzter tier')||t.includes('letzte tier')) return '🚨';
-  if(t.includes('tier-stufe unter')) return '📉';
+  if(t.includes('best remaining')||t.includes('best available')) return '👑';
+  if(t.includes('quality tier')||t.includes('last tier')||t.includes('last tier')) return '🚨';
+  if(t.includes('tier below')) return '📉';
   // Positionsbedarf
-  if(t.includes('kein rb im team')||(t.includes('kein rb')&&t.includes('team'))||t.includes('noch kein rb')||t.includes('zweiter solider rb')) return '🏃';
-  if(t.includes('kein wr im team')||(t.includes('kein wr')&&t.includes('team'))||t.includes('noch kein wr')||t.includes('zweiter solider wr')) return '🎯';
-  if(t.includes('kein te im team')||(t.includes('kein te')&&t.includes('team'))||t.includes('noch kein te')||t.includes('zweiter solider te')) return '🎪';
-  if(t.includes('kein qb im team')||(t.includes('kein qb')&&t.includes('team'))||t.includes('noch kein qb')) return '🏹';
+  if(t.includes('no rb on team')||(t.includes('kein rb')&&t.includes('team'))||t.includes('no rb')||t.includes('second solid rb')) return '🏃';
+  if(t.includes('no wr on team')||(t.includes('kein wr')&&t.includes('team'))||t.includes('no wr')||t.includes('second solid wr')) return '🎯';
+  if(t.includes('no te on team')||(t.includes('kein te')&&t.includes('team'))||t.includes('no te')||t.includes('second solid te')) return '🎪';
+  if(t.includes('no qb on team')||(t.includes('kein qb')&&t.includes('team'))||t.includes('no qb')) return '🏹';
   if(t.includes('kein ')&&t.includes('team')) return '🎯';
   if(t.includes('zweiter solider')) return '🎯';
   // Strategie
@@ -1516,31 +1516,31 @@ function factorIcon(text) {
   if(t.includes('te-premium')||t.includes('te premium')) return '💎';
   if(t.includes('superflex')||t.includes('2-qb')) return '🔄';
   if(t.includes('qb-liga')||t.includes('qb timing')||t.includes('qb streaming')||t.includes('elite-qb')||t.includes('qb in runde')) return '🎲';
-  if(t.includes('te timing')||t.includes('te streaming')||t.includes('elite-te')||t.includes('te in runde')) return '⏳';
-  if(t.includes('kommt später')||t.includes('kein grund jetzt')) return '⏸️';
+  if(t.includes('te timing')||t.includes('te streaming')||t.includes('elite-te')||t.includes('te in round')) return '⏳';
+  if(t.includes('come in later rounds')||t.includes('no rush')) return '⏸️';
   // Timing / Scarcity
-  if(t.includes('nächsten pick weg')||t.includes('nächstem pick weg')||t.includes('nächsten pick verschwinden')) return '⏱️';
-  if(t.includes('run läuft')||t.includes('run läuft!')) return '🌊';
-  if(t.includes('run zeichnet sich')) return '〰️';
-  if(t.includes('anderen teams holen')||t.includes('liegt brach')) return '↩️';
+  if(t.includes('gone by your next pick')||t.includes('gone by your next pick')||t.includes('could be gone')) return '⏱️';
+  if(t.includes('run!')||t.includes('run is developing')) return '🌊';
+  if(t.includes('run is developing')) return '〰️';
+  if(t.includes('other teams are')||t.includes('sitting there')) return '↩️';
   // SOS / Schedule
-  if(t.includes('traumkalender')||t.includes('angenehmer spielplan')||t.includes('gute matchups')) return '☀️';
-  if(t.includes('härtester schedule')||t.includes('schwieriger spielplan')||t.includes('starke verteidigungen')) return '⛈️';
+  if(t.includes('dream schedule')||t.includes('pleasant schedule')||t.includes('good matchups')) return '☀️';
+  if(t.includes('hardest schedule')||t.includes('tough schedule')||t.includes('strong defenses')) return '⛈️';
   // Alter
-  if(t.includes('entwicklungsfenster')||t.includes('hochphase')) return '🌱';
-  if(t.includes('herbst seiner karriere')||t.includes('leistungsabfall')||t.includes('nahe am ende')) return '🧓';
-  if(t.includes('fenster schliessen')||t.includes('regressions')) return '📉';
+  if(t.includes('development window')||t.includes('peak')) return '🌱';
+  if(t.includes('fall of his career')||t.includes('performance decline')||t.includes('near the end')) return '🧓';
+  if(t.includes('window is starting')||t.includes('regression')) return '📉';
   // Sonstiges
   if(t.includes('bye week')) return '🗓️';
-  if(t.includes('direkter backup')||t.includes('handcuff')) return '🔗';
-  if(t.includes('zuverlässig')||t.includes('verlässlich')||t.includes('schwankt kaum')) return '✅';
-  if(t.includes('boom-or-bust')||t.includes('totalausfall')||t.includes('hohe varianz')) return '🔥';
-  if(t.includes('varianz')||t.includes('streubreite')||t.includes('schwer vorherzusagen')) return '⚠️';
-  if(t.includes('upside-potenzial')||t.includes('upside-')||t.includes('upside')) return '🚀';
-  if(t.includes('bessere optionen')||t.includes('besseren wert')) return '🔍';
-  if(t.includes('zeitdruck')||t.includes('nächste runde noch verfügbar')) return '💤';
-  if(t.includes('nicht aufdrängt')||t.includes('nicht dringend')||t.includes('noch zeit')) return '😌';
-  if(t.includes('zu früh')) return '⏸️';
+  if(t.includes('direct backup')||t.includes('handcuff')) return '🔗';
+  if(t.includes('reliable')||t.includes('reliable')||t.includes('barely fluctuates')) return '✅';
+  if(t.includes('boom-or-bust')||t.includes('complete bust')||t.includes('high variance')) return '🔥';
+  if(t.includes('variance')||t.includes('spread')||t.includes('hard to predict')) return '⚠️';
+  if(t.includes('upside potential')||t.includes('upside')||t.includes('upside')) return '🚀';
+  if(t.includes('better options')||t.includes('better value')) return '🔍';
+  if(t.includes('urgency')||t.includes('still be available')) return '💤';
+  if(t.includes('isn\'t pressing')||t.includes('pressing')||t.includes('still have time')) return '😌';
+  if(t.includes('too early')) return '⏸️';
   if(t.includes('rang #')) return '📊';
   return '•';
 }
@@ -2413,7 +2413,7 @@ function calcDraftScore(player) {
         factors.push({text:'Zero-RB strategy: RBs come in round 5+, no rush',type:'neu'});
       } else {
         needScore += 12;
-        factors.push({text:'Noch kein '+pos+'!',type:'pos'});
+        factors.push({text:'No '+pos+'!',type:'pos'});
       }
     }
     else if(have === 1 && needed >= 2) { needScore += 8; factors.push({text:'A second solid '+pos+' is still missing from the roster',type:'pos'}); }
@@ -2432,7 +2432,7 @@ function calcDraftScore(player) {
   // ── HAUPT-STRATEGY ──
   if(strategy.main === 'rb_heavy') {
     if(pos === 'RB' && round <= 4 && have < 3) {
-      stratBonus = 8; factors.push({text:'Passt perfekt zu deiner RB-Heavy-Strategie. Early die besten RBs sichern.',type:'pos'});
+      stratBonus = 8; factors.push({text:'Passt perfekt zu deiner RB-Heavy-Strategie. Secure the best RBs early.',type:'pos'});
     } else if(pos === 'RB' && round <= 6 && have < 4) {
       stratBonus = 4;
     } else if(pos === 'WR' && round <= 3 && have < 1) {
@@ -2452,9 +2452,9 @@ function calcDraftScore(player) {
     } else if(pos === 'RB' && round === 6) {
       stratBonus = -2;
     } else if(pos === 'WR' && round <= 5 && have < 4) {
-      stratBonus = 7; factors.push({text:'Earlyer WR passt ideal zu deiner Zero-RB-Strategie',type:'pos'});
+      stratBonus = 7; factors.push({text:'Earlyer WR fits perfectly with your Zero-RB strategy',type:'pos'});
     } else if(pos === 'TE' && round <= 4 && have === 0) {
-      stratBonus = 4; factors.push({text:'Earlyer TE-Griff ergänzt deine Zero-RB-Strategie gut',type:'pos'});
+      stratBonus = 4; factors.push({text:'Earlyer TE-Griff complements your Zero-RB strategy well',type:'pos'});
     }
   }
   else if(strategy.main === 'hero_rb') {
@@ -2724,7 +2724,7 @@ function calcDraftScore(player) {
       else if(pos === 'QB' && strategy.qbTiming === 'late') factors.push({text:'Your QB timing plan targets round 9+ — now is too early',type:'neg'});
       else factors.push({text:'This position isn\'t pressing right now — you still have time',type:'neg'});
     } else if(timingScore < 8 && !isUrgent) {
-      factors.push({text:'No Zeitdruck — er sollte nächste Round noch verfügbar sein',type:'neg'});
+      factors.push({text:'No urgency — he should still be available next round',type:'neg'});
     } else {
       factors.push({text:'Andere Gamesr auf dem Board bieten aktuell besseren Whoevert',type:'neg'});
     }
@@ -2961,7 +2961,7 @@ function showPlayerModal(playerName) {
       +'</div>';
   }
 
-  // Positional rank (z.B. RB4 = 4. bester RB im Ranking)
+  // Positional rank (e.g. RB4 = 4. bester RB im Ranking)
   var posRankNum = 1;
   source.forEach(function(x){ if(x.pos===p.pos && (x.rank||999)<(p.rank||999)) posRankNum++; });
   var posRankLabel = p.pos + posRankNum;
@@ -3265,7 +3265,7 @@ function showPlayerModal(playerName) {
     var gridCols = '90px' + (showLast?' 1fr':'') + (showExt?' 1fr':'') + (showProj?' 1fr':'');
 
     // Tabelle: gleiche 1fr|1fr Aufteilung wie Box drüber
-    // Label embedded in linker Datenzelle → kein Alignment-Problem
+    // Label embedded in linker Datenzelle → no alignment-Problem
     var tableColsStr = showExt ? '1fr 1fr' : (showProj ? '1fr 1fr' : '1fr');
 
     if(showLast || showProj) {
@@ -3592,9 +3592,9 @@ async function loadSleeperPlayers(sport){
         var pid=item.player_id;
         var rank=idx+1;
         // Sleeper weekly proj × 18 Weekn = Seasonprojektion (entspricht dem was Sleeper anzeigt)
-        // ADP-Rang + Sleeper Proj direkt aus API (season total, kein Multiplier nötig)
+        // ADP-Rang + Sleeper Proj direkt aus API (season total, no multiplier nötig)
         var rawProj = (item.stats && (item.stats['pts_ppr'] || item.stats['pts_half_ppr'] || item.stats['pts_std'])) || 0;
-        // rawProj kann weekly (z.B. 13.9) oder season-total sein — × 17 gibt Seasonwert
+        // rawProj kann weekly (e.g. 13.9) oder season-total sein — × 17 gibt Seasonwert
         var slpProj = rawProj > 0 ? Math.round(rawProj * 17 * 10) / 10 : null;
         if(sleeperMap){
           Object.values(sleeperMap).forEach(function(sm){
