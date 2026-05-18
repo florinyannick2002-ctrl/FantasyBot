@@ -2560,7 +2560,7 @@ function calcDraftScore(player) {
     }).length;
     var threshold = strategy.byeAvoidance === 'strict' ? 1 : 2;
     if(byeConflicts >= threshold + 1) {
-      contextScore -= 4; factors.push({text:'Bye Week '+player.bye+' — du hast bereits zu viele Gamesr in dieser Week',type:'neg'});
+      contextScore -= 4; factors.push({text:'Bye Week '+player.bye+' — you already have too many players in that week',type:'neg'});
     }
   }
   
