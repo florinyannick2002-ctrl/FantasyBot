@@ -3565,13 +3565,13 @@ async function loadSleeperPlayers(sport){
     var sr=(p.search_rank&&p.search_rank<9999)?p.search_rank:null;
     var age=null;
     if(p.birth_date){var b=new Date(p.birth_date),now=new Date();age=now.getFullYear()-b.getFullYear()-(now<new Date(now.getFullYear(),b.getMonth(),b.getDate())?1:0);}
-    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr,age:age,height:p.height||null,weight:p.weight||null,exp:p.years_exp!=null?p.years_exp:null,college:p.college||null,number:p.number||null,injuryStatus:p.injury_status||null,playerStatus:p.status||null};
+    sleeperMap[normSleeperName(nm)]={id:String(id),name:nm,pos:p.position,team:p.team||'',sleeperRank:sr,age:age,height:p.height||null,weight:p.weight||null,exp:p.years_exp!=null?p.years_exp:null,college:p.college||null,number:p.number||null,injuryStatus:p.injury_status||null,playerStatus:p.status||null,bye:p.bye_week||null};
   });
   // Enrich customRankings with sleeper IDs + search_rank
   if(customRankings.length){
     customRankings.forEach(function(cr){
       var match=sleeperMap[normSleeperName(cr.name)];
-      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;if(match.age)cr.age=match.age;if(match.height)cr.height=match.height;if(match.weight)cr.weight=match.weight;if(match.exp!=null)cr.exp=match.exp;if(match.college)cr.college=match.college;if(match.number)cr.number=match.number;if(match.injuryStatus)cr.injuryStatus=match.injuryStatus;if(match.playerStatus)cr.playerStatus=match.playerStatus;}
+      if(match){cr.sleeperId=match.id;if(cr.sleeperRank==null)cr.sleeperRank=match.sleeperRank;if(!cr.team)cr.team=match.team;if(match.age)cr.age=match.age;if(match.height)cr.height=match.height;if(match.weight)cr.weight=match.weight;if(match.exp!=null)cr.exp=match.exp;if(match.college)cr.college=match.college;if(match.number)cr.number=match.number;if(match.injuryStatus)cr.injuryStatus=match.injuryStatus;if(match.playerStatus)cr.playerStatus=match.playerStatus;if(match.bye&&!cr.bye)cr.bye=match.bye;}
     });
   }
   // Now fetch Sleeper projections which have the real draft rankings
