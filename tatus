@@ -1,0 +1,148 @@
+[33mcf3202c[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmaster[m[33m, [m[1;33mtag: [m[1;33mworking-v8[m[33m, [m[1;31morigin/master[m[33m)[m Fix bye week German text
+[33md6fb149[m Bye week from Sleeper API (bye_week field)
+[33mc0793ca[m Hide breakdown text from draft board cards
+[33mb840cf4[m Fix: VOR text, strategy cons, fully English
+[33m6861387[m Fix: Notes nav, remaining German factor texts
+[33mc6f7b04[m Translation pass 3: TOTAL, NEXT PICK, rec text, all factor icons
+[33mf791bf4[m Full EN translation pass 2 — nav, strategy, notes, status messages
+[33me1ca709[m Full translation: German → English
+[33m8330e2a[m Scout Tab: Pros/Cons scrollbar
+[33mf2fb088[m Modal: gleiche Grösse bei beiden Tabs
+[33m8cc39e2[m Revert: Tabelle wie vorher, MAX auch in Hochgerechnet
+[33m4bc6018[m Stats: 1fr|1fr Tabelle bündig, MAX in Hochrechnung
+[33m9f6b6d9[m Stats: MAX Badge, Tabelle bündig unter Box
+[33m2996612[m Stats Tab: eine Box, WR94/WR8 auf gleicher Höhe
+[33m4275e4d[m Rank-Bug fix, Boxen gleich hoch
+[33m35d6428[m Hochrechnung: Rang in Tabelle, Box-Layout verbessert
+[33m5b1733c[m Stats Tab: GP und Hochrechnung gleich hoch, 17/17 unten
+[33m3459f2e[m Stats Tab: eine GP+Hochrechnung Box, 3 Tabellenspalten
+[33mc700acf[m Hochrechnung: Rang korrekt, alle Stats hochgerechnet
+[33m97e1791[m Stats Tab: Rang oben, GP + Hochrechnung nebeneinander
+[33m3e3156a[m Stats Tab: 2025 Stats + SLP Proj 2026 beide Spalten
+[33mc3b1c84[m Stats Tab: 2025 raus, GP+Rang oben, Proj Tabelle
+[33m287dba4[m Modal: Karte scrollt nicht, Pros/Cons intern, 2025 Stats raus
+[33mbc3b69d[m Stats Tab: Positionsrang 2025, Tabelle, Max in Amber
+[33mabbcab4[m Modal: gleiche Höhe, Stats Tab Tabellen-Layout
+[33m3258d33[m Modal: 2 Tabs Scout und Stats
+[33md07694c[m Stats: Zeilen kompakter padding 4px
+[33m07ec2fb[m Stats: horizontal Layout, Differenz zu #1, Hochrechnung
+[33mc217ee5[m Stats: GP X/17 mit Farbe, schönere Zellen, fmt Zahlen
+[33ma5189e1[m Stats: GP kein Rank, Best-Wert pro Spalte
+[33m3d69aec[m Stats: GP, rec_tgt fix, posit. Schwellen, Backup-Filter
+[33m3acd4f9[m Stats: rec_td RB, 0-Werte anzeigen, Farblogik fix
+[33mcf55e3a[m Stats-Grid: weekly Fix + Position unter Bio-Pills
+[33m35c3b3b[m Stats-Grid: Catches, Yards, TD mit Rang und Farbe
+[33m293ceb8[m 2025 Saison Box: kein Trend-Vergleich mehr
+[33m5e87e72[m Sleeper Stats via Week 0 (season totals direkt)
+[33m7243fa5[m Labels 2026, Trend gerundet, SLP Proj fix
+[33ma15741f[m Jahre 2025/2026, falschen Proj-Wert gefixt
+[33m9e25dc2[m Fix Modal Layout: überschüssiges div entfernt
+[33made2a2d[m Fix JS Syntax Error: '24 Apostroph
+[33mcc5851a[m Sleeper Proj + 2024 Stats in Modal, 3 Boxen
+[33m4653b55[m Close-Button, Punkte, kein Dash, kein Duplikat
+[33ma5786c1[m Icons fix, kein Dash, Scout-Text verbessert
+[33m4c686ac[m Scout-Texte, VOR-Fix, Layout repariert
+[33m254a352[m Modal: kein Scroll, Header neu, VOR-Text, VERBL
+[33m3eb0d24[m Positionsrang, Scout-Report, Faktor-Sortierung
+[33m0c32a42[m Modal grösser, Picks über Board, alle Pros/Cons
+[33m723df4a[m Fix: Score-Farben, Achane Groesse, Spielerbild 48px
+[33mc69772e[m Feature: Vollständiges Modal + Bio-Daten + bessere Icons + lesbare Texte
+[33m3d60cb8[m Feature: Player Detail Modal + Draft-Begründung in Empfehlungen
+[33mc779b75[m Fix: Scarcity berechnet echten Snake Next Pick
+[33mc8f2881[m Feature: Mouse-Wheel Horizontal Scroll + grössere Picks Bar
+[33m242b3f0[m Feature: Letzte Picks scrollbar mit Buttons
+[33m9faf2d7[m Fix: Position-Run Threshold + Scarcity Snake-Pick Fix
+[33m333a675[m Feature: Normalisierter Position-Run + Scarcity Timing
+[33m0f50229[m Fix: Tier-Bonus relativ zum besten verfügbaren Tier
+[33m423539d[m Fix: VOR Text + Breakdown klarer
+[33md1cb453[m Fix: Doppelte Faktoren + Rundenangabe + Breakdown als Textzeile
+[33m0f435f7[m Fix: Kein Widerspruch zwischen LETZTE CHANCE und Kannst Warten
+[33m08387eb[m Feature: Vollständige Strategie-Implementation V3
+[33mbce9b5d[m Fix: Strategie-bewusster Bedarf + klarere Faktortexte
+[33m9317959[m Fix: Widerspruch-Bug + weisser Punkt + Breakdown Icon
+[33m8bd6485[m Fix: Rang #1 Bug + Score-Breakdown Icon
+[33m2dbcecf[m Fix: Auto-Neg mit verfügbarem Rang + klarere Texte
+[33m806a431[m Fix: Klarere Faktortexte + Sortierung nach Gewichtung
+[33m5af3042[m Fix: Icon-Bug + Text-Labels für Top-Faktoren
+[33maa092d9[m Fix: renderPlayers Funktion wiederhergestellt
+[33m82933e9[m Feature: FM Scout Report Icons mit Hover-Tooltips
+[33mcb7c1c8[m Fix: KANNST WARTEN Badge + Alle Faktoren anzeigen
+[33m1fe7529[m Feature: Avail-Tags + Neg-Faktoren + ADP-Steal Badge
+[33m2e002d3[m Fix: Schwarz + Card Mitte mit Score-Bar und Faktoren
+[33md0e9931[m UI: Player Card Layout statt Tabelle
+[33mb618b2d[m Redesign: Command Center Aesthetic
+[33m5dee26c[m Redesign: Visuelles Update + Spielerbilder
+[33mb15a4ae[m[33m ([m[1;33mtag: [m[1;33mworking-v7[m[33m)[m Fix: Todo Tab Panel korrekt eingebaut
+[33m9753813[m Feature: Pre-Draft Todo Liste
+[33mb434140[m[33m ([m[1;33mtag: [m[1;33mworking-v6[m[33m)[m Algorithmus V3: Best-Practice Draft Scoring
+[33maf99a9b[m Feature: Age Score + Anzeige eingebaut
+[33ma9c60d1[m SOS: Farbige Sterne gruen/grau/rot
+[33m5adfb26[m SOS: Weisse groessere Sterne
+[33m09fd7f9[m SOS: Goldene Sterne Anzeige
+[33mb435672[m Feature: Strength of Schedule eingebaut
+[33m1e1ea6e[m Fix: Confidence Spread korrekt
+[33mb370373[m Fix: Confidence Spread Anzeige
+[33m66c3948[m Confidence Score aus Projektions-Spread
+[33m810d76c[m Fix undefined Faktoren
+[33mc8ea5ee[m Proj upload oben, immer high/low anzeigen
+[33m4364cca[m Proj upload + fix high/low display
+[33m5ac3f49[m FantasyPros projections + Marginal Score
+[33mb05b085[m[33m ([m[1;33mtag: [m[1;33mworking-v5[m[33m)[m Availability symbols only with legend
+[33me7eccac[m Fix availability when on clock
+[33mf1f866a[m Cleaner availability labels
+[33m22ebd7e[m Fix availability label when on clock
+[33m5efa8f4[m Availability prediction under player name
+[33m4c8fdb6[m 210 Spieler Sleeper Ranks von BeatADP
+[33m3f3bc5c[m Fix Sleeper ranks sorted by ADP
+[33mf00bb14[m Sleeper rank statt ADP - Nabers=18
+[33mec49601[m Fetch real Sleeper draft rankings from projections endpoint
+[33m33336b6[m Remove ADP dict, use Sleeper search_rank only
+[33mc944fae[m Debug Sleeper rank
+[33m2e73c64[m Fix Sleeper ECR rank from draft endpoint
+[33m4c25bd4[m Use Sleeper search_rank instead of ADP
+[33mf1fec76[m Use Sleeper ECR rank instead of ADP
+[33mc36e0c0[m[33m ([m[1;33mtag: [m[1;33mworking-v4[m[33m)[m Algorithm V2 - quality first, strategy as tiebreaker
+[33m37c5d14[m Add recommendations box to draft board
+[33m14f585d[m Fix strategy panel + ranking list
+[33mdc95e7f[m Fix ranking list display
+[33mc0ef156[m Fix CSV upload
+[33m83a32c3[m Draft Assistant - full scoring algorithm
+[33m9645ef2[m[33m ([m[1;33mtag: [m[1;33mworking-v3[m[33m)[m Mein Team: lineup, analyse, bye weeks
+[33m2f72f01[m[33m ([m[1;33mtag: [m[1;33mworking-v2[m[33m)[m Add Letzte Picks title
+[33m756d802[m Scrollable picks + projected pick label
+[33me665ac0[m Fix saveDraftSettings missing
+[33mf6a7580[m Fix CSV import
+[33ma8877be[m Add new index.html
+[33mc007a59[m Trigger Netlify redeploy
+[33m121a04f[m Sleeper projected picks
+[33ma6487c1[m Force update index.html
+[33mc9154e5[m Manual draft settings
+[33medaa9bc[m Manual draft settings: slot, teams, type
+[33mfa20851[m Fix snake draft all rounds highlight
+[33mefe7a28[m Auto-detect snake vs linear draft
+[33m0a9f643[m Correct snake draft projection
+[33m6310f3e[m Fix pick projection all rounds
+[33mcc1bfac[m All rounds highlighted + scroll to pick button
+[33ma9fb186[m Fix all picks projection
+[33m1bee7e1[m Highlight all projected picks with round number
+[33md383a2a[m Fix pick projection highlight
+[33m8b089f7[m Snake draft pick highlight + recent picks below stats
+[33me8f6b75[m Recent picks, next pick highlight, Sleeper username
+[33mfb17ae6[m[33m ([m[1;33mtag: [m[1;33mworking-v1[m[33m)[m Tooltip fuer FantasyPros Notizen
+[33maee3dcc[m CSV import + FantasyPros notes tooltip
+[33m89b426f[m Mein Ranking tab - PDF only
+[33md9c564d[m Add Sleeper API + import fix
+[33me188a83[m Clean rewrite with notes
+[33m972adb0[m Revert to working version
+[33m0e0f287[m Fix Notizen tab DOM-based
+[33m53a7d52[m Fix syntax error line 397
+[33m88b3792[m Add Notizen tab
+[33m3ef7268[m Add Notizen tab
+[33mf176076[m Add Notizen tab
+[33m4898971[m Fix rank 3-digit width
+[33mc449882[m Fix: filter VS.ADP numbers from import
+[33mef39f26[m Fix syntax error
+[33m469f16b[m Clean index.html
+[33mc6c48a1[m PDF upload + gespeicherte Rankings
+[33m1fb98da[m Add index.html
+[33m67f3c09[m Initial commit
