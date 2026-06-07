@@ -31,6 +31,7 @@
   /* Semantic — injury/bye only */
   --severe:     #c0392b;
   --warn:       #b07d2a;
+  --score-mid:  #e0a93b;  /* yellow for mid-range scores */
   --severe-bg:  rgba(192,57,43,0.08);
   --warn-bg:    rgba(176,125,42,0.08);
 
@@ -239,6 +240,8 @@ button{
   background:var(--void-0);
   padding:0 1.75rem;
 }
+.tabs{margin-bottom:0;}
+.main{padding-top:1.5rem;}
 .tabs-logo{
   display:flex;align-items:center;gap:8px;
   padding-right:1.5rem;margin-right:auto;
@@ -320,11 +323,11 @@ button{
 /* ── Player list ── */
 .player-list{display:flex;flex-direction:column;}
 
-.tier-header{display:flex;align-items:center;gap:10px;padding:4px 4px 6px;margin-top:16px;}
+.tier-header{display:flex;align-items:center;gap:10px;padding:2px 4px 4px;margin-top:4px;}
 .tier-line{flex:1;height:1px;background:var(--wire);}
 .tier-label{
-  font-size:9px;font-weight:600;font-family:var(--mono);
-  letter-spacing:.1em;white-space:nowrap;color:var(--intel-low);
+  font-size:9px;font-weight:700;font-family:var(--mono);
+  letter-spacing:.08em;white-space:nowrap;color:var(--intel-low);
   text-transform:uppercase;
 }
 
@@ -336,7 +339,7 @@ button{
   border-radius:2px;
 }
 .tier-drop-label{
-  font-size:9px;font-family:var(--mono);font-weight:600;
+  font-size:9px;font-family:var(--mono);font-weight:700;
   color:var(--severe);letter-spacing:.08em;white-space:nowrap;
 }
 .tier-drop-line{flex:1;height:1px;background:rgba(192,57,43,0.15);}
@@ -357,13 +360,42 @@ button{
 
 /* ── Player cards (pcard) ── */
 .pcard{
-  display:flex;align-items:center;gap:8px;
-  padding:4px 10px;
-  border-bottom: 1px solid var(--wire);
-  transition: background var(--t-fast) var(--ease-out);
-  cursor:default;position:relative;
-  min-height:0;
+  display:grid;
+  grid-template-columns:24px 34px minmax(0,1fr) 78px 72px 50px;
+  align-items:center;gap:5px;
+  padding:5px 6px;
+  border-bottom:1px solid var(--wire);
+  transition:background var(--t-fast) var(--ease-out);
+  cursor:default;position:relative;min-height:0;
 }
+/* sticky column header — same grid template */
+.pc-head{
+  display:grid;
+  grid-template-columns:24px 34px minmax(0,1fr) 78px 72px 50px;
+  align-items:center;gap:5px;
+  padding:6px 6px;
+  position:sticky;top:46px;z-index:50;
+  background:var(--void-0);
+  border-bottom:1px solid var(--wire-laser);
+  font-family:var(--mono);font-size:9px;font-weight:700;
+  letter-spacing:.08em;color:var(--intel-low);text-transform:uppercase;
+}
+/* header labels: uniform size, override per-column font sizes (#3) */
+.pc-head .pc-col{font-size:9px;font-weight:700;}
+.pc-col{min-width:0;display:flex;align-items:center;gap:6px;}
+.pc-rank{font-family:var(--mono);font-size:11px;font-weight:600;color:var(--intel-mid);justify-content:flex-end;}
+.pc-pos{justify-content:flex-start;}
+.pc-name{gap:7px;overflow:hidden;}
+.pc-name .pcard-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;font-weight:600;color:var(--intel-hi);max-width:none;}
+.pc-img{width:24px;height:24px;flex-shrink:0;display:block;}
+.pc-img .pcard-img,.pc-img .pcard-img-fallback{width:24px;height:24px;}
+.pc-gone{justify-content:flex-start;}
+.pc-gone .avail-tag{margin:0;}
+.pc-pts{justify-content:flex-end;font-family:var(--mono);font-size:11px;white-space:nowrap;}
+.pc-pts-val{color:var(--intel-mid);font-weight:600;}
+.pc-pts-u{color:var(--intel-low);font-size:9px;margin-left:1px;}
+.pc-score{justify-content:flex-end;font-family:var(--mono);font-size:13px;font-weight:700;}
+.pc-head .pc-rank,.pc-head .pc-pts,.pc-head .pc-score{color:var(--intel-low);}
 /* Remove all tier left-borders and colored backgrounds */
 .pcard::before{display:none;}
 .pcard:hover{background:var(--void-2);}
@@ -459,6 +491,8 @@ button{
 .pcard-factor.neg{background:rgba(192,57,43,.06);color:var(--severe);border:1px solid rgba(192,57,43,.15);}
 .pcard-factor.neu{background:var(--void-2);color:var(--intel-low);border:1px solid var(--wire);}
 .score-cat-card:hover .stt{display:block!important;}
+/* proj+bio span full width below img/name/score on desktop grid */
+.pm-belowfold{grid-column:1 / -1;}
 
 /* ── Player table ── */
 .player-table th{
@@ -1145,43 +1179,99 @@ button{
    Desktop layout unchanged above this breakpoint.
 ═══════════════════════════════════════════════════ */
 @media (max-width:640px){
-  /* kill horizontal scroll globally */
-  html,body{max-width:100%;overflow-x:hidden;}
+  /* kill horizontal scroll without breaking sticky nav */
+  html,body{max-width:100%;overflow-x:clip;}
+  /* keep top nav pinned while scrolling */
+  .tabs{position:sticky;top:0;z-index:200;}
 
-  /* slightly larger base text for small screens */
-  body{font-size:14px;}
+  /* (1) global shrink */
+  body{font-size:12px;}
 
-  /* top nav tabs: allow wrap instead of forcing one rigid row */
-  .tabs-center{flex-wrap:wrap;justify-content:flex-start;gap:2px;}
-  .tab{padding:12px 12px 10px;}
+  /* (2) TOP NAV — logo tight on top, tabs wrap below so ALL stay visible */
+  .tabs{padding:0 .75rem;flex-wrap:wrap;gap:0;align-items:center;}
+  .tabs-logo{
+    padding:4px 0 2px;margin:0;border-right:none;
+    width:100%;justify-content:flex-start;flex-shrink:0;
+  }
+  .tabs-logo img{width:20px;height:20px;}
+  .tabs-logo-text{font-size:12px;}
+  .tabs-center{flex:1 1 100%;justify-content:flex-start;flex-wrap:nowrap;gap:0;}
+  .tab{padding:8px 6px 7px;font-size:11px;letter-spacing:0;white-space:nowrap;}
 
-  /* minimum 44px touch targets for primary controls */
-  .btn,.tab,.nav-item,.fb-fab{min-height:44px;}
+  /* touch targets */
+  .btn,.nav-item,.fb-fab{min-height:40px;}
 
-  /* ── STEP 3: funnel refinements ── */
+  /* funnel refinements */
   .fn-hero h1{font-size:34px;line-height:1.08;}
 
-  /* ── STEP 3: app top bar — compact, tabs wrap left-aligned ── */
-  .tabs{padding:0 1rem;flex-wrap:wrap;gap:6px;align-items:center;}
-  .tabs-logo{
-    padding-right:0;margin-right:0;border-right:none;
-    width:100%;justify-content:flex-start;
-  }
-  .tabs-center{flex:1 1 100%;justify-content:flex-start;}
+  /* (3) REC CARDS — much tighter: drop rationale, shrink everything */
+  .rec-header{margin-bottom:8px;}
+  .rec-card{align-items:center;gap:6px;padding:.4rem .55rem;margin-bottom:3px;}
+  .rec-card.rec-1{padding:.45rem .6rem;}
+  .rec-score{min-width:30px;}
+  .rec-score-num{font-size:15px;}
+  .rec-score-pct{font-size:8px;}
+  .rec-player-img,.rec-player-img-fallback{width:28px;height:28px;}
+  /* name: kill the inline 20px/16px bump */
+  .rec-player-name{font-size:14px !important;}
+  .rec-card.rec-1 .rec-player-name{font-size:15px !important;}
+  /* hide the full draft-reason paragraph — biggest space win */
+  .rec-reason{display:none !important;}
+  .rec-factors{margin-top:3px;}
 
-  /* ── STEP 4: rec cards — top-align score/image, reclaim text width ── */
-  .rec-card{align-items:flex-start;gap:7px;padding:.625rem .75rem;}
-  .rec-score{min-width:34px;}
-  .rec-player-img,.rec-player-img-fallback{width:30px;height:30px;}
-  .rec-card.rec-1{padding:.75rem;}
-
-  /* ── STEP 5: player modal — stack header + stats columns ── */
+  /* player modal — stack columns */
   .pm-head-grid{grid-template-columns:1fr !important;gap:10px !important;}
   .pm-stats-grid{grid-template-columns:1fr !important;}
+  /* modal header: row1 = img | name+meta | score, row2 = proj+bio full width */
+  .pm-head-grid2{display:flex !important;flex-wrap:wrap !important;align-items:flex-start !important;gap:10px !important;}
+  .pm-head-grid2>.pm-img{order:1;flex:0 0 auto;}
+  .pm-head-grid2>div:not(.pm-belowfold):not(.pm-score-col){order:2;flex:1 1 0;min-width:0;}
+  .pm-head-grid2>.pm-score-col{order:3;flex:0 0 auto;align-items:flex-end !important;text-align:right;}
+  .pm-head-grid2>.pm-belowfold{order:4;flex:1 1 100%;}
+  .pm-score-col>div:last-child{text-align:right !important;}
+  /* player modal — mobile compaction (everything else is inline-styled) */
+  .pm-panel{padding:16px 14px !important;max-height:92vh !important;}
+  .pm-img{width:64px !important;height:78px !important;}
+  .pm-name{font-size:15px !important;}
+  /* proj boxes: shrink number + label fonts */
+  .pm-proj-grid>div{padding:4px 6px !important;}
+  .pm-proj-grid>div>div:first-child{font-size:7px !important;margin-bottom:2px !important;}
+  .pm-proj-grid span{font-size:13px !important;}
+  .pm-proj-grid span[style*="font-size:9px"]{font-size:8px !important;}
+  /* score + posrank: align left under stacked grid, shrink number */
+  .pm-score-col{align-items:flex-start !important;min-width:0 !important;}
+  .pm-score-num{font-size:30px !important;text-shadow:0 0 12px currentColor !important;}
+  /* tab buttons tighter */
+  .pm-tabbar button{padding:7px 14px !important;font-size:9px !important;}
+  .pm-tabbar svg{width:11px !important;height:11px !important;margin-right:3px !important;}
+  /* value/roster cat-cards: tighten */
+  .score-cat-card{padding:5px 8px !important;}
 
-  /* ── STEP 6: strategy panel — collapse dense grids to 2 columns ── */
+  /* strategy panel — collapse to 2 columns */
   .strat-adv-grid{grid-template-columns:1fr 1fr !important;}
   .strat-bench-grid{grid-template-columns:1fr 1fr !important;}
+
+  /* on-the-clock / recent-picks bar — smaller */
+  .recent-picks{padding:.35rem .55rem;}
+  .recent-picks-inner{gap:6px;}
+  .next-pick-badge{font-size:10px;padding:3px 8px;}
+  .recent-pick-chip{font-size:10px;padding:3px 7px;}
+  .picks-scroll-btn{font-size:11px;padding:2px 6px;}
+
+  /* player list — declutter + shrink */
+  .pcard{padding:3px 8px;gap:6px;}
+  .pcard-rank{font-size:10px;min-width:18px;}
+  .pcard-imgwrap,.pcard-img,.pcard-img-fallback{width:22px;height:22px;}
+  .pcard-center{gap:5px;}
+  .pcard-name{font-size:11px;max-width:120px !important;}
+  /* hide team + bye metadata to cut noise */
+  .pcard-meta,.pcard-dot{display:none !important;}
+  /* hide decorative / redundant columns: score-bar, SOS stars, EXC#, diff */
+  .pcard-scorebar,.pcard-sos-wrap,.pcard-exc,.adp-d{display:none !important;}
+  .tier-label{font-size:10px;}
+  .tier-drop-label{font-size:9px;}
+  /* column header sits below the taller mobile nav */
+  .pc-head{top:72px;}
 }
 
 

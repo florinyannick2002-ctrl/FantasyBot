@@ -1035,7 +1035,7 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
 <div id="player-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:9998;align-items:center;justify-content:center;padding:20px;" onclick="if(event.target===this)this.style.display='none';">
 
-  <div style="background:#080d1a;border:1px solid rgba(0,212,255,0.12);border-top:2px solid var(--laser);border-radius:4px;max-width:860px;width:100%;padding:28px;position:relative;box-shadow:0 0 40px rgba(0,0,0,.7);display:flex;flex-direction:column;max-height:88vh;">
+  <div class="pm-panel" style="background:#080d1a;border:1px solid rgba(0,212,255,0.12);border-top:2px solid var(--laser);border-radius:4px;max-width:860px;width:100%;padding:28px;position:relative;box-shadow:0 0 40px rgba(0,0,0,.7);display:flex;flex-direction:column;max-height:88vh;">
 
     <button onclick="document.getElementById('player-modal').style.display='none'" style="position:absolute;top:12px;right:12px;background:var(--void-2);border:1px solid var(--wire);color:var(--intel-mid);width:32px;height:32px;border-radius:3px;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:color 120ms;" onmouseover="this.style.color='var(--intel-hi)'" onmouseout="this.style.color='var(--intel-mid)'">×</button>
 
@@ -1071,7 +1071,7 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
     <button class="nav-item" data-tab="rankings"><svg class="ic" viewBox="0 0 20 20"><use href="#ic-chart-bar"/></svg> My Rankings</button>
 
-    <button class="nav-item" data-tab="notes"><svg class="ic" viewBox="0 0 20 20"><use href="#ic-note"/></svg> Notes</button>
+    <button class="nav-item" data-tab="notes" style="display:none;"><svg class="ic" viewBox="0 0 20 20"><use href="#ic-note"/></svg> Notes</button>
 
     <button class="nav-item" data-tab="strategie"><svg class="ic" viewBox="0 0 20 20"><use href="#ic-target"/></svg> Strategy</button>
 
@@ -1112,7 +1112,7 @@ Standard: no reception points (boosts RBs).">?</span></div>
       <button class="tab active" data-tab="draft">Draft Board</button>
       <button class="tab" data-tab="myteam">My Team</button>
       <button class="tab" data-tab="rankings">My Rankings</button>
-      <button class="tab" data-tab="notes">Notes</button>
+      <button class="tab" data-tab="notes" style="display:none;">Notes</button>
       <button class="tab" data-tab="strategie">Strategy</button>
 
       <button class="tab" data-tab="draftsettings">Draft Settings</button>
@@ -1188,7 +1188,9 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
       <button class="pos-btn" data-pos="DEF">DEF</button>
 
-      <button id="atrisk-btn" class="pos-btn" style="border-color:rgba(192,57,43,0.4);color:var(--severe);margin-left:6px;">At Risk</button>
+      <div style="flex-basis:100%;height:0;"></div>
+
+      <button id="atrisk-btn" class="pos-btn" style="border-color:rgba(192,57,43,0.4);color:var(--severe);">At Risk</button>
 
       <button id="sort-toggle-btn" onclick="toggleSortMode()" style="background:var(--void-2);border:1px solid var(--wire);color:var(--intel-mid);font-size:11px;padding:5px 10px;border-radius:var(--radius);cursor:pointer;font-family:var(--mono);font-weight:500;white-space:nowrap;transition:border-color .12s,color .12s;" title="Toggle ranking source">Sort: Sleeper</button>
 
@@ -2643,6 +2645,8 @@ function renderPlayers(){
   }
 
   var h='<div class="player-list">';
+  // sticky column header
+  h+='<div class="pc-head">'+'<div class="pc-col pc-rank">#</div>'+'<div class="pc-col pc-pos">POS</div>'+'<div class="pc-col pc-name">PLAYER</div>'+'<div class="pc-col pc-gone">GONE</div>'+'<div class="pc-col pc-pts">PROJ PTS</div>'+'<div class="pc-col pc-score">SCORE</div>'+'</div>';
 
   Object.keys(byTier).sort(function(a,b){return+a-+b;}).forEach(function(tier){
 
@@ -2656,7 +2660,7 @@ function renderPlayers(){
 
     if(_tn===1) {
 
-      h+='<div class="tier-header t1"><span class="tier-line"></span>'
+      h+='<div class="tier-header t1" style="grid-column:1/-1;"><span class="tier-line"></span>'
 
         +'<span class="tier-label" style="color:'+tierColor+';">TIER 1 · '+(tierNames[1]||'ELITE').toUpperCase()+'</span>'
 
@@ -2664,7 +2668,7 @@ function renderPlayers(){
 
     } else {
 
-      h+='<div class="tier-drop"><div class="tier-drop-line"></div>'
+      h+='<div class="tier-drop" style="grid-column:1/-1;"><div class="tier-drop-line"></div>'
 
         +'<span class="tier-drop-label">▼ DROP-OFF · TIER '+tier+' STARTS</span>'
 
@@ -2854,80 +2858,31 @@ function renderPlayers(){
 
       h+='<div class="pcard t'+tc+isHighlight+'" onclick="showPlayerModal(\''+p.name.replace(/'/g,"\\'")+'\')\" style="cursor:pointer;">';
 
-      // primary rank left (depends on sort mode)
+      // col 1: rank (sort-dependent)
       var _primaryRank = (currentSortMode==='sleeper' && p.sleeperRank!=null) ? p.sleeperRank : p.rank;
-      h+='<div class="pcard-rank" style="display:flex;align-items:center;min-width:22px;text-align:right;">'+_primaryRank+'</div>';
+      h+='<div class="pc-col pc-rank">'+_primaryRank+'</div>';
 
-      h+='<div class="pcard-imgwrap">'+imgHtml+'</div>';
+      // col 2: position badge
+      h+='<div class="pc-col pc-pos"><span class="badge '+pc+'">'+p.pos+'</span></div>';
 
-      // Score (needed for bar)
+      // col 3: image + name
+      h+='<div class="pc-col pc-name"><span class="pc-img">'+imgHtml+'</span><span class="pcard-name">'+escHtml(p.name)+'</span></div>';
+
+      // col 4: gone %
+      h+='<div class="pc-col pc-gone">'+(availLabel||'')+'</div>';
+
+      // col 5: pts
+      // projection: FantasyPros if loaded, else Sleeper
+      var _ptsCell='';
+      if(p.projFpts) _ptsCell='<span class="pc-pts-val">'+p.projFpts+'</span><span class="pc-pts-u">proj</span>';
+      else if(p.sleeperProjPts) _ptsCell='<span class="pc-pts-val">'+p.sleeperProjPts+'</span><span class="pc-pts-u">proj</span>';
+      h+='<div class="pc-col pc-pts">'+_ptsCell+'</div>';
+
+      // col 6: score
       var scoreResult = calcDraftScore(p);
       var sc = scoreResult.score;
-      var barColor = sc >= 100 ? 'var(--purple)' : sc >= 75 ? 'var(--green)' : sc >= 55 ? 'var(--amber)' : sc >= 35 ? 'var(--blue)' : 'var(--red)';
-      var barGlow = sc >= 100 ? '0 0 14px '+barColor : '0 0 8px '+barColor;
-
-      // SLP rank
-      var _slpOverall = (window._sleeperRanks && p.sleeperId && window._sleeperRanks[p.sleeperId]) || null;
-
-      // Single flat row
-      h+='<div class="pcard-center" style="display:flex;align-items:center;gap:7px;min-width:0;flex:1;">';
-
-      // badge + name
-      h+='<span class="badge '+pc+'">'+p.pos+'</span>';
-      h+='<span class="pcard-name" style="flex-shrink:0;max-width:160px;">'+escHtml(p.name)+'</span>';
-
-      // avail tag (gone %)
-      if(availLabel||stealBadge) h+=availLabel+stealBadge;
-
-      // separator dot
-      h+='<span style="color:var(--intel-low);font-size:10px;flex-shrink:0;">·</span>';
-
-      // team + bye
-      if(p.team) h+='<span class="pcard-meta" style="flex-shrink:0;">'+p.team+'</span>';
-      if(p.bye){
-        var _byeConf = myPicks.filter(function(mp){ return mp.bye == p.bye && mp.pos === p.pos; }).length;
-        var _byeColor = _byeConf >= 2 ? 'var(--red)' : _byeConf === 1 ? 'var(--warn)' : 'var(--intel-low)';
-        h+='<span class="pcard-meta" style="flex-shrink:0;color:'+_byeColor+';">BYE '+p.bye+'</span>';
-      }
-
-      // injury
-      if(p.injuryStatus){
-        var injCol=p.injuryStatus==='Out'||p.injuryStatus==='IR'?'var(--red)':p.injuryStatus==='Doubtful'?'#ff8800':'var(--amber)';
-        h+='<span style="font-size:9px;padding:1px 5px;border-radius:2px;font-family:var(--mono);font-weight:800;background:rgba(255,51,68,.12);color:'+injCol+';border:1px solid '+injCol+'44;flex-shrink:0;">'+p.injuryStatus.toUpperCase()+'</span>';
-      }
-
-      // pts
-      if(p.lastSeasonPts) h+='<span style="font-size:10px;color:var(--intel-low);font-family:var(--mono);flex-shrink:0;"><span style="color:var(--intel-mid);">'+p.lastSeasonPts+'</span>pts</span>';
-      else if(p.sleeperProjPts&&!p.projFpts) h+='<span style="font-size:10px;color:var(--intel-low);font-family:var(--mono);flex-shrink:0;">PROJ <span style="color:var(--amber);">'+p.sleeperProjPts+'</span></span>';
-
-      // spacer
-      h+='<span style="flex:1;"></span>';
-
-      // rank block right: secondary rank + diff
-      h+='<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;margin-right:10px;">';
-      if(currentSortMode==='sleeper'){
-        // sorted by SLP → show excel rank right
-        if(p.rank!=null) h+='<span style="font-size:9px;color:var(--intel-low);font-family:var(--mono);">EXC #'+p.rank+'</span>';
-        if(diff) h+=diff;
-      } else {
-        // sorted by custom/excel → show slp rank right
-        if(p.sleeperRank!=null){
-          h+='<span style="font-size:9px;color:var(--intel-low);font-family:var(--mono);font-weight:500;">SLP '+p.sleeperRank+'</span>';
-          if(diff) h+=diff;
-        }
-      }
-      h+='</div>';
-
-      // score bar
-      h+='<div style="display:flex;align-items:center;gap:4px;flex-shrink:0;">';
-      h+='<div style="width:44px;height:2px;background:var(--void-4);border-radius:1px;"><div style="height:2px;border-radius:1px;width:'+Math.min(100,sc)+'%;background:'+barColor+';box-shadow:'+barGlow+';"></div></div>';
-      h+='<span style="font-size:10px;font-family:var(--mono);font-weight:600;color:'+barColor+';min-width:20px;text-align:right;">'+sc+'</span>';
-      h+='</div>';
-
-      // SOS
-      if(sosHtml) h+='<div style="display:flex;align-items:center;gap:2px;flex-shrink:0;margin-left:6px;"><span style="font-size:8px;font-family:var(--mono);color:var(--intel-low);">SOS</span>'+sosHtml+'</div>';
-
-      h+='</div>';
+      var scoreColor = sc >= 100 ? 'var(--purple)' : sc >= 75 ? 'var(--green)' : sc >= 35 ? 'var(--score-mid)' : 'var(--red)';
+      h+='<div class="pc-col pc-score" style="color:'+scoreColor+';">'+sc+'</div>';
 
       h+='</div>';
 
@@ -6954,9 +6909,9 @@ function showPlayerModal(playerName) {
 
   var imgHtml = p.sleeperId
 
-    ? '<img style="width:100px;height:120px;border-radius:4px;object-fit:cover;object-position:top center;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);flex-shrink:0;" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
+    ? '<img class="pm-img" style="width:100px;height:120px;border-radius:4px;object-fit:cover;object-position:top center;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);flex-shrink:0;" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
 
-    : '<div style="width:100px;height:120px;border-radius:4px;background:linear-gradient(180deg,var(--bg3),var(--bg4));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">🏈</div>';
+    : '<div class="pm-img" style="width:100px;height:120px;border-radius:4px;background:linear-gradient(180deg,var(--bg3),var(--bg4));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">🏈</div>';
 
 
 
@@ -7230,7 +7185,7 @@ function showPlayerModal(playerName) {
 
   var scoreColor = rec.score>=100?'var(--purple)':rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--red)';
 
-  var h = '<div class="pm-head-grid" style="display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:start;margin-bottom:10px;">';
+  var h = '<div class="pm-head-grid pm-head-grid2" style="display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:start;margin-bottom:10px;">';
 
 
 
@@ -7250,7 +7205,7 @@ function showPlayerModal(playerName) {
 
   h += '<span class="badge '+pc+'">'+p.pos+'</span>';
 
-  h += '<span style="font-family:var(--display);font-size:18px;letter-spacing:-.3px;line-height:1.1;">'+escHtml(p.name)+'</span>';
+  h += '<span class="pm-name" style="font-family:var(--display);font-size:18px;letter-spacing:-.3px;line-height:1.1;">'+escHtml(p.name)+'</span>';
 
   h += '</div>';
 
@@ -7293,6 +7248,8 @@ function showPlayerModal(playerName) {
 
   h += '</div>';
 
+  h += '<div class="pm-belowfold" style="min-width:0;">';
+
   // Projektion — FP + Sleeper nebeneinander, letzte Season darunter
 
   var hasFpProj = !!p.projFpts;
@@ -7305,7 +7262,7 @@ function showPlayerModal(playerName) {
 
     var cols = [hasFpProj, hasSlpProj, hasLast].filter(Boolean).length;
 
-    h += '<div style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:6px;margin-bottom:10px;">';
+    h += '<div class="pm-proj-grid" style="display:grid;grid-template-columns:repeat('+cols+',1fr);gap:6px;margin-bottom:10px;">';
 
 
 
@@ -7461,11 +7418,11 @@ function showPlayerModal(playerName) {
 
   // Spalte 3: Score + Positionsrang
 
-  h += '<div style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:76px;">';
+  h += '<div class="pm-score-col" style="display:flex;flex-direction:column;align-items:center;gap:6px;min-width:76px;">';
 
   h += '<div style="text-align:center;">';
 
-  h += '<div style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:42px;color:'+scoreColor+';line-height:1;text-shadow:0 0 20px '+scoreColor+';">'+rec.score+'</div>';
+  h += '<div class="pm-score-num" style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:42px;color:'+scoreColor+';line-height:1;text-shadow:0 0 20px '+scoreColor+';">'+rec.score+'</div>';
 
   h += '<div style="font-size:9px;font-family:var(--mono);color:var(--text3);letter-spacing:.15em;margin-top:2px;">SCORE</div>';
 
@@ -7505,7 +7462,7 @@ function showPlayerModal(playerName) {
 
   var tabBtnBase = 'font-family:var(--mono);font-weight:600;font-size:10px;letter-spacing:.08em;padding:8px 20px;border:none;cursor:pointer;border-radius:4px 4px 0 0;transition:all .12s;';
 
-  h += '<div style="display:flex;border-bottom:1px solid var(--border2);margin-bottom:14px;">';
+  h += '<div class="pm-tabbar" style="display:flex;border-bottom:1px solid var(--border2);margin-bottom:14px;">';
 
   h += '<button id="'+tabId+'_t1" onclick="modalTab(\''+tabId+'\',1)" style="'+tabBtnBase+'border-bottom:2px solid var(--amber);background:rgba(0,212,255,.06);color:var(--amber);"><svg class="ic" viewBox="0 0 20 20" style="width:13px;height:13px;vertical-align:-0.12em;margin-right:5px;"><use href="#ic-clipboard"/></svg>SCOUT</button>';
 
@@ -8322,25 +8279,17 @@ function renderRecommendations() {
 
     if(p.sleeperRank) h += '<span style="font-size:10px;color:var(--blue);font-family:var(--mono);">Slp '+p.sleeperRank+'</span>';
 
-    if(p.projFpts) h += '<span style="font-size:10px;color:var(--text2);font-family:var(--mono);">'+p.projFpts+'pts</span>';
+    if(p.projFpts) h += '<span style="font-size:10px;color:var(--text2);font-family:var(--mono);">'+p.projFpts+' proj pts</span>';
 
     h += '</div>';
 
     // Draft reason
 
-    h += '<div style="font-size:11px;color:var(--text);margin:5px 0;line-height:1.5;border-left:2px solid '+scoreColor+';padding-left:8px;">'+reason+'</div>';
+    h += '<div class="rec-reason" style="font-size:11px;color:var(--text);margin:5px 0;line-height:1.5;border-left:2px solid '+scoreColor+';padding-left:8px;">'+reason+'</div>';
 
     // Top icons: 3 pros + 1 neg
 
     h += '<div style="display:flex;gap:4px;align-items:center;margin-top:4px;">';
-
-    posF.slice(0,3).forEach(function(f){
-
-      h += '<span class="fm-icon fm-icon-pos" title="'+f.text+'">'+factorIcon(f.text)+'</span>';
-
-    });
-
-    if(negF[0]) h += '<span class="fm-icon fm-icon-neg" title="'+negF[0].text+'">'+factorIcon(negF[0].text)+'</span>';
 
     h += '<span style="font-size:9px;font-family:var(--mono);color:var(--text3);margin-left:6px;letter-spacing:.04em;">DETAILS →</span>';
 
