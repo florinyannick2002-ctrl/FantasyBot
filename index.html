@@ -259,9 +259,37 @@
 
         </div>
 
+        <div class="fn-trust" style="margin-bottom:1rem;">BUILT FOR 8–14 TEAM LEAGUES &nbsp;·&nbsp; PPR / HALF / STANDARD &nbsp;·&nbsp; LIVE SLEEPER SYNC</div>
+
 
 
         <p class="fn-hero-note">Want to test it first? Open Sleeper, start a free <strong>Mock Draft</strong>, copy the <strong>Draft ID</strong> and paste it here. It works exactly like a real draft.</p>
+
+        <div class="fn-mock" aria-hidden="true">
+
+          <div class="fn-mock-bar"><span></span><span></span><span></span><div class="fn-mock-title">LIVE DRAFT BOARD · ROUND 1 · PICK 3</div></div>
+
+          <div class="fn-mock-reco">
+
+            <div class="fn-mock-score">99</div>
+
+            <div class="fn-mock-info">
+
+              <div class="fn-mock-name"><span class="badge b-rb">RB</span> Bijan Robinson <span class="fn-mock-meta">ATL · Rank #1 · Slp 1.4</span></div>
+
+              <div class="fn-mock-verdict">TAKE NOW — tier closes before your next pick</div>
+
+            </div>
+
+          </div>
+
+          <div class="fn-mock-row"><span class="badge b-wr">WR</span><span class="fn-mock-rname">Ja&#39;Marr Chase</span><span class="fn-mock-gone">GONE 12%</span><span class="fn-mock-pts">96</span></div>
+
+          <div class="fn-mock-row"><span class="badge b-rb">RB</span><span class="fn-mock-rname">Saquon Barkley</span><span class="fn-mock-gone">GONE 38%</span><span class="fn-mock-pts">94</span></div>
+
+          <div class="fn-mock-row"><span class="badge b-wr">WR</span><span class="fn-mock-rname">Justin Jefferson</span><span class="fn-mock-gone">GONE 57%</span><span class="fn-mock-pts">93</span></div>
+
+        </div>
 
       </div>
 
@@ -322,7 +350,7 @@
 
 
     <!-- Features -->
-    <div class="fn-section" style="background:var(--bg2);">
+    <div class="fn-section" style="background:var(--void-2);">
 
       <div class="fn-wrap">
 
@@ -669,6 +697,7 @@
           Used to identify your picks in the draft board under "My Team".
 
         </p>
+        <div id="fn-username-status" class="fn-input-status" style="font-family:var(--mono);font-size:11px;margin-top:8px;min-height:14px;"></div>
 
       </div>
 
@@ -781,7 +810,7 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
         <button class="fn-btn-big ghost" style="font-size:11px;padding:10px 18px;" onclick="fnGoTo(2)">← Back</button>
 
-        <button class="fn-btn-big primary" onclick="fnGoTo(4)">Continue →</button>
+        <button class="fn-btn-big primary" onclick="fnResolveUserThenContinue()">Continue →</button>
 
       </div>
 
@@ -1242,7 +1271,7 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
       <div id="lineup-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:6px;">
 
-        <div class="empty-state" style="grid-column:1/-1;padding:1rem;">// Draft laden &amp; Username eingeben</div>
+        <div class="empty-state" style="grid-column:1/-1;padding:1rem;">// Load draft &amp; enter username</div>
 
       </div>
 
@@ -1258,11 +1287,11 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.875rem;">
 
-        <div class="section-label" style="margin-bottom:8px;">Team Stärke</div>
+        <div class="section-label" style="margin-bottom:8px;">Team Strength</div>
 
         <div id="team-strength" style="font-size:22px;font-weight:700;color:var(--green);">—</div>
 
-        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Ø Ranking meiner Picks</div>
+        <div style="font-size:11px;color:var(--text3);margin-top:2px;">Avg ranking of my picks</div>
 
       </div>
 
@@ -1270,7 +1299,7 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
       <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.875rem;">
 
-        <div class="section-label" style="margin-bottom:8px;">Positionsbedarf</div>
+        <div class="section-label" style="margin-bottom:8px;">Positional Needs</div>
 
         <div id="pos-need" style="font-size:12px;line-height:1.8;"></div>
 
@@ -1290,51 +1319,19 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
 
 
-    <!-- Draft Astellungen (Notfall) -->
+    <!-- Draft settings moved to "Draft Settings" tab. Hidden stubs kept so legacy sync/restore code stays valid. -->
 
-    <details style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem;">
+    <div style="display:none;">
 
-      <summary style="cursor:pointer;font-size:12px;color:var(--text3);font-family:var(--mono);"><svg class="ic" viewBox="0 0 20 20" style="width:12px;height:12px;vertical-align:-0.12em;margin-right:5px;"><use href="#ic-settings"/></svg>Draft Einstellungen (Notfall)</summary>
+      <input type="number" id="my-slot-input"/>
 
-      <div style="margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px;">
+      <input type="number" id="teams-input" value="10"/>
 
-        <div>
+      <select id="draft-type-select"><option value="snake">Snake Draft</option><option value="linear">Linear Draft</option><option value="3rdReversal">Snake + Third Round Reversal</option></select>
 
-          <div class="section-label" style="margin-bottom:6px;">My Draft Slot</div>
+      <button id="save-draft-settings-btn"></button>
 
-          <input type="number" id="my-slot-input" placeholder="e.g. 5" min="1" max="20" style="width:100%;"/>
-
-        </div>
-
-        <div>
-
-          <div class="section-label" style="margin-bottom:6px;">Anzahl Teams</div>
-
-          <input type="number" id="teams-input" placeholder="e.g. 10" min="2" max="20" value="10" style="width:100%;"/>
-
-        </div>
-
-      </div>
-
-      <div style="margin-bottom:10px;">
-
-        <div class="section-label" style="margin-bottom:6px;">Draft Typ</div>
-
-        <select id="draft-type-select" style="width:100%;">
-
-          <option value="snake">Snake Draft</option>
-
-          <option value="linear">Linear Draft</option>
-
-          <option value="3rdReversal">Snake + Third Round Reversal</option>
-
-        </select>
-
-      </div>
-
-      <button class="btn-ghost" id="save-draft-settings-btn" style="width:100%;">✓ Save</button>
-
-    </details>
+    </div>
 
 
 
@@ -1364,9 +1361,9 @@ Standard: no reception points (boosts RBs).">?</span></div>
 
       <div style="margin-bottom:8px;color:var(--intel-low);"><svg class="ic" viewBox="0 0 20 20" style="width:32px;height:32px;stroke-width:1.3;"><use href="#ic-file"/></svg></div>
 
-      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">FantasyPros CSV oder PDF hier reinziehen</div>
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:4px;">Drop FantasyPros CSV or PDF here</div>
 
-      <div style="font-size:12px;color:var(--text3);">oder klicken zum Auswählen, CSV wird empfohlen</div>
+      <div style="font-size:12px;color:var(--text3);">or click to browse — CSV recommended</div>
 
     </label>
 
@@ -1730,7 +1727,7 @@ on your roster slot counts.">?</span></div>
 
               <div style="font-size:13px;font-weight:600;">FantasyPros Projektionen CSV uploaden</div>
 
-              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Projections → QB/RB/WR/TE je herunterladen → Tab "Mein Ranking" uploaden</div>
+              <div style="font-size:11px;color:var(--text3);">fantasypros.com → Projections → QB/RB/WR/TE download each → upload in the "My Ranking" tab</div>
 
             </div>
 
@@ -1756,7 +1753,7 @@ on your roster slot counts.">?</span></div>
 
               <div style="font-size:13px;font-weight:600;">Sleeper Draft ID eintragen</div>
 
-              <div style="font-size:11px;color:var(--text3);">Sleeper App → Draft → Link kopieren → ID in Sidebar eingeben</div>
+              <div style="font-size:11px;color:var(--text3);">Sleeper App → Draft → copy link → paste ID in sidebar</div>
 
             </div>
 
@@ -1810,7 +1807,7 @@ on your roster slot counts.">?</span></div>
 
               <div style="font-size:13px;font-weight:600;">Top 50 Gamesr durchschauen</div>
 
-              <div style="font-size:11px;color:var(--text3);">Eigene Rankings mit Sleeper ADP vergleichen, grosse Unterschiede notieren</div>
+              <div style="font-size:11px;color:var(--text3);">Compare your rankings vs. Sleeper ADP and flag big gaps</div>
 
             </div>
 
@@ -2074,6 +2071,15 @@ on your roster slot counts.">?</span></div>
 
 var customRankings = [];
 var currentSortMode = 'sleeper'; // 'sleeper' | 'custom'
+// dataSource: persistent user choice. 'sleeper' = ADP only, 'fantasypros' = CSV uploads. Default 'sleeper' for new users.
+var dataSource = (function(){ try{ return localStorage.getItem('fantasybot_source') || 'sleeper'; }catch(e){ return 'sleeper'; } })();
+var colSort = null; // null = default tier/rank view; else {key,dir}
+function setColSort(key){
+  if(colSort && colSort.key===key){ colSort.dir = colSort.dir==='asc' ? 'desc' : 'asc'; }
+  else { colSort = {key:key, dir: (key==='name'||key==='pos'||key==='rank') ? 'asc' : 'desc'}; }
+  if(key==='rank' && colSort.dir==='asc'){ colSort = null; } // back to default tier view
+  renderPlayers();
+}
 
 function toggleSortMode(){
   currentSortMode = (currentSortMode === 'sleeper') ? 'custom' : 'sleeper';
@@ -2114,9 +2120,9 @@ function escHtml(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/
 
 
 
-function saveRankings(){try{localStorage.setItem('fantasybot_rankings',JSON.stringify(customRankings));}catch(e){}}
+function saveRankings(){/* session-only: rankings are not persisted across reloads */ try{localStorage.removeItem('fantasybot_rankings');}catch(e){}}
 
-function loadRankings(){try{var s=localStorage.getItem('fantasybot_rankings');if(s){customRankings=JSON.parse(s);return true;}}catch(e){}return false;}
+function loadRankings(){/* session-only: nothing restored on reload */ return false;}
 
 function saveNotes(){try{localStorage.setItem('fantasybot_notes',JSON.stringify(playerNotes));}catch(e){}}
 
@@ -2139,6 +2145,16 @@ function showTab(name){
   if(name==='notes')renderNotes();
 
   if(name==='draftsettings')renderDraftSettings();
+
+  if(name==='myteam'){
+
+    // Re-pull picks if a draft is live (catches slot set after picks loaded), else just re-render
+
+    if(typeof draftId!=='undefined' && draftId && typeof loadPicks==='function'){ loadPicks(); }
+
+    else if(typeof renderMyTeam==='function'){ renderMyTeam(); }
+
+  }
 
 }
 
@@ -2168,7 +2184,9 @@ function applyADP(){
 
     }
 
-    // FantasyPros projected points
+    // FantasyPros projected points (built-in) — skip entirely in Sleeper-only mode
+
+    if(dataSource!=='sleeper'){
 
     if(FP_PROJ[p.name]!=null){
 
@@ -2195,6 +2213,8 @@ function applyADP(){
         }
 
       }
+
+    }
 
     }
 
@@ -2510,8 +2530,35 @@ function survDebug(){
 
 function renderPlayers(){
 
+  var _stBtn=document.getElementById('sort-toggle-btn'); if(_stBtn) _stBtn.style.display=(dataSource==='sleeper')?'none':'';
+
   var search=(document.getElementById('search-input').value||'').toLowerCase();
 
+  // self-heal: rebuild allPlayers from sleeperMap if empty in Sleeper-only mode
+  if(!useCustom && (!allPlayers || !allPlayers.length) && typeof sleeperMap!=='undefined' && Object.keys(sleeperMap).length){
+    allPlayers = Object.values(sleeperMap).map(function(p){
+      var key = normName(p.name);
+      var adpRank = null;
+      if(typeof SLEEPER_ADP!=='undefined'){
+        if(SLEEPER_ADP[key] != null) adpRank = SLEEPER_ADP[key];
+        else { for(var n in SLEEPER_ADP){ if(normName(n)===key){ adpRank = SLEEPER_ADP[n]; break; } } }
+      }
+      var finalRank = adpRank != null ? adpRank : p.sleeperRank;
+      return Object.assign({}, p, {sleeperRank: finalRank, sleeperId: p.id, _hasAdp: adpRank != null});
+    })
+    .filter(function(p){
+      if(!p.sleeperRank) return false;
+      if(!p.team && p.pos!=='DEF' && p.pos!=='K') return false;
+      return true;
+    })
+    .sort(function(a,b){
+      if(a._hasAdp && !b._hasAdp) return -1;
+      if(!a._hasAdp && b._hasAdp) return 1;
+      return a.sleeperRank - b.sleeperRank;
+    })
+    .map(function(p,i){ return Object.assign({}, p, {rank:i+1, tier:Math.min(Math.ceil((i+1)/30),6)}); });
+    if(typeof applyByes==='function') applyByes(allPlayers);
+  }
   var source=(useCustom && customRankings.length)?customRankings:allPlayers;
 
   // Apply sort mode without mutating source
@@ -2572,9 +2619,32 @@ function renderPlayers(){
 
   }
 
+  var _flatMode = !!colSort;
+  if(_flatMode){
+    var _sm = _survMap;
+    var _val = function(p){
+      var pid=p.sleeperId||p.id||p.name;
+      switch(colSort.key){
+        case 'pos':   return p.pos||'';
+        case 'name':  return (p.name||'').toLowerCase();
+        case 'gone':  return (_sm.ok && _sm.map[pid]!=null) ? _sm.map[pid] : -1;
+        case 'pts':   return p.projFpts || p.sleeperProjPts || 0;
+        case 'score': return calcDraftScore(p).score;
+        case 'rank':  return (p.sleeperRank!=null?p.sleeperRank:p.rank)||999;
+        default:      return 0;
+      }
+    };
+    var _dir = colSort.dir==='asc' ? 1 : -1;
+    filtered = filtered.slice().sort(function(a,b){
+      var va=_val(a), vb=_val(b);
+      if(typeof va==='string'){ return va<vb?-1*_dir : va>vb?1*_dir : 0; }
+      return (va-vb)*_dir;
+    });
+  }
   var byTier={};
 
-  filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);});
+  if(_flatMode){ byTier[0]=filtered; }
+  else { filtered.forEach(function(p){var t=p.tier||6;if(!byTier[t])byTier[t]=[];byTier[t].push(p);}); }
 
   
 
@@ -2646,7 +2716,16 @@ function renderPlayers(){
 
   var h='<div class="player-list">';
   // sticky column header
-  h+='<div class="pc-head">'+'<div class="pc-col pc-rank">#</div>'+'<div class="pc-col pc-pos">POS</div>'+'<div class="pc-col pc-name">PLAYER</div>'+'<div class="pc-col pc-gone">GONE</div>'+'<div class="pc-col pc-pts">PROJ PTS</div>'+'<div class="pc-col pc-score">SCORE</div>'+'</div>';
+  var _arrow = function(k){ if(!colSort||colSort.key!==k) return ''; return '<span class="pc-sort-arr">'+(colSort.dir==='asc'?'▲':'▼')+'</span>'; };
+  var _hc = function(k){ return (colSort&&colSort.key===k)?' pc-col-active':''; };
+  h+='<div class="pc-head">'
+    +'<div class="pc-col pc-rank pc-col-sort'+_hc('rank')+'" onclick="setColSort(\'rank\')">#'+_arrow('rank')+'</div>'
+    +'<div class="pc-col pc-pos pc-col-sort'+_hc('pos')+'" onclick="setColSort(\'pos\')">POS'+_arrow('pos')+'</div>'
+    +'<div class="pc-col pc-name pc-col-sort'+_hc('name')+'" onclick="setColSort(\'name\')">PLAYER'+_arrow('name')+'</div>'
+    +'<div class="pc-col pc-gone pc-col-sort'+_hc('gone')+'" onclick="setColSort(\'gone\')">GONE'+_arrow('gone')+'</div>'
+    +'<div class="pc-col pc-pts pc-col-sort'+_hc('pts')+'" onclick="setColSort(\'pts\')">PROJ PTS'+_arrow('pts')+'</div>'
+    +'<div class="pc-col pc-score pc-col-sort'+_hc('score')+'" onclick="setColSort(\'score\')">SCORE'+_arrow('score')+'</div>'
+    +'</div>';
 
   Object.keys(byTier).sort(function(a,b){return+a-+b;}).forEach(function(tier){
 
@@ -2658,7 +2737,8 @@ function renderPlayers(){
 
     var _tn=+tier;
 
-    if(_tn===1) {
+    if(_flatMode){ /* column-sorted: no tier separators */ }
+    else if(_tn===1) {
 
       h+='<div class="tier-header t1" style="grid-column:1/-1;"><span class="tier-line"></span>'
 
@@ -2842,13 +2922,13 @@ function renderPlayers(){
 
       if(p.sleeperId){
 
-        var initials=(p.name||'?').split(' ').map(function(w){return w[0];}).join('').substring(0,2);
+        var initials=((p.name||'').split(' ').map(function(w){return w.charAt(0);}).join('').substring(0,2).toUpperCase()||'?');
 
         imgHtml='<img class="pcard-img" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\';" /><span class="pcard-img-fallback" style="display:none;">'+initials+'</span>';
 
       } else {
 
-        imgHtml='<span class="pcard-img-fallback">?</span>';
+        imgHtml='<span class="pcard-img-fallback">'+((p.name||'').split(' ').map(function(w){return w.charAt(0);}).join('').substring(0,2).toUpperCase()||'?')+'</span>';
 
       }
 
@@ -2874,7 +2954,7 @@ function renderPlayers(){
       // col 5: pts
       // projection: FantasyPros if loaded, else Sleeper
       var _ptsCell='';
-      if(p.projFpts) _ptsCell='<span class="pc-pts-val">'+p.projFpts+'</span><span class="pc-pts-u">proj</span>';
+      if(dataSource!=='sleeper' && p.projFpts) _ptsCell='<span class="pc-pts-val">'+p.projFpts+'</span><span class="pc-pts-u">proj</span>';
       else if(p.sleeperProjPts) _ptsCell='<span class="pc-pts-val">'+p.sleeperProjPts+'</span><span class="pc-pts-u">proj</span>';
       h+='<div class="pc-col pc-pts">'+_ptsCell+'</div>';
 
@@ -2972,7 +3052,7 @@ function renderRankingList(){
 
   if(!customRankings.length){
 
-    list.innerHTML='<div class="empty-state">// Noch kein Ranking, CSV hochladen</div>';
+    list.innerHTML='<div class="empty-state">// No ranking yet — upload a CSV</div>';
 
     if(delBtn)delBtn.style.display='none';
 
@@ -3100,7 +3180,7 @@ function importBulk(){
 
 function clearRankings(){
 
-  if(!confirm('Rankings löschen?'))return;
+  if(!confirm('Delete rankings?'))return;
 
   customRankings=[];useCustom=false;saveRankings();renderRankingList();renderPlayers();
 
@@ -3236,31 +3316,71 @@ function loadDemo(){
 
   customRankings=[
 
-    {id:'d1',name:"Ja'Marr Chase",pos:'WR',team:'CIN',rank:1,tier:1,bye:1,sleeperRank:3.4},
+    {id:'d1',name:"Ja'Marr Chase",pos:'WR',team:'CIN',rank:1,tier:1,bye:10,sleeperRank:3.4,sleeperProjPts:348},
 
-    {id:'d2',name:'Bijan Robinson',pos:'RB',team:'ATL',rank:2,tier:1,bye:1,sleeperRank:1.4},
+    {id:'d2',name:'Bijan Robinson',pos:'RB',team:'ATL',rank:2,tier:1,bye:5,sleeperRank:1.4,sleeperProjPts:331},
 
-    {id:'d3',name:'Puka Nacua',pos:'WR',team:'LAR',rank:3,tier:1,bye:2,sleeperRank:4.9},
+    {id:'d3',name:'Puka Nacua',pos:'WR',team:'LAR',rank:3,tier:1,bye:8,sleeperRank:4.9,sleeperProjPts:318},
 
-    {id:'d4',name:'Jaxon Smith-Njigba',pos:'WR',team:'SEA',rank:4,tier:1,bye:3,sleeperRank:5.4},
+    {id:'d4',name:'Jaxon Smith-Njigba',pos:'WR',team:'SEA',rank:4,tier:1,bye:9,sleeperRank:5.4,sleeperProjPts:312},
 
-    {id:'d5',name:'Jahmyr Gibbs',pos:'RB',team:'DET',rank:5,tier:2,bye:2,sleeperRank:2.9},
+    {id:'d5',name:'Jahmyr Gibbs',pos:'RB',team:'DET',rank:5,tier:2,bye:9,sleeperRank:2.9,sleeperProjPts:324},
 
-    {id:'d6',name:"Amon-Ra St. Brown",pos:'WR',team:'DET',rank:6,tier:2,bye:4,sleeperRank:11.2},
+    {id:'d6',name:'Amon-Ra St. Brown',pos:'WR',team:'DET',rank:6,tier:2,bye:9,sleeperRank:11.2,sleeperProjPts:305},
 
-    {id:'d7',name:'CeeDee Lamb',pos:'WR',team:'DAL',rank:7,tier:2,bye:5,sleeperRank:10.6},
+    {id:'d7',name:'CeeDee Lamb',pos:'WR',team:'DAL',rank:7,tier:2,bye:10,sleeperRank:10.6,sleeperProjPts:301},
 
-    {id:'d8',name:'Christian McCaffrey',pos:'RB',team:'SF',rank:8,tier:2,bye:3,sleeperRank:6.7},
+    {id:'d8',name:'Christian McCaffrey',pos:'RB',team:'SF',rank:8,tier:2,bye:14,sleeperRank:6.7,sleeperProjPts:296},
 
-    {id:'d9',name:'Justin Jefferson',pos:'WR',team:'MIN',rank:9,tier:2,bye:6,sleeperRank:12.4},
+    {id:'d9',name:'Justin Jefferson',pos:'WR',team:'MIN',rank:9,tier:2,bye:6,sleeperRank:12.4,sleeperProjPts:308},
 
-    {id:'d10',name:'Josh Allen',pos:'QB',team:'BUF',rank:10,tier:3,bye:7,sleeperRank:28.2},
+    {id:'d10',name:'Josh Allen',pos:'QB',team:'BUF',rank:10,tier:3,bye:7,sleeperRank:28.2,sleeperProjPts:392},
 
-    {id:'d11',name:'Trey McBride',pos:'TE',team:'ARI',rank:11,tier:3,bye:null,sleeperRank:18.7}
+    {id:'d11',name:'Trey McBride',pos:'TE',team:'ARI',rank:11,tier:3,bye:8,sleeperRank:18.7,sleeperProjPts:264},
+
+    {id:'d12',name:'Saquon Barkley',pos:'RB',team:'PHI',rank:12,tier:2,bye:9,sleeperRank:7.8,sleeperProjPts:290},
+
+    {id:'d13',name:'Derrick Henry',pos:'RB',team:'BAL',rank:13,tier:2,bye:7,sleeperRank:13.5,sleeperProjPts:282},
+
+    {id:'d14',name:'Malik Nabers',pos:'WR',team:'NYG',rank:14,tier:2,bye:14,sleeperRank:9.3,sleeperProjPts:295},
+
+    {id:'d15',name:'Nico Collins',pos:'WR',team:'HOU',rank:15,tier:3,bye:6,sleeperRank:16.1,sleeperProjPts:274},
+
+    {id:'d16',name:'Brock Bowers',pos:'TE',team:'LV',rank:16,tier:3,bye:8,sleeperRank:14.7,sleeperProjPts:270},
+
+    {id:'d17',name:"De'Von Achane",pos:'RB',team:'MIA',rank:17,tier:3,bye:12,sleeperRank:15.2,sleeperProjPts:268},
+
+    {id:'d18',name:'Ashton Jeanty',pos:'RB',team:'LV',rank:18,tier:3,bye:8,sleeperRank:17.4,sleeperProjPts:265},
+
+    {id:'d19',name:'Drake London',pos:'WR',team:'ATL',rank:19,tier:3,bye:5,sleeperRank:19.6,sleeperProjPts:262},
+
+    {id:'d20',name:'A.J. Brown',pos:'WR',team:'PHI',rank:20,tier:3,bye:9,sleeperRank:21.3,sleeperProjPts:258},
+
+    {id:'d21',name:'Lamar Jackson',pos:'QB',team:'BAL',rank:21,tier:4,bye:7,sleeperRank:30.5,sleeperProjPts:378},
+
+    {id:'d22',name:'Bucky Irving',pos:'RB',team:'TB',rank:22,tier:4,bye:11,sleeperRank:22.8,sleeperProjPts:250},
+
+    {id:'d23',name:'Tee Higgins',pos:'WR',team:'CIN',rank:23,tier:4,bye:10,sleeperRank:24.1,sleeperProjPts:244},
+
+    {id:'d24',name:'Garrett Wilson',pos:'WR',team:'NYJ',rank:24,tier:4,bye:12,sleeperRank:26.7,sleeperProjPts:240},
+
+    {id:'d25',name:'Kyren Williams',pos:'RB',team:'LAR',rank:25,tier:4,bye:8,sleeperRank:27.9,sleeperProjPts:236},
+
+    {id:'d26',name:'Tyreek Hill',pos:'WR',team:'MIA',rank:26,tier:4,bye:12,sleeperRank:31.2,sleeperProjPts:232},
+
+    {id:'d27',name:'Jalen Hurts',pos:'QB',team:'PHI',rank:27,tier:4,bye:9,sleeperRank:33.8,sleeperProjPts:360},
+
+    {id:'d28',name:'George Kittle',pos:'TE',team:'SF',rank:28,tier:4,bye:14,sleeperRank:35.4,sleeperProjPts:228},
+
+    {id:'d29',name:'Chase Brown',pos:'RB',team:'CIN',rank:29,tier:5,bye:10,sleeperRank:29.6,sleeperProjPts:230},
+
+    {id:'d30',name:'Jonathan Taylor',pos:'RB',team:'IND',rank:30,tier:5,bye:11,sleeperRank:23.4,sleeperProjPts:248}
 
   ];
 
   useCustom=true;
+
+  totalTeams=12;myDraftSlot=10;
 
   draftedIds.clear();draftedIds.add('d1');draftedIds.add('d3');
 
@@ -3461,7 +3581,7 @@ function handlePdfFile(file){
 
     status.style.color='var(--text2)';
 
-    status.textContent='// CSV wird gelesen...';
+    status.textContent='// Reading CSV...';
 
     var reader=new FileReader();
 
@@ -3481,7 +3601,7 @@ function handlePdfFile(file){
 
   status.style.color='var(--text2)';
 
-  status.textContent='// PDF wird gelesen...';
+  status.textContent='// Reading PDF...';
 
   if(!window.pdfjsLib){
 
@@ -3581,6 +3701,37 @@ function parseCSV(text){
 
   }
 
+  // Enrich CSV players with Sleeper bio/proj/rank (sleeperMap already built on draft load)
+  if(Object.keys(sleeperMap).length){
+    customRankings.forEach(function(cr){
+      var match=sleeperMap[normSleeperName(cr.name)];
+      if(match){
+        cr.sleeperId=match.id;
+        if(!cr.team)cr.team=match.team;
+        if(match.age)cr.age=match.age;
+        if(match.height)cr.height=match.height;
+        if(match.weight)cr.weight=match.weight;
+        if(match.exp!=null)cr.exp=match.exp;
+        if(match.college)cr.college=match.college;
+        if(match.number)cr.number=match.number;
+        if(match.injuryStatus)cr.injuryStatus=match.injuryStatus;
+        if(match.playerStatus)cr.playerStatus=match.playerStatus;
+        if(match.bye&&!cr.bye)cr.bye=match.bye;
+        if(match.sleeperRank!=null)cr.sleeperRank=match.sleeperRank;
+        if(match.sleeperProjPts!=null)cr.sleeperProjPts=match.sleeperProjPts;
+      }
+    });
+  }
+  // Attach Sleeper season stats / proj detail to CSV players (dicts persist from draft load)
+  if(customRankings.length){
+    customRankings.forEach(function(cr){
+      if(!cr.sleeperId) return;
+      var last = SLEEPER_STATS_2024[cr.sleeperId];
+      var proj = SLEEPER_PROJ_2026[cr.sleeperId];
+      if(last){ cr.lastSeasonPts = Math.round(last*10)/10; cr.lastStats = SLEEPER_STATS_DETAIL[cr.sleeperId]||null; }
+      if(proj){ cr.sleeperProjPts = Math.round(proj*10)/10; cr.projStats = SLEEPER_PROJ_DETAIL[cr.sleeperId]||null; }
+    });
+  }
   applyADP();
 
   useCustom=true;
@@ -3827,7 +3978,29 @@ async function fetchProjectedPicks(){
 
 function renderMyTeam(){
 
-  if(!myPicks.length) return;
+  if(!myPicks.length){
+
+    var _lg=document.getElementById('lineup-grid');
+
+    if(_lg){
+
+      var _msg;
+
+      if(typeof draftId==='undefined' || !draftId)      _msg='// Load a draft first (Draft Board → enter Draft ID)';
+
+      else if(!myDraftSlot)                              _msg='// Draft loaded, but your slot is unknown. Set it in Draft Settings (My Draft Slot) or check your Sleeper username.';
+
+      else                                               _msg='// No picks yet — your roster fills as you draft.';
+
+      _lg.innerHTML='<div class="empty-state" style="grid-column:1/-1;padding:1rem;">'+_msg+'</div>';
+
+    }
+
+    var _ar=document.getElementById('analysis-row'); if(_ar) _ar.style.display='none';
+
+    return;
+
+  }
 
   
 
@@ -4253,25 +4426,81 @@ function strategyMultiplier(pos, strategy, have, stillNeed) {
 
   var mult = 1.0;
 
-  if     (m==='rb_heavy'   && pos==='RB' && stillNeed>0) mult = 1.15;
+  // ── Main strategy ─────────────────────────────────────────────────────────
 
-  else if(m==='wr_heavy'   && pos==='WR' && stillNeed>0) mult = 1.15;
+  if     (m==='rb_heavy'   && pos==='RB' && stillNeed>0) mult = 1.18;
 
-  else if(m==='te_premium' && pos==='TE' && stillNeed>0) mult = 1.15;
+  else if(m==='rb_heavy'   && pos==='WR')                mult = 0.92;
 
-  else if(m==='hero_rb'    && pos==='RB' && have===0)    mult = 1.20;
+  else if(m==='wr_heavy'   && pos==='WR' && stillNeed>0) mult = 1.18;
 
-  else if(m==='hero_rb'    && pos==='RB' && have>=1)     mult = 0.85; // soft penalty for 2nd RB early
+  else if(m==='wr_heavy'   && pos==='RB')                mult = 0.92;
 
-  else if(m==='zero_rb'    && pos==='WR' && stillNeed>0) mult = 1.15;
+  else if(m==='te_premium' && pos==='TE' && stillNeed>0) mult = 1.30; // was 1.15 — make it real
 
-  else if(m==='zero_rb'    && pos==='TE' && stillNeed>0) mult = 1.10;
+  else if(m==='hero_rb'    && pos==='RB' && have===0)    mult = 1.22;
 
-  if(sc==='ppr'      && pos==='WR' && stillNeed>0) mult = Math.min(1.25, mult + 0.05);
+  else if(m==='hero_rb'    && pos==='RB' && have>=1)     mult = 0.80; // strong penalty for 2nd RB early
 
-  if(sc==='standard' && pos==='RB' && stillNeed>0) mult = Math.min(1.25, mult + 0.05);
+  else if(m==='zero_rb'    && pos==='RB')                mult = 0.78; // actively suppress RBs
 
-  return Math.max(0.85, Math.min(1.25, mult));
+  else if(m==='zero_rb'    && pos==='WR' && stillNeed>0) mult = 1.18;
+
+  else if(m==='zero_rb'    && pos==='TE' && stillNeed>0) mult = 1.12;
+
+  // ── QB timing (4 distinct stages) ─────────────────────────────────────────
+
+  if(pos==='QB' && have < (strategy.maxQB||2)){
+
+    var qt = strategy.qbTiming;
+
+    if     (qt==='two_qb') mult *= 1.30; // need 2 QBs — most aggressive
+
+    else if(qt==='early')  mult *= 1.18;
+
+    else if(qt==='mid')    mult *= 1.05;
+
+    else                   mult *= 0.82; // late: actively suppress early QB
+
+  }
+
+  // ── TE timing (mirrors QB) ────────────────────────────────────────────────
+
+  if(pos==='TE' && have < (strategy.maxTE||2) && m!=='te_premium'){
+
+    var tt = strategy.teTiming;
+
+    if     (tt==='early')  mult *= 1.15;
+
+    else if(tt==='mid')    mult *= 1.02;
+
+    else                   mult *= 0.85; // late: stream, suppress early TE
+
+  }
+
+  // ── Superflex / 2QB: QBs broadly more valuable (complements VOR baseline) ──
+
+  if((strategy.rosterType==='superflex'||strategy.rosterType==='2qb') && pos==='QB' && have < 2){
+
+    mult *= (strategy.rosterType==='2qb' ? 1.22 : 1.15);
+
+  }
+
+  // ── Scoring format nudge ──────────────────────────────────────────────────
+
+  if(sc==='ppr'       && pos==='WR' && stillNeed>0) mult *= 1.05;
+
+  if(sc==='ppr'       && pos==='TE' && stillNeed>0) mult *= 1.04; // TEs gain in PPR
+
+  if(sc==='half_ppr'  && pos==='WR' && stillNeed>0) mult *= 1.02;
+
+  if(sc==='standard'  && pos==='RB' && stillNeed>0) mult *= 1.06; // RBs gain in standard
+
+  // Wider cap (0.70–1.45) so the stages above are actually distinguishable;
+
+  // the global x1.8 strategy-weight + normalization keep totals sane.
+
+  return Math.max(0.70, Math.min(1.45, mult));
 
 }
 
@@ -4282,6 +4511,68 @@ function strategyMultiplier(pos, strategy, have, stillNeed) {
 // DRAFT ASSISTANT — SCORING ALGORITHM
 
 // ══════════════════════════════════════════════
+
+
+
+// Board-relative score normalization: max raw score across available players,
+
+// cached per draft-state (same invalidation idea as survivalMap). A raw-pass
+
+// flag (window._NORM_PASS) makes calcDraftScore return its pre-norm raw score,
+
+// so scanning the board doesn't recurse into normalization.
+
+function boardScoreMax(){
+
+  var key=[draftedIds.size, myDraftSlot, totalTeams, draftType,
+
+           (useCustom?customRankings.length:(allPlayers?allPlayers.length:0)),
+
+           strategy.main, strategy.qbTiming, strategy.teTiming, strategy.risk,
+
+           strategy.scoring, (window._picksUntilMe||0)].join(':');
+
+  var c=window._normCache; if(c && c.key===key) return c;
+
+  var src=(useCustom && customRankings.length)?customRankings:(allPlayers||[]);
+
+  var avail=src.filter(function(p){ return !draftedIds.has(p.sleeperId||p.id||p.name); });
+
+  var raws=[];
+
+  window._NORM_PASS=true;
+
+  try{
+
+    for(var i=0;i<avail.length;i++){
+
+      var r=calcDraftScore(avail[i]);
+
+      raws.push((r && r._raw!=null)?r._raw:0);
+
+    }
+
+  } finally { window._NORM_PASS=false; }
+
+  raws.sort(function(a,b){return a-b;});
+
+  var max = raws.length ? raws[raws.length-1] : 0;
+
+  // floor = 15th percentile of available raws (robust low anchor; ignores the
+
+  // single worst scrub so the band isn't dragged down by one zero).
+
+  var floor = raws.length ? raws[Math.floor(raws.length*0.15)] : 0;
+
+  if(floor >= max) floor = 0; // degenerate guard
+
+  var out={key:key, max:max, floor:floor};
+
+  window._normCache=out;
+
+  return out;
+
+}
 
 
 
@@ -4415,17 +4706,27 @@ function calcDraftScore(player) {
 
   
 
+  // 3-tier value source: FP projection (CSV) -> Sleeper projection -> none.
+
+  // Never mutate the player object (Sleeper-only must keep projFpts null).
+
+  function basePts(p){ if(!p) return 0; return (p.projFpts!=null?p.projFpts : (p.sleeperProjPts!=null?p.sleeperProjPts : 0)); }
+
   function getDynPts(p) {
 
-    if(!p || !p.projFpts) return 0;
+    var bp = basePts(p);
 
-    var high = p.projHigh || p.projFpts;
+    if(!bp) return 0;
 
-    return (p.projFpts * floorWeight) + (high * upsideWeight);
+    var high = (p.projHigh!=null ? p.projHigh : bp); // range only exists in CSV mode
+
+    return (bp * floorWeight) + (high * upsideWeight);
 
   }
 
   var playerPts = getDynPts(player);
+
+  var _hasPts = basePts(player) > 0;
 
 
 
@@ -4477,55 +4778,169 @@ function calcDraftScore(player) {
 
 
 
-  if(player.rank) { // works for both Sleeper-only (allPlayers) and CSV (customRankings)
+  // ── VOR BASE (V4) ─────────────────────────────────────────────────────────
 
-    var altByRank = altPool.slice().sort(function(a,b){ return (a.rank||999)-(b.rank||999); })[0] || null;
+  // Replacement = best alternative at this position you'd realistically face
 
-    var altRank = altByRank ? (altByRank.rank||999) : (playerSurvives ? rank : Math.max(rank, 50));
+  // at your NEXT pick (altPool already encodes the survive/gone split).
 
+  // Points-first: when projections exist, VOR = points over replacement.
 
+  // Rank-curve fallback only when neither projFpts nor sleeperProjPts exist.
 
-    // Smoothed rank-VOR curve (exponent 0.75 prevents early-round cap)
+  var vorScore = 0;
 
-    var rankDiff = Math.max(0, altRank - rank);
-
-    var relativeAdv = rankDiff / Math.pow(Math.max(1, rank), 0.75);
-
-    var rankVorScore = relativeAdv * 20; // raised from 18 to compensate for removed posScale
+  var REPLACEMENT_PTS = 0;
 
 
 
-    var zScorePoints = 0;
+  if(_hasPts) {
 
-    if(topAltsByPts.length > 0 && playerPts > 0) {
+    // VORP: replacement = the points of the player at this position's league
 
-      var altPtsArray = topAltsByPts.map(getDynPts);
+    // starter baseline. Baseline index = starters of this pos across all teams,
 
-      var mu = altPtsArray.reduce(function(a,b){return a+b;},0) / altPtsArray.length;
+    // plus a share of FLEX for RB/WR/TE. Computed from the FULL position pool
 
-      var variance = altPtsArray.reduce(function(a,b){return a + Math.pow(b-mu, 2);},0) / altPtsArray.length;
+    // (raw value, independent of who survives -> that's URGENCY's job, not VALUE).
 
-      var sigma = Math.max(8.0, Math.sqrt(variance));
+    var _flex = (rosterSlots.flex||0) * totalTeams;
 
-      var zScore = (playerPts - mu) / sigma;
+    var _flexShare = {RB:0.45, WR:0.45, TE:0.10}; // typical flex usage split
 
-      zScorePoints = Math.max(0, zScore * 12); // raised from 10 to compensate for removed posScale
+    // Superflex/2QB: a second QB starts most weeks -> effective QB starters/team
 
-      sub.vorGap = Math.round(playerPts - mu);
+    // rises, pushing the QB replacement baseline deeper so elite QB VOR climbs.
+
+    var _qbPerTeam = (rosterSlots.qb||1);
+
+    if(strategy.rosterType==='2qb')            _qbPerTeam = Math.max(_qbPerTeam, 2);
+
+    else if(strategy.rosterType==='superflex') _qbPerTeam = Math.max(_qbPerTeam, 1.7);
+
+    var _baseCount = {
+
+      QB: Math.round(_qbPerTeam * totalTeams),
+
+      RB: (rosterSlots.rb||2) * totalTeams + Math.round(_flex * _flexShare.RB),
+
+      WR: (rosterSlots.wr||2) * totalTeams + Math.round(_flex * _flexShare.WR),
+
+      TE: (rosterSlots.te||1) * totalTeams + Math.round(_flex * _flexShare.TE),
+
+      K:  (rosterSlots.k||1)  * totalTeams,
+
+      DEF:(rosterSlots.def||1)* totalTeams
+
+    };
+
+    var _N = _baseCount[pos] || (12 * totalTeams);
+
+    // Full pool at this position, by points desc (drafted + available = true value)
+
+    var _posAll = source.filter(function(p){ return p.pos===pos && basePts(p)>0; })
+
+                        .sort(function(a,b){ return basePts(b)-basePts(a); });
+
+    if(_posAll.length){
+
+      // baseline player = the one at index _N-1 (clamped); if pool shorter, use last
+
+      var _idx = Math.min(_posAll.length-1, Math.max(0, _N-1));
+
+      REPLACEMENT_PTS = basePts(_posAll[_idx]);
+
+    } else {
+
+      REPLACEMENT_PTS = playerPts * 0.6;
+
+    }
+
+    var ptsVor = basePts(player) - REPLACEMENT_PTS;  // raw points over replacement (use floor pts, not upside-weighted)
+
+
+
+    // ── FP-RANK BLEND (CSV mode only) ─────────────────────────────────────────
+
+    // FantasyPros expert order is trusted but secondary to points. Convert this
+
+    // player's POSITIONAL rank (per FP) into an implied points-VOR by reading the
+
+    // points of whoever actually sits at that positional slot, then blend 70/30.
+
+    // If FP ranks him above his own points, implied VOR > ptsVor -> small lift.
+
+    var _useFP = (useCustom && customRankings.length && player.rank);
+
+    if(_useFP){
+
+      // _posAll is already points-sorted desc for this position.
+
+      // FP positional rank = how many same-pos players FP ranks ahead of him.
+
+      var _fpPosRank = source.filter(function(p){
+
+        return p.pos===pos && (p.rank||999) < (player.rank||999);
+
+      }).length; // 0-based slot FP assigns him within the position
+
+      var _fpIdx = Math.min(_posAll.length-1, Math.max(0, _fpPosRank));
+
+      var _fpImpliedPts = _posAll.length ? basePts(_posAll[_fpIdx]) : basePts(player);
+
+      var _fpVor = _fpImpliedPts - REPLACEMENT_PTS;
+
+      ptsVor = ptsVor * 0.70 + _fpVor * 0.30; // points lead, FP nudges
 
     }
 
 
 
-    // Pure objective VOR: no league-setting multiplier
+    sub.vorGap = Math.round(ptsVor);
 
-    var rawVor = rankVorScore * 0.65 + zScorePoints * 0.35;
+    // Scale into the working 0-40 band. Negative VOR (below replacement) floors at 0.
 
-    var vorScore = Math.min(28, Math.round(rawVor)); // cap 25→28 to keep max VALUE reachable
+    // Divisor tuned so a strong positional VOR (~90+ pts) approaches the 40 cap.
 
-    valueScore += vorScore; sub.vor = vorScore;
+    vorScore = Math.max(0, Math.min(40, Math.round(ptsVor * 0.42)));
+
+  } else if(player.rank) {
+
+    // Rank-VOR fallback (Sleeper-only with no projection at all).
+
+    var altByRank = altPool.slice().sort(function(a,b){ return (a.rank||999)-(b.rank||999); })[0] || null;
+
+    var altRank = altByRank ? (altByRank.rank||999) : (playerSurvives ? rank : Math.max(rank, 50));
+
+    var rankDiff = Math.max(0, altRank - rank);
+
+    var relativeAdv = rankDiff / Math.pow(Math.max(1, rank), 0.75);
+
+    vorScore = Math.max(0, Math.min(40, Math.round(relativeAdv * 26)));
+
+    sub.vorGap = Math.round(rankDiff);
+
+  } else {
+
+    if(rank <= 12) vorScore = 24;
+
+    else if(rank <= 24) vorScore = 18;
+
+    else if(rank <= 48) vorScore = 12;
+
+    else if(rank <= 72) vorScore = 6;
+
+  }
+
+  valueScore += vorScore; sub.vor = vorScore;
 
 
+
+  // Value narrative (points-aware when available, else rank-based)
+
+  (function(){
+
+    var altByRank = altPool.slice().sort(function(a,b){ return (a.rank||999)-(b.rank||999); })[0] || null;
 
     if(playerSurvives) {
 
@@ -4533,63 +4948,139 @@ function calcDraftScore(player) {
 
         factors.push({text:altByRank.name+' ranks higher and won\'t survive to your next pick.',type:'neg'});
 
-      } else if(relativeAdv >= 0.6) {
+      } else if(vorScore >= 20) {
 
-        factors.push({text:'Massive rank edge: every comparable '+pos+' will be gone by your next pick.',type:'pos'});
+        factors.push({text:'Massive edge: every comparable '+pos+' should be gone by your next pick.',type:'pos'});
 
       }
 
     } else {
 
-      if(relativeAdv >= 0.8) factors.push({text:'Clear value: dominates the alternatives you\'d face at your next turn.',type:'pos'});
+      if(vorScore >= 24) factors.push({text:'Clear value: dominates the alternatives you\'d face at your next turn.',type:'pos'});
 
-      else if(relativeAdv >= 0.3) factors.push({text:'Good value: meaningful rank edge over the next available '+pos+'.',type:'pos'});
-
-    }
-
-
-
-  } else {
-
-    // No rank at all — hardcoded fallback (should rarely happen)
-
-    if(rank <= 12) valueScore += 22;
-
-    else if(rank <= 24) valueScore += 18;
-
-    else if(rank <= 48) valueScore += 12;
-
-    else if(rank <= 72) valueScore += 6;
-
-  }
-
-  // Supplement: if projFpts or sleeperProjPts available, add pts-based VOR on top
-
-  if(player.projFpts || player.sleeperProjPts) {
-
-    if(!player.projFpts && player.sleeperProjPts) player.projFpts = player.sleeperProjPts;
-
-    var _ptsSupplement = 0;
-
-    if(altPool.length && player.projFpts) {
-
-      var _altByPts = altPool.slice().sort(function(a,b){ return ((b.projFpts||b.sleeperProjPts||0))-(a.projFpts||a.sleeperProjPts||0); })[0];
-
-      var _altPts = _altByPts ? (_altByPts.projFpts||_altByPts.sleeperProjPts||0) : 0;
-
-      var _vor = player.projFpts - _altPts;
-
-      _ptsSupplement = Math.min(8, Math.max(0, Math.round(_vor * 0.2))); // supplement, not override
-
-      sub.vorGap = Math.round(_vor);
+      else if(vorScore >= 12) factors.push({text:'Good value: meaningful edge over the next available '+pos+'.',type:'pos'});
 
     }
 
-    valueScore += _ptsSupplement;
+  })();
 
-    sub.vor = (sub.vor||0) + _ptsSupplement;
 
-  }
+
+  // ── TIER DERIVATION (V4) ──────────────────────────────────────────────────
+
+  // FP tier when present; otherwise derive from points-gaps within the position.
+
+  // Stored on sub for Patch 2/3 (cliff detection). Does not change score here.
+
+  (function(){
+
+    if(player.tier && player.tier < 6){ sub.derivedTier = player.tier; return; }
+
+    if(!_hasPts){ sub.derivedTier = player.tier || 6; return; }
+
+    var posPool = available.filter(function(p){return p.pos===pos && basePts(p)>0;})
+
+                           .sort(function(a,b){return basePts(b)-basePts(a);});
+
+    var t = 1, prev = null;
+
+    for(var i=0;i<posPool.length;i++){
+
+      var bp = basePts(posPool[i]);
+
+      if(prev!=null){
+
+        var gap = prev - bp;
+
+        // a gap >8% of the prev tier's points starts a new tier
+
+        if(gap > prev * 0.08) t++;
+
+      }
+
+      if(posPool[i].name === player.name){ sub.derivedTier = t; break; }
+
+      prev = bp;
+
+    }
+
+    if(sub.derivedTier==null) sub.derivedTier = player.tier || 6;
+
+  })();
+
+
+
+  // ── TIER-CLIFF MULTIPLIER (V4) ────────────────────────────────────────────
+
+  // "Last of his tier?" If few/no same-position players in THIS tier-or-better
+
+  // survive to my next pick, taking him now avoids a steep drop-off -> lift.
+
+  // FP tier drives it when present; else derivedTier (points-gap tiers).
+
+  sub.cliffMult = 1.0;
+
+  (function(){
+
+    if(pos==='K' || pos==='DEF' || !_hasPts) return;
+
+    // Same-position pool by points desc (available only — board state matters).
+
+    var posPool = available.filter(function(p){ return p.pos===pos && isHealthyAlt(p) && basePts(p)>0; })
+
+                           .sort(function(a,b){ return basePts(b)-basePts(a); });
+
+    // Find this player's index in that pool.
+
+    var idx = -1;
+
+    for(var i=0;i<posPool.length;i++){ if(posPool[i].name===player.name){ idx=i; break; } }
+
+    if(idx<0) return;
+
+    var myPts = basePts(posPool[idx]);
+
+    if(myPts<=0) return;
+
+    // Average points of the next 3 same-position players behind him.
+
+    var nextSlice = posPool.slice(idx+1, idx+4);
+
+    if(!nextSlice.length){ sub.cliffMult = 1.18; // he's the last of the position -> hard cliff
+
+      factors.push({text:'Last comparable '+pos+' on the board: clear drop-off after him.',type:'pos'}); return; }
+
+    var nextAvg = nextSlice.reduce(function(a,p){return a+basePts(p);},0)/nextSlice.length;
+
+    var dropPct = (myPts - nextAvg) / myPts;  // fraction of points lost stepping down
+
+    // FP-tier corroboration: if FP marks a tier break right after him, strengthen.
+
+    var fpBreak = false;
+
+    if(player.tier && player.tier<6 && posPool[idx+1] && posPool[idx+1].tier){
+
+      fpBreak = (posPool[idx+1].tier > player.tier);
+
+    }
+
+    // Map drop-off to a lift. ~8% step is normal; >15% is a real cliff.
+
+    if(dropPct >= 0.15 || (fpBreak && dropPct >= 0.10))      sub.cliffMult = 1.16;
+
+    else if(dropPct >= 0.10 || (fpBreak && dropPct >= 0.06)) sub.cliffMult = 1.09;
+
+    else if(dropPct >= 0.07)                                  sub.cliffMult = 1.04;
+
+    else                                                      sub.cliffMult = 1.00;
+
+    if(sub.cliffMult > 1.0){
+
+      factors.push({text:'Tier cliff: a clear drop-off in '+pos+' value follows him. Taking him now beats the next tier.',type:'pos'});
+
+    }
+
+  })();
 
 
 
@@ -5461,7 +5952,9 @@ function calcDraftScore(player) {
 
       urgencyPts = 15;
 
-      factors.push({text:'🔥 ADP (pick #'+effectiveADP+') is before your next turn: now or never.',type:'pos'});
+      var _adpT=['🔥 ADP (pick #'+effectiveADP+') is before your next turn: now or never.','🔥 ADP (pick #'+effectiveADP+') lands before you are back on the clock: now or never.','🔥 ADP has him gone at pick #'+effectiveADP+', before your turn comes back: now or never.'];
+
+      factors.push({text:_adpT[Math.round(effectiveADP||0)%_adpT.length],type:'pos'});
 
     } else if(effectiveADP < nextRoundPickNo + Math.round(totalTeams / 2)) {
 
@@ -5677,11 +6170,157 @@ function calcDraftScore(player) {
 
 
 
-  var totalScore = valueScore + needScore + contextScore + timingScore + riskBonus + lateRoundBonus;
+  // ── V4 MULTIPLICATIVE COMBINE ─────────────────────────────────────────────
 
-  // Cap at 100 — >100 was causing misleadingly high late-round scores
+  // VOR (valueScore, 0-40) is the base. Blocks become bounded multipliers so
 
-  totalScore = Math.max(0, Math.min(100, Math.round(totalScore)));
+  // VALUE drives the score and need/strategy/urgency/risk nuance it.
+
+  // Linear maps from each block's clamped range to its multiplier range:
+
+  function _lerp(x, inLo, inHi, outLo, outHi){
+
+    if(inHi===inLo) return outLo;
+
+    var t = Math.max(0, Math.min(1, (x-inLo)/(inHi-inLo)));
+
+    return outLo + t*(outHi-outLo);
+
+  }
+
+  // needScore -15..25 -> 0.65..1.20 (carries strategy; full position / K-DEF-early drag down)
+
+  var needMult = _lerp(needScore, -15, 25, 0.65, 1.20);
+
+  // contextScore 0..15 -> 0.92..1.08 (SOS/bye/age = small nuance, can't dominate)
+
+  var ctxMult  = _lerp(contextScore, 0, 15, 0.92, 1.08);
+
+  // timingScore 0..15 -> 1.00..1.20 (urgency/survival/runs lift only — never punish a "safe" pick)
+
+  var timeMult = _lerp(timingScore, 0, 15, 1.00, 1.20);
+
+  // Tier cliff (computed above) multiplies into the urgency domain.
+
+  timeMult *= (sub.cliffMult || 1.0);
+
+  // STRATEGY WEIGHT: widen deviation-from-1.0 so strategy reshapes picks 2-10.
+
+  // (Top generational value still wins #1 because its VOR base dominates.)
+
+  var _STRAT_W = 1.8;
+
+  needMult = 1 + (needMult - 1) * _STRAT_W;
+
+  timeMult = 1 + (timeMult - 1) * _STRAT_W;
+
+  // keep multipliers from going negative / absurd
+
+  needMult = Math.max(0.35, needMult);
+
+  timeMult = Math.max(0.50, timeMult);
+
+  sub.needMult = Math.round(needMult*100)/100;
+
+  sub.timeMult = Math.round(timeMult*100)/100;
+
+  // riskBonus -10..10 -> 0.90..1.10 (risk-fit vs strategy.risk)
+
+  var riskMult = _lerp(riskBonus, -10, 10, 0.90, 1.10);
+
+
+
+  // UNCAPPED VOR base: use the true VOR gap (not the 40-clamped valueScore) so
+
+  // the elite tier spreads. Points-mode uses vorGapRaw (pts over replacement);
+
+  // rank/fallback mode has no gap, so fall back to the capped valueScore.
+
+  var _vorBase;
+
+  if(_hasPts && sub.vorGap != null) {
+
+    // pts over replacement -> base. ~1 pt ~= 0.5 base; floor at the capped path
+
+    // so a below-replacement player still gets a sane (low) base, not negative.
+
+    _vorBase = Math.max(valueScore, sub.vorGap * 0.5);
+
+  } else {
+
+    _vorBase = valueScore;   // rank/fallback path: keep 0-40
+
+  }
+
+  var _raw = _vorBase * needMult * ctxMult * timeMult * riskMult;
+
+
+
+  // Additive tiebreakers AFTER multiplication (small, can't flip the ranking):
+
+  _raw += (typeof lateRoundBonus !== 'undefined' ? lateRoundBonus : 0) * 0.4;
+
+
+
+  // Store multipliers + raw for breakdown UI (Patch 4) and normalization.
+
+  sub.needMult = Math.round(needMult*100)/100;
+
+  sub.ctxMult  = Math.round(ctxMult*100)/100;
+
+  sub.timeMult = Math.round(timeMult*100)/100;
+
+  sub.riskMult = Math.round(riskMult*100)/100;
+
+  sub.rawScore = _raw;
+
+  sub.vorGapRaw = sub.vorGap;
+
+
+
+  // ── RAW PASS: when scanning the board for the max, return raw and stop ──────
+
+  if(window._NORM_PASS){ return {score:_raw, _raw:_raw, factors:factors, breakdown:{v:valueScore,n:needScore,c:contextScore,t:timingScore,r:riskBonus,sub:sub}}; }
+
+
+
+  // ── BOARD-RELATIVE NORMALIZATION (concave curve) ────────────────────────────
+
+  // Best available raw score -> ~99; everyone else relative on a concave curve
+
+  // so the valuable mid-pack isn't crushed by an outlier #1. P<1 = concave.
+
+  var _bStats = boardScoreMax();
+
+  var _bMax = _bStats.max, _bFloor = _bStats.floor||0;
+
+  var totalScore;
+
+  if(_bMax > 0){
+
+    // Min-max: best available -> 99, ~15th-percentile -> FLOOR_SCORE, rest spread.
+
+    // Works in narrow fields (late rounds) AND wide fields (early). A mild
+
+    // concave shape (P=0.80) keeps the very top from bunching.
+
+    var FLOOR_SCORE = 28;
+
+    var _span = Math.max(1, _bMax - _bFloor);
+
+    var _ratio = Math.max(0, Math.min(1, (_raw - _bFloor) / _span));
+
+    var _P = 0.80;
+
+    totalScore = Math.round(FLOOR_SCORE + Math.pow(_ratio, _P) * (99 - FLOOR_SCORE));
+
+  } else {
+
+    totalScore = Math.round(_raw);
+
+  }
+
+  totalScore = Math.max(0, Math.min(100, totalScore));
 
 
 
@@ -6729,7 +7368,25 @@ function isUrgencyFactor(f) {
 
 
 
-function generateDraftReason(p, rec) {
+var _gdrUsed=[];
+
+function _gdrPick(arr, seed, idx){
+
+  if(!idx) _gdrUsed=[];
+
+  var k=Math.floor(seed)%arr.length;
+
+  var t=0;
+
+  while(_gdrUsed.indexOf(k)!==-1 && t<arr.length){ k=(k+1)%arr.length; t++; }
+
+  _gdrUsed.push(k);
+
+  return arr[k];
+
+}
+
+function generateDraftReason(p, rec, idx) {
 
   var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
 
@@ -6789,7 +7446,7 @@ function generateDraftReason(p, rec) {
 
     ];
 
-    sentences.push(openers[Math.floor(score*7%openers.length)]);
+    sentences.push(_gdrPick(openers, score*7, idx));
 
     if(pro1) sentences.push(pro1+(pts?' at '+pts+' projected points.':'.'));
 
@@ -6809,7 +7466,7 @@ function generateDraftReason(p, rec) {
 
     ];
 
-    sentences.push(openers2[Math.floor(score*5%openers2.length)]);
+    sentences.push(_gdrPick(openers2, score*5, idx));
 
     if(pro1) sentences.push(pro1+'.');
 
@@ -6831,7 +7488,7 @@ function generateDraftReason(p, rec) {
 
     ];
 
-    sentences.push(openers3[Math.floor(score*3%openers3.length)]);
+    sentences.push(_gdrPick(openers3, score*3, idx));
 
     if(pro1) sentences.push('The case for him: '+pro1.charAt(0).toLowerCase()+pro1.slice(1)+'.');
 
@@ -6853,7 +7510,7 @@ function generateDraftReason(p, rec) {
 
     ];
 
-    sentences.push(openers4[Math.floor(score*11%openers4.length)]);
+    sentences.push(_gdrPick(openers4, score*11, idx));
 
     if(con1) sentences.push(con1.charAt(0).toUpperCase()+con1.slice(1)+'.');
 
@@ -6911,7 +7568,7 @@ function showPlayerModal(playerName) {
 
     ? '<img class="pm-img" style="width:100px;height:120px;border-radius:4px;object-fit:cover;object-position:top center;border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);flex-shrink:0;" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\'"/>'
 
-    : '<div class="pm-img" style="width:100px;height:120px;border-radius:4px;background:linear-gradient(180deg,var(--bg3),var(--bg4));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:36px;flex-shrink:0;">🏈</div>';
+    : '<div class="pm-img" style="width:100px;height:120px;border-radius:4px;background:linear-gradient(180deg,var(--bg3),var(--bg4));border:2px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;font-family:var(--mono);color:var(--intel-mid);font-weight:600;letter-spacing:.06em;">'+((p.name||'').split(' ').map(function(w){return w.charAt(0);}).join('').substring(0,2).toUpperCase()||'?')+'</div>';
 
 
 
@@ -7121,7 +7778,7 @@ function showPlayerModal(playerName) {
 
       +'<span style="font-size:8px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;flex-shrink:0;min-width:48px;">'+label+'</span>'
 
-      +'<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:17px;color:'+col+';line-height:1;flex-shrink:0;">'+fmt(val)+'</span>'
+      +'<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;color:'+col+';line-height:1;flex-shrink:0;">'+fmt(val)+'</span>'
 
       +'<div style="display:flex;align-items:center;gap:6px;min-width:0;">'
 
@@ -7185,7 +7842,221 @@ function showPlayerModal(playerName) {
 
   var scoreColor = rec.score>=100?'var(--purple)':rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--red)';
 
-  var h = '<div class="pm-head-grid pm-head-grid2" style="display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:start;margin-bottom:10px;">';
+  // ── VERDICT computation: survival P(gone) + score -> action tag ───────────
+
+  var _verdict = (function(){
+
+    var pid = p.sleeperId||p.id||p.name;
+
+    var pGone = null;
+
+    try { var sm = survivalMap(); if(sm && sm.ok && sm.map[pid]!=null) pGone = sm.map[pid]; } catch(e){}
+
+    var sc = rec.score;
+
+    // ADP fallback when survival has no entry for this player
+
+    if(pGone==null && p.sleeperRank!=null && myDraftSlot){
+
+      var pl=window._picksUntilMe||0, tp=draftedIds.size, mnp=tp+1+pl;
+
+      if(p.sleeperRank < mnp) pGone = 0.9; else if(p.sleeperRank <= mnp+totalTeams) pGone = 0.5; else pGone = 0.1;
+
+    }
+
+    if(pGone==null) pGone = 0;
+
+    var pct = Math.round(pGone*100);
+
+    // Decision matrix
+
+    if(pGone>=0.60){
+
+      if(sc>=70) return {tag:'TAKE NOW', col:'var(--red)', bg:'rgba(192,57,43,.10)', txt:pct+'% gone by your next pick. Strong value \u2014 don\'t wait.'};
+
+      return {tag:'LET HIM GO', col:'var(--intel-mid)', bg:'transparent', txt:pct+'% gone, but better value sits elsewhere. No need to reach.'};
+
+    } else if(pGone>=0.35){
+
+      return {tag:'RISKY', col:'var(--score-mid)', bg:'rgba(224,169,59,.08)', txt:pct+'% chance he\'s gone by your next pick. Your call.'};
+
+    } else {
+
+      if(sc>=80) return {tag:'CAN WAIT', col:'var(--green)', bg:'rgba(46,204,135,.07)', txt:'Only '+pct+'% gone \u2014 he should still be there next turn. Elite if he falls.'};
+
+      return {tag:'CAN WAIT', col:'var(--green)', bg:'rgba(46,204,135,.07)', txt:'Only '+pct+'% gone \u2014 safe to wait and take a bigger need now.'};
+
+    }
+
+  })();
+
+
+
+  var scoreColor = rec.score>=100?'var(--purple)':rec.score>=80?'var(--green)':rec.score>=65?'var(--amber)':rec.score>=50?'var(--blue)':'var(--red)';
+
+
+
+  // ── 1. VERDICT BAR: image | name+bio | score ─────────────────────────────
+
+  var h = '<div style="display:flex;align-items:stretch;border:1px solid var(--border2);border-radius:6px;overflow:hidden;margin-bottom:8px;">';
+
+  // image (slightly smaller, flush left)
+
+  h += '<div style="flex:none;width:84px;background:var(--bg3);display:flex;align-items:center;justify-content:center;position:relative;"><span style="position:absolute;font-size:30px;opacity:.5;">\ud83c\udfc8</span>'+imgHtml.replace('width:100px;height:120px','width:84px;height:104px;position:relative;z-index:1;').replace('border:2px solid var(--amber);box-shadow:0 0 16px var(--amber-glow);','border:none;')+'</div>';
+
+  // name + bio
+
+  h += '<div style="flex:1;min-width:0;padding:11px 14px;display:flex;flex-direction:column;justify-content:center;">';
+
+  h += '<div style="display:flex;align-items:center;gap:8px;margin-bottom:4px;flex-wrap:wrap;">';
+
+  h += '<span class="badge '+pc+'">'+p.pos+'</span>';
+
+  h += '<span class="pm-name" style="font-family:var(--display);font-size:20px;font-weight:800;letter-spacing:-.3px;line-height:1;">'+escHtml(p.name)+'</span>';
+
+  if(p.injuryStatus){ var _ic=p.injuryStatus==='Out'||p.injuryStatus==='IR'?'var(--red)':p.injuryStatus==='Doubtful'?'#ff8800':'var(--amber)';
+
+    h += '<span style="font-size:8px;font-family:var(--mono);font-weight:800;color:'+_ic+';background:rgba(255,60,60,.1);border:1px solid '+_ic+';border-radius:2px;padding:1px 5px;letter-spacing:.05em;">\u26a0 '+p.injuryStatus.toUpperCase()+'</span>'; }
+
+  h += '</div>';
+
+  // thin bio line: TEAM · POSRANK · age · height · college · bye
+
+  var _bioBits = [];
+
+  if(p.team) _bioBits.push('<b>'+p.team+'</b>');
+
+  if(p.pos&&p.rank) _bioBits.push(posRankLabel);
+
+  if(p.age) _bioBits.push(p.age+'y');
+
+  bioItems.forEach(function(b){ if(b.lbl==='HEIGHT') _bioBits.push(b.val); });
+
+  if(p.college) _bioBits.push(p.college);
+
+  if(p.bye) _bioBits.push('Bye '+p.bye);
+
+  h += '<div style="font-size:9px;color:var(--text3);font-family:var(--mono);letter-spacing:.03em;line-height:1.4;">'+_bioBits.join(' \u00b7 ').replace(/<b>/g,'<b style="color:var(--text2);font-weight:700;">')+'</div>';
+
+  h += '</div>';
+
+  // score column
+
+  h += '<div style="flex:none;width:104px;display:flex;flex-direction:column;align-items:center;justify-content:center;border-left:1px solid var(--border2);background:linear-gradient(180deg,'+_verdict.bg+',transparent);">';
+
+  h += '<div class="pm-score-num" style="font-family:var(--num);font-weight:800;font-size:38px;color:'+scoreColor+';line-height:.9;text-shadow:0 0 18px '+scoreColor+';">'+rec.score+'</div>';
+
+  h += '<div style="font-size:7px;font-family:var(--mono);color:var(--text3);letter-spacing:.18em;margin-top:3px;">SCORE</div>';
+
+  if(p.pos&&p.rank) h += '<div style="font-size:8px;font-family:var(--mono);color:var(--green);letter-spacing:.05em;margin-top:4px;">'+posRankAvailLabel+' LEFT</div>';
+
+  h += '</div>';
+
+  h += '</div>';
+
+
+
+  // ── 2. ACTION VERDICT ─────────────────────────────────────────────────────
+
+  h += '<div style="display:flex;align-items:center;gap:10px;padding:8px 12px;border:1px solid var(--border2);border-radius:5px;background:'+_verdict.bg+';margin-bottom:8px;">';
+
+  h += '<span style="font-size:11px;font-family:var(--mono);font-weight:800;letter-spacing:.08em;padding:3px 9px;border-radius:3px;white-space:nowrap;color:'+(_verdict.tag==='TAKE NOW'?'#fff':_verdict.col)+';background:'+(_verdict.tag==='TAKE NOW'?'var(--red)':'transparent')+';border:1px solid '+_verdict.col+';">'+_verdict.tag+'</span>';
+
+  h += '<span style="font-size:11px;color:var(--text);line-height:1.35;">'+_verdict.txt+'</span>';
+
+  h += '</div>';
+
+
+
+  // ── 3. HERO PROJECTION (one number) + small comparisons ───────────────────
+
+  (function(){
+
+    var fpMode = (dataSource!=='sleeper') && !!p.projFpts;
+
+    var heroVal, heroLbl, heroPosRk=null, heroCol='var(--laser)';
+
+    // positional rank for the hero source
+
+    function posRkOf(field){ var s=(useCustom&&customRankings.length)?customRankings:allPlayers;
+
+      var peers=s.filter(function(x){return x.pos===p.pos&&x[field]>0;}).map(function(x){return x[field];}).sort(function(a,b){return b-a;});
+
+      var rk=1, mine=p[field]||0; for(var i=0;i<peers.length;i++){ if(peers[i]>mine) rk++; } return mine>0?rk:null; }
+
+    if(fpMode){ heroVal=Math.round(p.projFpts); heroLbl='FANTASYPROS PROJ 2026'; heroPosRk=posRkOf('projFpts'); }
+
+    else if(p.sleeperProjPts){ heroVal=p.sleeperProjPts; heroLbl='SLEEPER PROJ 2026'; heroPosRk=posRkOf('sleeperProjPts'); }
+
+    if(heroVal==null) return;
+
+    h += '<div style="display:flex;align-items:center;gap:14px;padding:9px 12px;border:1px solid var(--border2);border-radius:5px;margin-bottom:9px;">';
+
+    h += '<div style="min-width:0;">';
+
+    h += '<div style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--text3);letter-spacing:.1em;margin-bottom:3px;">'+heroLbl+'</div>';
+
+    h += '<div style="display:flex;align-items:baseline;gap:6px;">';
+
+    h += '<span style="font-family:var(--num);font-size:26px;font-weight:800;color:'+heroCol+';line-height:1;letter-spacing:-.02em;">'+heroVal+'</span>';
+
+    h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts'+(heroPosRk?' \u00b7 '+p.pos+heroPosRk:'')+'</span>';
+
+    h += '</div></div>';
+
+    // comparisons on the right
+
+    h += '<div style="display:flex;gap:14px;margin-left:auto;">';
+
+    if(fpMode && p.sleeperProjPts){ var d=Math.round(p.sleeperProjPts-Math.round(p.projFpts)); var dc=d>0?'var(--green)':d<0?'var(--red)':'var(--text3)';
+
+      h += '<div style="text-align:right;"><div style="font-size:13px;font-family:var(--num);font-weight:700;color:'+dc+';">'+(d>0?'+':'')+d+'</div><div style="font-size:7px;font-family:var(--mono);color:var(--text3);letter-spacing:.06em;">VS SLEEPER</div></div>'; }
+
+    if(p.lastSeasonPts){ h += '<div style="text-align:right;"><div style="font-size:13px;font-family:var(--num);font-weight:700;color:var(--text2);">'+Math.round(p.lastSeasonPts)+'</div><div style="font-size:7px;font-family:var(--mono);color:var(--text3);letter-spacing:.06em;">2025 ACTUAL</div></div>'; }
+
+    h += '</div>';
+
+    h += '</div>';
+
+  })();
+
+
+
+  // ── statDefs for Stats tab (unchanged, still needed downstream) ───────────
+
+  var hasLastStats = p.lastStats && Object.keys(p.lastStats).length > 0;
+
+  var hasProjStats = p.projStats && Object.keys(p.projStats).length > 0;
+
+  var statDefs = [];
+
+  var pos2 = p.pos;
+
+  if(pos2==='RB') statDefs = [
+
+    {k:'gp',lbl:'GP',hi:true,noRank:true,isGp:true},{k:'rush_att',lbl:'ATT',hi:true},{k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true},
+
+    {k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'REC YDS',hi:true},{k:'rec_td',lbl:'REC TD',hi:true},{k:'rec_tgt',lbl:'TAR',hi:true}
+
+  ];
+
+  else if(pos2==='WR'||pos2==='TE') statDefs = [
+
+    {k:'gp',lbl:'GP',hi:true,noRank:true,isGp:true},{k:'rec_tgt',lbl:'TAR',hi:true},{k:'rec',lbl:'REC',hi:true},{k:'rec_yd',lbl:'YDS',hi:true},{k:'rec_td',lbl:'TD',hi:true}
+
+  ];
+
+  else if(pos2==='QB') statDefs = [
+
+    {k:'gp',lbl:'GP',hi:true,noRank:true,isGp:true},{k:'pass_att',lbl:'ATT',hi:true},{k:'pass_yd',lbl:'PASS YDS',hi:true},{k:'pass_td',lbl:'PASS TD',hi:true},{k:'pass_int',lbl:'INT',hi:false},
+
+    {k:'rush_yd',lbl:'RUSH YDS',hi:true},{k:'rush_td',lbl:'RUSH TD',hi:true}
+
+  ];
+
+  if(false){ // legacy 3-column header disabled
+
+  var h_legacy = '<div class="pm-head-grid pm-head-grid2" style="display:grid;grid-template-columns:100px 1fr auto;gap:14px;align-items:start;margin-bottom:10px;">';
 
 
 
@@ -7248,11 +8119,37 @@ function showPlayerModal(playerName) {
 
   h += '</div>';
 
+  // Bio pills (ohne Rang — jetzt rechts neben dem Bild)
+
+  var bioWithoutRank = bioItems.filter(function(b){return b.lbl!=='RANK' && b.lbl!=='INJURED';});
+
+  if(bioWithoutRank.length) {
+
+    h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:4px;">';
+
+    bioWithoutRank.forEach(function(b){
+
+      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:2px 7px;border-radius:2px;">';
+
+      h += '<span style="font-size:7px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+b.lbl+' </span>';
+
+      h += '<span style="font-size:10px;color:var(--text);font-family:var(--mono);font-weight:700;">'+b.val+'</span>';
+
+      h += '</div>';
+
+    });
+
+    h += '</div>';
+
+  }
+
+  h += '</div>';
+
   h += '<div class="pm-belowfold" style="min-width:0;">';
 
   // Projektion — FP + Sleeper nebeneinander, letzte Season darunter
 
-  var hasFpProj = !!p.projFpts;
+  var hasFpProj = (dataSource!=='sleeper') && !!p.projFpts;
 
   var hasSlpProj = !!p.sleeperProjPts;
 
@@ -7274,15 +8171,15 @@ function showPlayerModal(playerName) {
 
       h += '<div style="font-size:8px;color:var(--amber);font-family:var(--mono);font-weight:800;letter-spacing:.1em;margin-bottom:3px;">FP PROJ 2026</div>';
 
-      h += '<div style="display:flex;align-items:baseline;gap:5px;flex-wrap:wrap;">';
+      h += '<div style="display:flex;align-items:baseline;gap:4px;flex-wrap:nowrap;white-space:nowrap;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:16px;color:var(--amber);line-height:1;">'+Math.round(p.projFpts)+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:13px;color:var(--amber);line-height:1;">'+Math.round(p.projFpts)+'</span>';
 
-      h += '<span style="font-size:9px;color:var(--text3);font-family:var(--mono);">pts</span>';
+      h += '<span style="font-size:8px;color:var(--text3);font-family:var(--mono);">pts</span>';
 
-      if(p.projHigh) h += '<span style="font-size:10px;color:var(--green);font-family:var(--mono);font-weight:700;">▲'+p.projHigh+'</span>';
+      if(p.projHigh) h += '<span style="font-size:9px;color:var(--green);font-family:var(--mono);font-weight:700;">▲'+p.projHigh+'</span>';
 
-      if(p.projLow)  h += '<span style="font-size:10px;color:var(--red);font-family:var(--mono);font-weight:700;">▼'+p.projLow+'</span>';
+      if(p.projLow)  h += '<span style="font-size:9px;color:var(--red);font-family:var(--mono);font-weight:700;">▼'+p.projLow+'</span>';
 
       h += '</div></div>';
 
@@ -7356,29 +8253,7 @@ function showPlayerModal(playerName) {
 
   }
 
-  // Bio pills (ohne Rang — kommt rechts prominent)
-
-  var bioWithoutRank = bioItems.filter(function(b){return b.lbl!=='RANK' && b.lbl!=='INJURED';});
-
-  if(bioWithoutRank.length) {
-
-    h += '<div style="display:flex;gap:4px;flex-wrap:wrap;margin-bottom:7px;">';
-
-    bioWithoutRank.forEach(function(b){
-
-      h += '<div style="background:var(--bg3);border:1px solid var(--border2);padding:2px 7px;border-radius:2px;">';
-
-      h += '<span style="font-size:7px;color:var(--text3);font-family:var(--mono);font-weight:700;letter-spacing:.08em;">'+b.lbl+' </span>';
-
-      h += '<span style="font-size:10px;color:var(--text);font-family:var(--mono);font-weight:700;">'+b.val+'</span>';
-
-      h += '</div>';
-
-    });
-
-    h += '</div>';
-
-  }
+  // Bio pills — nach oben verschoben (jetzt in der Identity-Spalte)
 
   // statDefs vorbereiten für Tab 2
 
@@ -7432,23 +8307,23 @@ function showPlayerModal(playerName) {
 
     h += '<div style="background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.18);border-radius:3px;padding:6px 10px;text-align:center;width:100%;">';
 
-    h += '<div style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:18px;color:var(--amber);line-height:1;">'+posRankLabel+'</div>';
+    h += '<div style="display:flex;align-items:flex-end;justify-content:center;gap:8px;">';
 
-    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em;margin-top:2px;">OVERALL</div>';
+    h += '<div style="text-align:center;"><div style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;color:var(--amber);line-height:1;">'+posRankLabel+'</div><div style="font-size:7px;color:var(--text3);font-family:var(--mono);letter-spacing:.06em;margin-top:1px;">OVERALL</div></div>';
 
-    h += '<div style="height:1px;background:rgba(0,212,255,.1);margin:4px 0;"></div>';
+    h += '<div style="width:1px;align-self:stretch;background:rgba(0,212,255,.12);"></div>';
 
-    h += '<div style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;color:var(--green);line-height:1;">'+posRankAvailLabel+'</div>';
+    h += '<div style="text-align:center;"><div style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:15px;color:var(--green);line-height:1;">'+posRankAvailLabel+'</div><div style="font-size:7px;color:var(--green);font-family:var(--mono);letter-spacing:.06em;margin-top:1px;opacity:.75;">REMAINING</div></div>';
 
-    h += '<div style="font-size:8px;color:var(--green);font-family:var(--mono);letter-spacing:.06em;margin-top:2px;opacity:.75;">REMAINING</div>';
+    h += '</div>';
 
     h += '</div>';
 
   }
 
-  h += '</div>';
+  h_legacy += '</div>';
 
-  h += '</div>';
+  } // end disabled legacy header block
 
 
 
@@ -7476,15 +8351,9 @@ function showPlayerModal(playerName) {
 
   h += '<div id="'+tabId+'_c1" style="overflow:hidden;display:flex;flex-direction:column;flex:1;min-height:0;width:100%;">' ;
 
-  // Draft Verdict — urgency / timing only
+  // DRAFT TIMING box removed — the header verdict (TAKE NOW / RISKY / CAN WAIT)
 
-  h += '<div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);padding:6px 12px;border-radius:3px;margin-bottom:9px;">';
-
-  h += '<div style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--amber);letter-spacing:.12em;margin-bottom:5px;display:flex;align-items:center;gap:5px;"><svg class="ic" viewBox="0 0 20 20" style="width:11px;height:11px;"><circle cx="10" cy="11" r="6"/><path d="M10 11V7.5M10 5V3M8 3h4"/></svg>DRAFT TIMING</div>';
-
-  h += '<div style="font-size:11px;color:var(--text);line-height:1.45;">'+reason+'</div>';
-
-  h += '</div>';
+  // already states timing. (reason still computed; surfaced via cons if needed.)
 
   // Score Bars
 
@@ -7495,6 +8364,128 @@ function showPlayerModal(playerName) {
   // tip row: [label, valueFn, noteFn, theoreticalMax, applicableFn(pl,s)]
 
   // applicableFn=null → always applicable
+
+  // ── V4 BREAKDOWN ──────────────────────────────────────────────────────────
+
+  // VOR base + bounded multiplier chain. Plain-text meaning leads; the small
+
+  // x-number is a secondary cue. Renders, then returns past the legacy block.
+
+  (function(){
+
+    var s = bd.sub || {};
+
+    var vor = s.vor || 0;
+
+    var vorGap = s.vorGap || 0;
+
+    var posTxt = (p&&p.pos?p.pos:'player');
+
+    var vorTag = vor>=34?'ELITE':vor>=24?'STRONG':vor>=14?'SOLID':vor>=6?'FRINGE':'REPL';
+
+    var mults = [
+
+      {label:'ROSTER FIT', m:(s.needMult!=null?s.needMult:1),
+
+       txt:(function(){ var m=s.needMult||1; if(m>=1.12)return 'fills a starter need'; if(m>=1.03)return 'fits your roster'; if(m<=0.80)return 'position full'; if(m<1)return 'low need'; return 'neutral'; })()},
+
+      {label:'URGENCY / CLIFF', m:(s.timeMult!=null?s.timeMult:1),
+
+       txt:(function(){ var c=s.cliffMult||1; var t=s.timeMult||1; if(c>=1.12)return 'tier cliff — drop-off after him'; if(c>1)return 'mild drop-off ahead'; if(t>=1.12)return 'going soon — take now'; if(t>1.03)return 'some draft pressure'; return 'no urgency'; })()},
+
+      {label:'RISK FIT', m:(s.riskMult!=null?s.riskMult:1),
+
+       txt:(function(){ var m=s.riskMult||1; var rk=(typeof strategy!=='undefined'&&strategy.risk)?strategy.risk:'balanced';
+
+         if(m>=1.07)return rk==='boom'?'high ceiling':'reliable floor';
+
+         if(m>=1.02)return rk==='boom'?'good upside':'fairly safe';
+
+         if(m<=0.93)return 'boom-or-bust';
+
+         if(m<0.98)return 'above-avg variance';
+
+         return 'neutral variance'; })()}
+
+    ];
+
+
+
+    // ── VOR base: number + gauge + tag on ONE row ─────────────────────────────
+
+    var _vfill=Math.max(0,Math.min(100,Math.round(vor/40*100)));
+
+    h += '<div style="margin-bottom:8px;">';
+
+    h += '<div style="display:flex;align-items:center;gap:9px;margin-bottom:3px;">';
+
+    h += '<span style="font-size:18px;font-family:var(--num);font-weight:800;color:var(--laser);line-height:1;letter-spacing:-.02em;white-space:nowrap;">'+Math.round(vor)+'<span style="font-size:9px;color:var(--text3);font-weight:600;">/40</span></span>';
+
+    h += '<div style="flex:1;height:6px;background:var(--void-3);border-radius:4px;overflow:hidden;"><div style="height:100%;width:'+_vfill+'%;background:linear-gradient(90deg,var(--laser),#5ee7ff);box-shadow:0 0 8px var(--laser-glow);border-radius:4px;"></div></div>';
+
+    h += '<span style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--green);letter-spacing:.06em;white-space:nowrap;">'+vorTag+'</span>';
+
+    h += '</div>';
+
+    h += '<div style="font-size:8px;color:var(--text3);font-family:var(--mono);letter-spacing:.04em;">VOR · '+(vorGap?('+'+vorGap+' pts over replacement '+posTxt):'rank-based')+'</div>';
+
+    h += '</div>';
+
+
+
+    // ── Adjustments: compact diverging bars (label + bar + % + note, 1 line) ──
+
+    mults.forEach(function(row){
+
+      var m = row.m;
+
+      var dir = m>1.005 ? 'up' : (m<0.995 ? 'down' : 'flat');
+
+      var col = dir==='up' ? 'var(--green)' : dir==='down' ? 'var(--red)' : 'var(--text3)';
+
+      var arrow = dir==='up' ? '▲' : dir==='down' ? '▼' : '–';
+
+      var pct = Math.round((m-1)*100);
+
+      var pctTxt = (pct>0?'+':'')+pct+'%';
+
+      var w = Math.min(50, Math.abs(pct)*1.5);
+
+      var glow = dir==='up' ? (col==='var(--green)'?'var(--green-bg)':'rgba(224,169,59,.3)') : 'var(--red-bg)';
+
+      h += '<div style="display:flex;align-items:center;gap:8px;padding:4px 0;border-top:1px solid var(--wire);">';
+
+      // label
+
+      h += '<span style="font-size:8px;font-family:var(--mono);font-weight:700;color:var(--text2);letter-spacing:.06em;width:74px;flex:none;white-space:nowrap;">'+row.label+'</span>';
+
+      // diverging bar
+
+      h += '<div style="flex:1;height:5px;background:var(--void-3);border-radius:3px;position:relative;min-width:50px;">';
+
+      h += '<div style="position:absolute;left:50%;top:-1px;bottom:-1px;width:1px;background:var(--intel-low);opacity:.35;"></div>';
+
+      if(dir==='up'){ h += '<div style="position:absolute;top:0;left:50%;height:5px;width:'+w+'%;background:'+col+';box-shadow:0 0 7px '+glow+';border-radius:0 3px 3px 0;"></div>'; }
+
+      else if(dir==='down'){ h += '<div style="position:absolute;top:0;right:50%;height:5px;width:'+w+'%;background:var(--red);box-shadow:0 0 7px var(--red-bg);border-radius:3px 0 0 3px;"></div>'; }
+
+      h += '</div>';
+
+      // pct
+
+      h += '<span style="font-size:10px;font-family:var(--mono);font-weight:800;color:'+col+';width:42px;flex:none;text-align:right;white-space:nowrap;">'+arrow+pctTxt+'</span>';
+
+      // note
+
+      h += '<span style="font-size:8px;color:'+(dir==='flat'?'var(--text3)':col)+';width:108px;flex:none;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;opacity:.9;" title="'+row.txt+'">'+row.txt+'</span>';
+
+      h += '</div>';
+
+    });
+
+  })();
+
+  if(true){ /* V4 breakdown rendered above; skip legacy pillar block */ } else {
 
   var cats = [
 
@@ -7658,6 +8649,8 @@ function showPlayerModal(playerName) {
 
   h += '</div>';
 
+  } // end disabled legacy pillar block
+
   // Pros & Cons — player profile & roster fit
 
   h += '<div style="font-size:8px;font-family:var(--mono);font-weight:800;color:var(--text3);letter-spacing:.15em;margin-bottom:6px;">👤 PLAYER PROFILE &amp; ROSTER FIT</div>';
@@ -7670,15 +8663,31 @@ function showPlayerModal(playerName) {
 
   h += '<div style="display:flex;flex-direction:column;gap:3px;">';
 
-  if(posF.length) { posF.forEach(function(f){
+  function _proRow(f){ return '<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 7px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">'
 
-    h += '<div style="display:flex;align-items:flex-start;gap:6px;padding:4px 7px;background:rgba(0,255,136,.06);border:1px solid rgba(0,255,136,.15);border-radius:3px;">';
+    + '<span style="font-size:13px;flex-shrink:0;line-height:1.4;">'+factorIcon(f.text)+'</span>'
 
-    h += '<span style="font-size:13px;flex-shrink:0;line-height:1.4;">'+factorIcon(f.text)+'</span>';
+    + '<span style="font-size:10px;color:var(--green);line-height:1.45;">'+f.text+'</span></div>'; }
 
-    h += '<span style="font-size:10px;color:var(--green);line-height:1.45;">'+f.text+'</span></div>';
+  if(posF.length) {
 
-  }); } else { h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">No positive factors</div>'; }
+    var _top = posF.slice(0,4), _rest = posF.slice(4);
+
+    _top.forEach(function(f){ h += _proRow(f); });
+
+    if(_rest.length){
+
+      h += '<details style="margin-top:1px;"><summary style="font-size:9px;font-family:var(--mono);color:var(--laser);cursor:pointer;padding:3px 7px;list-style:none;">+ '+_rest.length+' more reason'+(_rest.length>1?'s':'')+' \u25be</summary>';
+
+      h += '<div style="display:flex;flex-direction:column;gap:3px;margin-top:3px;">';
+
+      _rest.forEach(function(f){ h += _proRow(f); });
+
+      h += '</div></details>';
+
+    }
+
+  } else { h += '<div style="font-size:11px;color:var(--text3);padding:7px 10px;font-style:italic;">No positive factors</div>'; }
 
   h += '</div></div>';
 
@@ -7837,13 +8846,13 @@ function showPlayerModal(playerName) {
 
     h += '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">';
 
-    if(posRank2025) h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:30px;color:'+prCol2+';line-height:1;">'+posRank2025.label+'</span>';
+    if(posRank2025) h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:20px;color:'+prCol2+';line-height:1;">'+posRank2025.label+'</span>';
 
     if(p.lastSeasonPts) {
 
       h += '<div style="'+(posRank2025?'border-left:1px solid var(--border2);padding-left:10px;':'')+' display:flex;align-items:baseline;gap:4px;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:30px;color:var(--amber);line-height:1;">'+p.lastSeasonPts+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:20px;color:var(--amber);line-height:1;">'+p.lastSeasonPts+'</span>';
 
       h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span>';
 
@@ -7863,7 +8872,7 @@ function showPlayerModal(playerName) {
 
       h += '<div style="display:flex;align-items:baseline;gap:5px;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:18px;color:'+gpColH+';line-height:1;">'+gpV2+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:13px;color:'+gpColH+';line-height:1;">'+gpV2+'</span>';
 
       h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">/'+NFL_SEASON_GAMES+' Games</span>';
 
@@ -7897,11 +8906,11 @@ function showPlayerModal(playerName) {
 
       h += '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:30px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:20px;color:'+extCol2+';line-height:1;">'+extLabel+'</span>';
 
       h += '<div style="border-left:1px solid rgba(0,212,255,.15);padding-left:10px;display:flex;align-items:baseline;gap:4px;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:30px;color:var(--amber);line-height:1;">'+extPts+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:20px;color:var(--amber);line-height:1;">'+extPts+'</span>';
 
       h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span>';
 
@@ -7949,11 +8958,11 @@ function showPlayerModal(playerName) {
 
       h += '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:30px;color:'+slpStatRankCol+';line-height:1;">'+slpStatRankLabel+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:20px;color:'+slpStatRankCol+';line-height:1;">'+slpStatRankLabel+'</span>';
 
       h += '<div style="border-left:1px solid rgba(0,184,255,.2);padding-left:10px;display:flex;align-items:baseline;gap:4px;">';
 
-      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:30px;color:var(--blue);line-height:1;">'+slpStatPts+'</span>';
+      h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:20px;color:var(--blue);line-height:1;">'+slpStatPts+'</span>';
 
       h += '<span style="font-size:10px;color:var(--text3);font-family:var(--mono);">pts</span>';
 
@@ -8005,13 +9014,13 @@ function showPlayerModal(playerName) {
 
     var showProj = hasProjStats && p.projStats;
 
-    var gridCols = '90px minmax(0,1fr)' + (showExt?' minmax(0,1fr)':'') + (showProj?' minmax(0,1fr)':''); // 2025 immer da
+    var gridCols = '72px minmax(0,1fr)' + (showExt?' minmax(0,1fr)':'') + (showProj?' minmax(0,1fr)':''); // 2025 immer da
 
 
 
     if(showLast || showProj) {
 
-      h += '<div style="border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:6px;width:100%;">';
+      h += '<div style="grid-column:1 / -1;border:1px solid var(--border2);border-radius:4px;overflow:hidden;margin-top:6px;width:100%;box-sizing:border-box;">';
 
       // Header
 
@@ -8075,7 +9084,7 @@ function showPlayerModal(playerName) {
 
           if(lastVal!=null){
 
-            h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:17px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
+            h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;color:'+lastCol+';line-height:1;">'+fmt(lastVal)+'</span>';
 
             if(lastRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+lastCol+';font-weight:700;">#'+lastRk.rank+'/'+lastRk.total+'</span>';
 
@@ -8095,7 +9104,7 @@ function showPlayerModal(playerName) {
 
           if(extVal!=null){
 
-            h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:17px;color:'+extCl+';line-height:1;">'+fmt(extVal)+'</span>';
+            h += '<span style="font-family:var(--num);font-weight:700;font-variant-numeric:tabular-nums;font-size:14px;color:'+extCl+';line-height:1;">'+fmt(extVal)+'</span>';
 
             if(extRk) h += '<span style="font-size:9px;font-family:var(--mono);color:'+extCl+';font-weight:700;">#'+extRk.rank+'/'+extRk.total+'</span>';
 
@@ -8237,13 +9246,13 @@ function renderRecommendations() {
 
     var imgHtml = p.sleeperId
 
-      ? '<img class="rec-player-img" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\';" /><div class="rec-player-img-fallback" style="display:none;">'+(p.name||'?').substring(0,2)+'</div>'
+      ? '<img class="rec-player-img" src="https://sleepercdn.com/content/nfl/players/thumb/'+p.sleeperId+'.jpg" onerror="this.style.display=\'none\';this.nextSibling.style.display=\'flex\';" /><div class="rec-player-img-fallback" style="display:none;">'+((p.name||'').split(' ').map(function(w){return w.charAt(0);}).join('').substring(0,2).toUpperCase()||'?')+'</div>'
 
-      : '<div class="rec-player-img-fallback">🏈</div>';
+      : '<div class="rec-player-img-fallback">'+((p.name||'').split(' ').map(function(w){return w.charAt(0);}).join('').substring(0,2).toUpperCase()||'?')+'</div>';
 
 
 
-    var reason = generateDraftReason(p, rec);
+    var reason = generateDraftReason(p, rec, i);
 
     var factors = rec.factors.filter(function(f){return !f.text.startsWith('Breakdown:');});
 
@@ -8315,7 +9324,7 @@ function saveDraftSettings(){
 
   var status=document.getElementById('myteam-status');
 
-  if(!slot||slot<1||slot>20){status.textContent='Bitte Slot eingeben';status.style.color='var(--red)';return;}
+  if(!slot||slot<1||slot>20){status.textContent='Please enter a slot';status.style.color='var(--red)';return;}
 
   myDraftSlot=slot;
 
@@ -8341,7 +9350,7 @@ async function loadMyTeam(){
 
   var username=document.getElementById('sleeper-username-input').value.trim();
 
-  if(!username){alert('Bitte Username eingeben');return;}
+  if(!username){alert('Please enter a username');return;}
 
   var status=document.getElementById('myteam-status');
 
@@ -8371,13 +9380,33 @@ async function loadMyTeam(){
 
       var draft=await dr.json();
 
-      if(draft.slot_to_roster_id){
+      // Resolve my slot via league rosters when draft_order is missing (common in real leagues)
 
-        Object.entries(draft.slot_to_roster_id).forEach(function(e){
+      if(draft.slot_to_roster_id && draft.league_id){
 
-          // We need roster_id for this user - fetch league rosters
+        try{
 
-        });
+          var lr=await fetch('https://api.sleeper.app/v1/league/'+draft.league_id+'/rosters');
+
+          if(lr.ok){
+
+            var rosters=await lr.json();
+
+            var mine=rosters.filter(function(ro){return ro.owner_id===user.user_id;})[0];
+
+            if(mine){
+
+              Object.entries(draft.slot_to_roster_id).forEach(function(e){
+
+                if(parseInt(e[1])===parseInt(mine.roster_id)) myDraftSlot=parseInt(e[0]);
+
+              });
+
+            }
+
+          }
+
+        }catch(e){}
 
       }
 
@@ -8521,7 +9550,7 @@ async function loadDraft(){
 
   draftId=document.getElementById('draft-id-input').value.trim();
 
-  if(!draftId){alert('Bitte Draft ID eingeben.');return;}
+  if(!draftId){alert('Please enter a Draft ID');return;}
 
   var btn=document.getElementById('load-btn');
 
@@ -8530,7 +9559,7 @@ async function loadDraft(){
 
   btn.textContent='Loading...';btn.disabled=true;
 
-  document.getElementById('player-grid').innerHTML='<div class="empty-state">// Verbinde mit Sleeper...</div>';
+  document.getElementById('player-grid').innerHTML='<div class="empty-state">// Connecting to Sleeper...</div>';
 
   try{
 
@@ -8618,9 +9647,11 @@ async function loadDraft(){
 
         var _pf=null,_ph=null,_pl=null;
 
+        if(dataSource!=='sleeper'){
         if(FP_PROJ[p.name]!=null){ _pf=FP_PROJ[p.name].f; _ph=FP_PROJ[p.name].h; _pl=FP_PROJ[p.name].l; }
 
         else { for(var pn in FP_PROJ){ if(normName(pn)===key){ _pf=FP_PROJ[pn].f; _ph=FP_PROJ[pn].h; _pl=FP_PROJ[pn].l; break; } } }
+        }
 
         return Object.assign({}, p, {sleeperRank: finalRank, sleeperId: p.id, _hasAdp: adpRank != null, projFpts:_pf, projHigh:_ph, projLow:_pl});
 
@@ -8670,7 +9701,7 @@ async function loadDraft(){
 
   }catch(e){
 
-    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Fehler: '+e.message+'</div>';
+    document.getElementById('player-grid').innerHTML='<div class="empty-state">// Error: '+e.message+'</div>';
 
   }
 
@@ -9445,7 +10476,9 @@ document.addEventListener('DOMContentLoaded',function(){
 
   }catch(e){}
 
-  if(loadRankings() && customRankings.length){
+  if(dataSource === 'sleeper'){ try{ localStorage.removeItem('fantasybot_rankings'); }catch(e){} }
+
+  if(dataSource !== 'sleeper' && loadRankings() && customRankings.length){
 
     useCustom=true;
 
@@ -9553,7 +10586,9 @@ document.addEventListener('DOMContentLoaded',function(){
 
   document.getElementById('search-input').addEventListener('input',renderPlayers);
 
-  document.getElementById('scroll-to-pick-btn').addEventListener('click',function(){
+  var _scrollPickBtn=document.getElementById('scroll-to-pick-btn');
+
+  if(_scrollPickBtn) _scrollPickBtn.addEventListener('click',function(){
 
     var el=document.querySelector('.pcard-highlight');
 
@@ -9592,6 +10627,14 @@ document.addEventListener('DOMContentLoaded',function(){
       this.classList.add('active');
 
       strategy.main = this.dataset.strat;
+
+      // auto bench default follows strategy unless user customised it
+
+      if(typeof calcBenchDefault==='function' && typeof applyBenchToUI==='function'){
+
+        strategy.benchShare = calcBenchDefault(); applyBenchToUI(strategy.benchShare);
+
+      }
 
     });
 
@@ -9768,6 +10811,12 @@ document.addEventListener('DOMContentLoaded',function(){
     applyBenchToUI(calcBenchDefault());
 
   });
+
+  (function(){ var rs=document.getElementById('roster-setting'); if(rs) rs.addEventListener('change', function(){
+
+    strategy.rosterType=this.value; strategy.benchShare=calcBenchDefault(); applyBenchToUI(strategy.benchShare);
+
+  }); })();
 
 
 
@@ -10077,59 +11126,13 @@ document.addEventListener('DOMContentLoaded',function(){
 
       sleeperBtn.style.borderColor = 'var(--amber)';
 
-      sleeperBtn.style.color       = 'var(--amber)';
-
-      fpBtn.style.borderColor      = 'var(--border2)';
-
-      fpBtn.style.color            = 'var(--text)';
-
-      fpPanel.style.display        = 'none';
-
-      // Clear any uploaded rankings so Sleeper ADP is used
-
-      customRankings = [];
-
-      useCustom      = false;
-
-      try{ localStorage.removeItem('fantasybot_rankings'); }catch(e){}
-
-    } else {
-
-      fpBtn.style.borderColor      = 'var(--amber)';
-
-      fpBtn.style.color            = 'var(--amber)';
-
-      sleeperBtn.style.borderColor = 'var(--border2)';
-
-      sleeperBtn.style.color       = 'var(--text)';
-
-      fpPanel.style.display        = 'block';
-
-    }
-
-  };
-
-
-
-
-
-  // ── data source toggle ──────────────────────────────────────────────────
-
-  window.fnSetDataSource = function(src) {
-
-    var sleeperBtn = document.getElementById('fn-sleeper-only-btn');
-
-    var fpBtn      = document.getElementById('fn-fantasypros-btn');
-
-    var fpPanel    = document.getElementById('fn-fp-panel');
-
-    if(src === 'sleeper') {
-
-      sleeperBtn.style.borderColor = 'var(--amber)';
-
       fpBtn.style.borderColor      = 'var(--border2)';
 
       fpPanel.style.display        = 'none';
+
+      dataSource = 'sleeper';
+
+      try{ localStorage.setItem('fantasybot_source','sleeper'); }catch(e){}
 
       // Reset uploaded rankings → Sleeper ADP takes over
 
@@ -10162,6 +11165,10 @@ document.addEventListener('DOMContentLoaded',function(){
       sleeperBtn.style.borderColor = 'var(--border2)';
 
       fpPanel.style.display        = 'block';
+
+      dataSource = 'fantasypros';
+
+      try{ localStorage.setItem('fantasybot_source','fantasypros'); }catch(e){}
 
     }
 
@@ -10209,6 +11216,27 @@ document.addEventListener('DOMContentLoaded',function(){
 
   // ── "Go to Draft Board" button ──────────────────────
 
+  window.fnResolveUserThenContinue = async function() {
+    var uInput = document.getElementById('fn-username-input');
+    var st     = document.getElementById('fn-username-status');
+    var name   = (uInput && uInput.value.trim()) || '';
+    if(!name){ if(st){ st.className='fn-input-status err'; st.textContent='\u26a0 Please enter your Sleeper username to continue.'; } if(uInput) uInput.focus(); return; }
+    if(st){ st.className='fn-input-status loading'; st.textContent='\u23f3 Verifying username\u2026'; }
+    // Mirror into the sidebar input that loadMyTeam() reads from
+    var sideInput = document.getElementById('sleeper-username-input');
+    if(sideInput) sideInput.value = name;
+    try{
+      if(typeof loadMyTeam === 'function'){ await loadMyTeam(); }
+      if(myDraftSlot){
+        if(st){ st.className='fn-input-status ok'; st.textContent='\u2713 '+name+' \u00b7 Draft slot #'+myDraftSlot+' detected.'; }
+        setTimeout(function(){ fnGoTo(4); }, 500);
+      } else {
+        if(st){ st.className='fn-input-status err'; st.textContent='\u2717 '+name+' was found, but not in this draft. Check the username or Draft ID.'; }
+      }
+    } catch(e){
+      if(st){ st.className='fn-input-status err'; st.textContent='\u2717 Could not verify username. Check spelling and try again.'; }
+    }
+  };
   window.fnEnterApp = function() {
 
     // Save username → sidebar. loadMyTeam() fires AFTER loadDraft() succeeds.
@@ -10362,7 +11390,7 @@ document.addEventListener('DOMContentLoaded',function(){
 
     <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;">
       <div style="font-family:var(--mono);font-size:11px;font-weight:800;
-                  color:var(--blue);letter-spacing:.12em;">IMPRESSUM &amp; PRIVACY POLICY</div>
+                  color:var(--blue);letter-spacing:.12em;">LEGAL NOTICE &amp; PRIVACY POLICY</div>
       <button onclick="privacyClose()"
         style="background:none;border:none;color:var(--text3);font-size:20px;
                cursor:pointer;padding:0 4px;line-height:1;margin-top:-2px;">&#xD7;</button>
@@ -10370,10 +11398,10 @@ document.addEventListener('DOMContentLoaded',function(){
 
     <div style="margin-bottom:20px;">
       <div style="font-family:var(--mono);font-size:10px;font-weight:700;
-                  color:var(--text2);letter-spacing:.1em;margin-bottom:8px;">IMPRESSUM</div>
+                  color:var(--text2);letter-spacing:.1em;margin-bottom:8px;">LEGAL NOTICE</div>
       <div style="font-size:13px;color:var(--text);line-height:1.7;">
         Yannick Florin<br>
-        Igis, Schweiz<br>
+        Igis, Switzerland<br>
         <a href="mailto:OwlPick.feedback@gmail.com"
            style="color:var(--blue);text-decoration:none;">OwlPick.feedback@gmail.com</a>
       </div>
